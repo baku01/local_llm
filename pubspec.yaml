@@ -1,0 +1,48 @@
+name: local_llm
+description: "Aplicação desktop nativa para interação com LLMs locais via Ollama."
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+  flutter: ">=3.24.0"
+
+# Plataformas suportadas
+platforms:
+  macos:
+  windows:
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Networking
+  dio: ^5.8.0+1
+  http: ^1.2.1
+  
+  # Desktop-specific packages
+  window_manager: ^0.4.3
+  
+  # UI enhancements
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.0
+  
+  # Web search
+  html: ^0.15.4
+  url_launcher: ^6.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  
+  # Testing packages
+  mockito: ^5.4.4  
+  build_runner: ^2.4.7
+  integration_test:
+    sdk: flutter
+  test: ^1.25.7
+
+flutter:
+  uses-material-design: true
