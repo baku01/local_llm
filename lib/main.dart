@@ -1,5 +1,5 @@
 /// Local LLM Chat Application
-/// 
+///
 /// Este é o ponto de entrada principal da aplicação Local LLM Chat.
 /// A aplicação fornece uma interface para interagir com modelos de linguagem
 /// locais através do Ollama, incluindo funcionalidades de busca na web.
@@ -15,7 +15,7 @@ import 'presentation/pages/home_page.dart';
 import 'presentation/providers/theme_provider.dart';
 
 /// Função principal da aplicação.
-/// 
+///
 /// Configura as dependências, inicializa a janela do desktop (quando aplicável)
 /// e executa a aplicação.
 void main() async {
@@ -51,7 +51,7 @@ void main() async {
 }
 
 /// Widget principal da aplicação.
-/// 
+///
 /// Gerencia o tema, configurações globais e navegação principal.
 /// Utiliza o padrão Provider para gerenciamento de estado do tema.
 class MyApp extends StatefulWidget {
@@ -77,7 +77,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   /// Configura atalhos de teclado globais.
-  /// 
+  ///
   /// Atualmente suporta:
   /// - Cmd/Ctrl + Shift + L: Alterna entre tema claro e escuro
   void _setupKeyboardShortcuts() {
@@ -99,7 +99,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   /// Constrói o tema claro da aplicação.
-  /// 
+  ///
   /// Utiliza Material Design 3 com cores personalizadas inspiradas no iOS.
   /// Retorna um [ThemeData] configurado para o modo claro.
   ThemeData _buildMaterialLightTheme() {
@@ -123,7 +123,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   /// Constrói o tema escuro da aplicação.
-  /// 
+  ///
   /// Utiliza Material Design 3 com cores personalizadas para modo escuro.
   /// Retorna um [ThemeData] configurado para o modo escuro.
   ThemeData _buildMaterialDarkTheme() {

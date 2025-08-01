@@ -1,5 +1,5 @@
 /// Cliente HTTP robusto com retry automático e headers otimizados.
-/// 
+///
 /// Implementa um wrapper em torno do cliente HTTP padrão do Dart,
 /// adicionando funcionalidades de resiliência como timeout configurável,
 /// retry automático em falhas de rede e headers personalizados para
@@ -11,7 +11,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 /// Cliente HTTP robusto com funcionalidades de resiliência.
-/// 
+///
 /// Características principais:
 /// - Headers de User-Agent realísticos para evitar bloqueios
 /// - Timeout configurável com fallback
@@ -26,14 +26,14 @@ class RobustHttpClient extends http.BaseClient {
   RobustHttpClient() : _inner = http.Client();
 
   /// Envia uma requisição HTTP com resiliência e retry.
-  /// 
+  ///
   /// Adiciona headers padronizados para melhor compatibilidade,
   /// implementa timeout e retry automático em caso de falhas de rede.
-  /// 
+  ///
   /// [request] - A requisição HTTP a ser enviada
-  /// 
+  ///
   /// Returns: [http.StreamedResponse] com a resposta do servidor
-  /// 
+  ///
   /// Throws: Exceções de rede após retry ou outros erros não relacionados à conectividade
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
@@ -68,7 +68,7 @@ class RobustHttpClient extends http.BaseClient {
       if (e is SocketException || e is TimeoutException) {
         // Aguarda um pouco antes do retry para dar tempo de recuperação
         await Future.delayed(const Duration(milliseconds: 500));
-        
+
         // Segunda tentativa com timeout menor
         return await _inner.send(request).timeout(const Duration(seconds: 10));
       }
@@ -77,7 +77,7 @@ class RobustHttpClient extends http.BaseClient {
   }
 
   /// Fecha o cliente HTTP e libera recursos.
-  /// 
+  ///
   /// Deve ser chamado quando o cliente não for mais necessário
   /// para evitar vazamentos de recursos.
   @override

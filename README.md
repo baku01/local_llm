@@ -65,46 +65,154 @@ selecionados para garantir performance e manutenibilidade.
 - **Integração com Desktop:** `window_manager` permite a personalização e o controle do comportamento da janela da aplicação.
 Uma lista exaustiva de todas as dependências pode ser encontrada no arquivo `pubspec.yaml`.
 
-## 5. Pontos de Refatoração e Melhorias Futuras
+## 5. Roadmap de Desenvolvimento
 
-Para aprimorar a qualidade do código, a escalabilidade e a funcionalidade do projeto,
-os seguintes pontos são sugeridos para futuras iterações:
+### **Infraestrutura e Qualidade**
 
-- **Arquitetura de Estado:**
-  - **Migração do Gerenciador de Estado:** Para aplicações mais complexas,
-    considerar a migração do `provider` para uma solução mais robusta como `Riverpod` ou `BLoC`,
-    que oferecem melhor separação de responsabilidades e facilitam os testes.
-- **Qualidade de Código e Padrões:**
-  - **Injeção de Dependência:** Implementar um padrão formal de Injeção de Dependência (DI)
-    para desacoplar as camadas de serviço, repositório e UI.
-  - **Tratamento de Erros Centralizado:** Desenvolver um sistema de tratamento de erros mais sofisticado,
-    que possa capturar, registrar e apresentar falhas de forma consistente em toda a aplicação.
-  - **Cobertura de Testes:** Aumentar a cobertura de testes, incluindo testes de unidade para a lógica de negócios,
-    testes de widget para os componentes de UI e testes de integração para os fluxos principais.
-- **Novas Funcionalidades:**
-  - **Gerenciamento de Modelos:** Adicionar uma interface para gerenciar os modelos do Ollama
-    (listar, baixar e excluir) diretamente da aplicação.
-  - **Persistência de Histórico:** Implementar uma solução de banco de dados local
-    (como `sembast`, `Isar` ou `Drift`) para salvar o histórico de conversas.
-  - **Múltiplas Conversas:** Permitir que o usuário gerencie múltiplas conversas simultaneamente
-    em abas ou em uma barra lateral.
+#### Core System
+- [ ] Implementar sistema de logging estruturado com rotação de arquivos
+- [ ] Configurar sistema centralizado de tratamento de exceções
+- [ ] Implementar retry patterns para operações de rede críticas
+- [ ] Adicionar sistema de cache inteligente para configurações e dados frequentemente acessados
+- [ ] Otimizar inicialização da aplicação com lazy loading de dependências
 
-## 6. Contribuições
+#### Testing & Quality Assurance
+- [ ] Expandir cobertura de testes unitários para repositórios e casos de uso
+- [ ] Implementar testes de integração para fluxos críticos da aplicação
+- [ ] Configurar testes automatizados para componentes de UI
+- [ ] Estabelecer pipeline de CI/CD com análise de qualidade de código
+- [ ] Implementar testes de performance para operações custosas
 
-Contribuições são fundamentais para o sucesso de projetos de código aberto.
-Toda e qualquer contribuição é **extremamente bem-vinda**.
+#### Error Handling & Monitoring
+- [ ] Desenvolver sistema unificado de apresentação de erros ao usuário
+- [ ] Implementar fallback mechanisms para falhas de conectividade
+- [ ] Adicionar monitoramento de performance em tempo real
+- [ ] Configurar crash reporting para builds de produção
 
-Se você deseja contribuir, por favor, siga os passos abaixo:
+### **Funcionalidades do Domínio**
 
-1. Realize um Fork do projeto.
-2. Crie uma nova Branch para a sua feature (`git checkout -b feature/AmazingFeature`).
-3. Faça o Commit de suas alterações (`git commit -m 'Add some AmazingFeature'`).
-4. Faça o Push para a Branch (`git push origin feature/AmazingFeature`).
-5. Abra um Pull Request.
+#### Model Management
+- [ ] Criar interface para listagem e gerenciamento de modelos Ollama instalados
+- [ ] Implementar funcionalidade de download/instalação de modelos via UI
+- [ ] Adicionar visualização de informações detalhadas dos modelos (tamanho, versão, capabilities)
+- [ ] Desenvolver sistema de exclusão segura de modelos não utilizados
+- [ ] Implementar configurações avançadas por modelo (temperatura, top-p, max tokens)
 
-Alternativamente, você pode abrir uma issue com a tag `enhancement` para sugerir novas funcionalidades ou melhorias.
+#### Conversation Management
+- [ ] Desenvolver sistema de persistência para histórico de conversas
+- [ ] Implementar busca full-text no histórico de conversas
+- [ ] Criar funcionalidade de organização por tags e categorias
+- [ ] Adicionar sistema de export/import de conversas em múltiplos formatos
+- [ ] Implementar sistema de múltiplas conversas com interface de abas
 
-## 7. Licença
+#### Data Persistence
+- [ ] Integrar banco de dados local (SQLite/Drift) para armazenamento persistente
+- [ ] Implementar sistema de backup automático local
+- [ ] Desenvolver funcionalidades de migração de dados entre versões
+- [ ] Criar sistema de configurações de retenção de dados
+
+### **Interface e Experiência do Usuário**
+
+#### UI/UX Enhancements
+- [ ] Implementar sistema de temas customizáveis além dos padrões claro/escuro
+- [ ] Desenvolver configurações avançadas de interface (fontes, tamanhos, densidade)
+- [ ] Adicionar indicadores visuais de progresso mais granulares
+- [ ] Implementar feedback háptico para ações importantes (desktop)
+- [ ] Otimizar responsividade para diferentes resoluções de tela
+
+#### Advanced UI Components
+- [ ] Desenvolver componente de editor de texto mais avançado com syntax highlighting
+- [ ] Implementar sistema de auto-complete para prompts frequentes
+- [ ] Criar interface de configuração visual para parâmetros de modelo
+- [ ] Adicionar suporte a drag-and-drop para arquivos e imagens
+
+#### Accessibility & Internationalization
+- [ ] Implementar suporte completo a acessibilidade (screen readers, navegação por teclado)
+- [ ] Adicionar suporte a múltiplos idiomas (i18n)
+- [ ] Configurar temas de alto contraste para acessibilidade
+- [ ] Implementar atalhos de teclado configuráveis
+
+### **Integrações e Conectividade**
+
+#### External Integrations
+- [ ] Desenvolver sistema de plugins/extensões
+- [ ] Implementar integração com editores de código populares
+- [ ] Criar funcionalidades de export direto para Notion, Obsidian, etc.
+- [ ] Adicionar suporte a webhooks para automação
+
+#### Network & Communication
+- [ ] Otimizar comunicação com API do Ollama com connection pooling
+- [ ] Implementar suporte a múltiplas instâncias Ollama simultâneas
+- [ ] Adicionar configuração de proxy e certificados SSL customizados
+- [ ] Desenvolver modo offline com sincronização posterior
+
+### **Performance e Otimização**
+
+#### Memory & Performance
+- [ ] Implementar garbage collection otimizado para conversas longas
+- [ ] Adicionar lazy loading para componentes pesados da UI
+- [ ] Otimizar rendering de markdown para documentos extensos
+- [ ] Implementar virtualização para listas de conversas extensas
+
+#### Caching & Storage
+- [ ] Desenvolver sistema de cache inteligente para responses frequentes
+- [ ] Implementar compressão de dados para armazenamento local
+- [ ] Otimizar gerenciamento de memória para modelos grandes
+- [ ] Adicionar limpeza automática de cache antigo
+
+### **Extensibilidade e Arquitetura**
+
+#### Architecture Improvements
+- [ ] Refatorar para implementação completa de Clean Architecture
+- [ ] Implementar pattern de Event Sourcing para auditoria de ações
+- [ ] Desenvolver sistema de middleware para operações transversais
+- [ ] Criar abstrações para futuras integrações com outros providers LLM
+
+#### Developer Experience
+- [ ] Documentar APIs internas para desenvolvimento de plugins
+- [ ] Criar ferramentas de debug e profiling para desenvolvedores
+- [ ] Implementar hot reload para desenvolvimento de temas
+- [ ] Estabelecer padrões de contribuição e review de código
+
+### **Expansão de Plataforma**
+
+#### Multi-Platform Support
+- [ ] Adaptar aplicação para Linux (AppImage, Snap, Flatpak)
+- [ ] Desenvolver versão web/PWA mantendo funcionalidades core
+- [ ] Otimizar para diferentes window managers no Linux
+- [ ] Implementar auto-updater cross-platform
+
+#### Mobile & Responsive
+- [ ] Criar layouts otimizados para tablets
+- [ ] Implementar gestos touch para navegação
+- [ ] Adaptar componentes para uso em telas pequenas
+- [ ] Desenvolver modo compacto para uso em dispositivos limitados
+
+### **Funcionalidades Avançadas**
+
+#### AI & ML Enhancements
+- [ ] Implementar suporte a modelos multimodais (texto + imagem)
+- [ ] Adicionar análise de sentimento e contexto das conversas
+- [ ] Desenvolver sistema de sugestões inteligentes baseado no histórico
+- [ ] Implementar funcionalidades de síntese e resumo automático
+
+#### Collaboration & Sharing
+- [ ] Criar sistema de compartilhamento de conversas
+- [ ] Implementar funcionalidades de colaboração em tempo real
+- [ ] Desenvolver sistema de comentários e anotações
+- [ ] Adicionar modo de apresentação para demonstrações
+
+### **Status Atual do Projeto**
+- ✅ Arquitetura base implementada com Clean Architecture
+- ✅ Interface principal funcional e responsiva
+- ✅ Integração completa com API Ollama
+- ✅ Sistema de temas claro/escuro
+- ✅ Documentação completa do código fonte
+- ✅ Web scraping para enriquecimento de contexto
+- ✅ Suporte a streaming de respostas
+- ✅ Sistema de pesquisa web integrado
+
+## 6. Licença
 
 Este projeto é distribuído sob a Licença MIT.
 Consulte o arquivo `LICENSE` para obter mais detalhes.
