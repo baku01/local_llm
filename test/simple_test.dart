@@ -150,8 +150,11 @@ void main() {
         const gold = Color(0xFFFFD700);
         const green = Color(0xFF228B22);
 
+        // ignore: deprecated_member_use
         expect(red.value, 0xFFCC0000);
+        // ignore: deprecated_member_use
         expect(gold.value, 0xFFFFD700);
+        // ignore: deprecated_member_use
         expect(green.value, 0xFF228B22);
 
         // Verify colors are not null

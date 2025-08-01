@@ -52,8 +52,6 @@ class _ResponsiveLayoutState extends State<ResponsiveLayout>
     with TickerProviderStateMixin {
   late AnimationController _contentController;
 
-  bool _isMobile = false;
-
   @override
   void initState() {
     super.initState();
@@ -76,8 +74,6 @@ class _ResponsiveLayoutState extends State<ResponsiveLayout>
     return ResponsiveBreakpoints.builder(
       child: Builder(
         builder: (context) {
-          _isMobile = ResponsiveBreakpoints.of(context).isMobile;
-
           return Scaffold(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: _buildSimpleLayout(context),

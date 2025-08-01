@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 class McpToolsWidget extends StatefulWidget {
-  const McpToolsWidget({Key? key}) : super(key: key);
+  const McpToolsWidget({super.key});
 
   @override
   State<McpToolsWidget> createState() => _McpToolsWidgetState();
@@ -11,7 +11,7 @@ class McpToolsWidget extends StatefulWidget {
 class _McpToolsWidgetState extends State<McpToolsWidget> {
   final TextEditingController _pathController = TextEditingController();
   final TextEditingController _fileContentController = TextEditingController();
-  String _currentDirectory = Directory.current.path;
+  final String _currentDirectory = Directory.current.path;
   String _output = '';
 
   void _createFolder() async {
@@ -65,8 +65,7 @@ class _McpToolsWidgetState extends State<McpToolsWidget> {
       final contents = directory.listSync();
       setState(() {
         _output =
-            'Contents of $_currentDirectory:\n' +
-            contents.map((e) => e.path).join('\n');
+            'Contents of $_currentDirectory:\n${contents.map((e) => e.path).join('\n')}';
       });
     } else {
       setState(() {

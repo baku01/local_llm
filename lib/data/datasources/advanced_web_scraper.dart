@@ -351,7 +351,7 @@ class AdvancedWebScraper implements WebSearchDataSource {
             final title = _cleanText(titleElement.text);
             final snippet = _cleanText(snippetElement?.text ?? '');
 
-            if (title.isNotEmpty && _isRelevant(title + ' ' + snippet, query)) {
+            if (title.isNotEmpty && _isRelevant('$title $snippet', query)) {
               results.add(
                 SearchResult(
                   title: title,
@@ -398,7 +398,7 @@ class AdvancedWebScraper implements WebSearchDataSource {
             final title = _cleanText(titleElement.text);
             final snippet = _cleanText(snippetElement?.text ?? '');
 
-            if (title.isNotEmpty && _isRelevant(title + ' ' + snippet, query)) {
+            if (title.isNotEmpty && _isRelevant('$title $snippet', query)) {
               results.add(
                 SearchResult(
                   title: title,
@@ -444,7 +444,7 @@ class AdvancedWebScraper implements WebSearchDataSource {
             final title = _cleanText(titleElement.text);
             final snippet = _cleanText(snippetElement?.text ?? '');
 
-            if (title.isNotEmpty && _isRelevant(title + ' ' + snippet, query)) {
+            if (title.isNotEmpty && _isRelevant('$title $snippet', query)) {
               results.add(
                 SearchResult(
                   title: title,
@@ -488,7 +488,7 @@ class AdvancedWebScraper implements WebSearchDataSource {
             final title = _cleanText(titleElement.text);
             final snippet = _cleanText(snippetElement?.text ?? '');
 
-            if (title.isNotEmpty && _isRelevant(title + ' ' + snippet, query)) {
+            if (title.isNotEmpty && _isRelevant('$title $snippet', query)) {
               results.add(
                 SearchResult(
                   title: title,
@@ -532,7 +532,7 @@ class AdvancedWebScraper implements WebSearchDataSource {
             final title = _cleanText(titleElement.text);
             final snippet = _cleanText(snippetElement?.text ?? '');
 
-            if (title.isNotEmpty && _isRelevant(title + ' ' + snippet, query)) {
+            if (title.isNotEmpty && _isRelevant('$title $snippet', query)) {
               results.add(
                 SearchResult(
                   title: title,

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:local_llm/core/di/injection_container.dart';
 import 'package:local_llm/presentation/controllers/llm_controller.dart';
@@ -119,7 +120,7 @@ void main() {
         for (final testQuery in maliciousQueries) {
           // Test that search handles malicious input
           controller.toggleWebSearch(true);
-          print('Processing query: $testQuery'); // Use testQuery directly
+          debugPrint('Processing query: $testQuery'); // Use testQuery directly
           // Would need access to search internals to test properly
         }
 

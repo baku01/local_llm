@@ -22,10 +22,12 @@ class EnhancedWebScraper {
       receiveTimeout: _timeout,
       sendTimeout: _timeout,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+        'User-Agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
             'AppleWebKit/537.36 (KHTML, like Gecko) '
             'Chrome/118.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept':
+            'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
         'Accept-Encoding': 'gzip, deflate',
         'Cache-Control': 'no-cache',
@@ -103,9 +105,7 @@ class EnhancedWebScraper {
 
       final response = await _dio.get(
         url,
-        options: Options(
-          receiveTimeout: timeout ?? _timeout,
-        ),
+        options: Options(receiveTimeout: timeout ?? _timeout),
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -117,7 +117,12 @@ class EnhancedWebScraper {
           e.type == DioExceptionType.receiveTimeout ||
           e.type == DioExceptionType.connectionError) {
         await Future.delayed(Duration(seconds: retryCount + 1));
-        return scrapeUrl(url, timeout: timeout, customHeaders: customHeaders, retryCount: retryCount + 1);
+        return scrapeUrl(
+          url,
+          timeout: timeout,
+          customHeaders: customHeaders,
+          retryCount: retryCount + 1,
+        );
       }
     } catch (e) {
       // Handle unexpected errors
@@ -130,7 +135,7 @@ class EnhancedWebScraper {
   ScrapedContent _extractContentFromHtml(String url, String html) {
     final document = html_parser.parse(html);
     final beautifulSoup = BeautifulSoup(html);
-    
+
     // Strategy 1: Use Beautiful Soup for robust extraction
     final title = _extractTitle(beautifulSoup, document);
     final description = _extractDescription(beautifulSoup, document);
@@ -228,7 +233,8 @@ class EnhancedWebScraper {
         final element = soup.find(selector);
         if (element != null) {
           final content = _extractTextContent(element);
-          if (content.length > 100) { // Minimum content length
+          if (content.length > 100) {
+            // Minimum content length
             return content;
           }
         }
@@ -243,9 +249,20 @@ class EnhancedWebScraper {
       if (body != null) {
         // Remove navigation, ads, footer, etc.
         final elementsToRemove = [
-          'nav', 'header', 'footer', '.nav', '.navigation',
-          '.menu', '.sidebar', '.ads', '.advertisement',
-          '.social', '.share', '.comments', 'script', 'style'
+          'nav',
+          'header',
+          'footer',
+          '.nav',
+          '.navigation',
+          '.menu',
+          '.sidebar',
+          '.ads',
+          '.advertisement',
+          '.social',
+          '.share',
+          '.comments',
+          'script',
+          'style',
         ];
 
         for (final selectorToRemove in elementsToRemove) {
@@ -266,7 +283,7 @@ class EnhancedWebScraper {
 
   String _extractTextContent(dynamic element) {
     if (element == null) return '';
-    
+
     try {
       // Get text and clean it
       final text = element.getText() as String? ?? '';
@@ -276,7 +293,10 @@ class EnhancedWebScraper {
     }
   }
 
-  Map<String, String> _extractMetadata(BeautifulSoup soup, html_dom.Document document) {
+  Map<String, String> _extractMetadata(
+    BeautifulSoup soup,
+    html_dom.Document document,
+  ) {
     final metadata = <String, String>{};
 
     // Extract meta tags
@@ -284,7 +304,7 @@ class EnhancedWebScraper {
     for (final meta in metaTags) {
       final name = meta.attributes['name'] ?? meta.attributes['property'] ?? '';
       final content = meta.attributes['content'] ?? '';
-      
+
       if (name.isNotEmpty && content.isNotEmpty) {
         metadata[name] = content;
       }
@@ -293,9 +313,13 @@ class EnhancedWebScraper {
     return metadata;
   }
 
-  List<String> _extractLinks(BeautifulSoup soup, html_dom.Document document, String baseUrl) {
+  List<String> _extractLinks(
+    BeautifulSoup soup,
+    html_dom.Document document,
+    String baseUrl,
+  ) {
     final links = <String>{};
-    
+
     try {
       final linkElements = soup.findAll('a');
       for (final link in linkElements) {
@@ -314,9 +338,13 @@ class EnhancedWebScraper {
     return links.toList();
   }
 
-  List<String> _extractImages(BeautifulSoup soup, html_dom.Document document, String baseUrl) {
+  List<String> _extractImages(
+    BeautifulSoup soup,
+    html_dom.Document document,
+    String baseUrl,
+  ) {
     final images = <String>{};
-    
+
     try {
       final imgElements = soup.findAll('img');
       for (final img in imgElements) {
@@ -401,10 +429,10 @@ class ScrapedContent {
 
 class Semaphore {
   int _currentCount;
-  final int _maxCount;
+
   final Queue<Completer<void>> _waitQueue = Queue<Completer<void>>();
 
-  Semaphore(int maxCount) : _maxCount = maxCount, _currentCount = maxCount;
+  Semaphore(int maxCount) : _currentCount = maxCount;
 
   Future<void> acquire() async {
     if (_currentCount > 0) {
@@ -426,4 +454,3 @@ class Semaphore {
     }
   }
 }
-
