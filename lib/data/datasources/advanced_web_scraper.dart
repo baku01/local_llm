@@ -1,3 +1,11 @@
+/// Biblioteca que implementa um web scraper avançado com técnicas anti-detecção.
+/// 
+/// Esta biblioteca contém a classe [AdvancedWebScraper] que implementa
+/// estratégias sofisticadas de web scraping, incluindo rotação de user agents,
+/// cache de conteúdo, controle de taxa de requisições e parsing inteligente
+/// de conteúdo HTML.
+library;
+
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
@@ -5,7 +13,25 @@ import 'package:html/dom.dart' as dom;
 import '../../domain/entities/search_result.dart';
 import 'web_search_datasource.dart';
 
-/// Advanced Web Scraper com múltiplas estratégias e técnicas anti-detecção
+/// Web scraper avançado com múltiplas estratégias e técnicas anti-detecção.
+/// 
+/// Esta classe implementa [WebSearchDataSource] fornecendo capacidades
+/// avançadas de web scraping que incluem:
+/// - Rotação automática de user agents
+/// - Cache inteligente de conteúdo
+/// - Controle de taxa de requisições (rate limiting)
+/// - Parsing de conteúdo HTML otimizado
+/// - Técnicas para evitar detecção por sistemas anti-bot
+/// 
+/// O scraper é projetado para ser respeitoso com os servidores alvo,
+/// implementando delays apropriados e respeitando robots.txt quando possível.
+/// 
+/// Exemplo de uso:
+/// ```dart
+/// final scraper = AdvancedWebScraper(client: http.Client());
+/// final results = await scraper.search(SearchQuery('Flutter desenvolvimento'));
+/// final content = await scraper.fetchPageContent('https://flutter.dev');
+/// ```
 class AdvancedWebScraper implements WebSearchDataSource {
   final http.Client client;
   final List<String> _rotatingUserAgents;

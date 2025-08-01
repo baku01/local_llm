@@ -1,3 +1,13 @@
+/// DataSource local para pesquisas web com múltiplos provedores.
+/// 
+/// Implementa pesquisas web através de scraping direto de múltiplos
+/// mecanismos de busca (Google, Bing, DuckDuckGo) como alternativa
+/// robusta quando APIs específicas não estão disponíveis.
+/// 
+/// Utiliza rotação de User-Agents e agregação de resultados para
+/// maximizar a qualidade e quantidade de resultados obtidos.
+library;
+
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
@@ -5,8 +15,19 @@ import 'package:html/dom.dart' as dom;
 import '../../domain/entities/search_result.dart';
 import 'web_search_datasource.dart';
 
+/// DataSource que realiza pesquisas web através de scraping direto.
+/// 
+/// Características principais:
+/// - Múltiplos provedores de busca simultâneos
+/// - Rotação automática de User-Agents para evitar bloqueios
+/// - Deduplicação de resultados entre provedores
+/// - Fallback automático entre diferentes mecanismos de busca
+/// - Parsing inteligente de HTML para extração de resultados
 class LocalWebSearchDataSource implements WebSearchDataSource {
+  /// Cliente HTTP para realizar requisições.
   final http.Client client;
+  
+  /// Lista de User-Agents realísticos para rotação.
   final List<String> _userAgents = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -14,17 +35,30 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
   ];
 
+  /// Construtor que recebe o cliente HTTP configurado.
   LocalWebSearchDataSource({required this.client});
 
+  /// Retorna um User-Agent aleatório da lista para evitar detecção.
   String get _randomUserAgent =>
       _userAgents[Random().nextInt(_userAgents.length)];
 
+  /// Realiza pesquisa web agregando resultados de múltiplos provedores.
+  /// 
+  /// Executa pesquisas simultâneas em Google, Bing e DuckDuckGo,
+  /// depois combina e deduplica os resultados para maximizar
+  /// relevância e cobertura.
+  /// 
+  /// [query] - Objeto de consulta com termos e parâmetros
+  /// 
+  /// Returns: Lista deduplicated de [SearchResult] ordenados por relevância
+  /// 
+  /// Throws: Exception se todas as tentativas de pesquisa falharem
   @override
   Future<List<SearchResult>> search(SearchQuery query) async {
     final results = <SearchResult>[];
 
     try {
-      // Tentar múltiplas fontes de pesquisa
+      // Executar pesquisas em paralelo para melhor performance
       final futures = [
         _searchGoogle(query),
         _searchBing(query),
@@ -33,7 +67,7 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
 
       final allResults = await Future.wait(futures, eagerError: false);
 
-      // Combinar resultados únicos
+      // Combinar e deduplicated resultados por URL
       final seenUrls = <String>{};
       for (final searchResults in allResults) {
         for (final result in searchResults) {

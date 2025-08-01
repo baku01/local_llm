@@ -1,3 +1,10 @@
+/// Controlador principal da aplicação de chat com LLM.
+/// 
+/// Este arquivo contém o controlador responsável por gerenciar toda a lógica
+/// de interação com modelos de linguagem locais, incluindo pesquisa web,
+/// streaming de respostas e cache de conteúdo.
+library;
+
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/llm_model.dart';
 import '../../domain/entities/llm_response.dart';
@@ -8,15 +15,35 @@ import '../../domain/usecases/generate_response_stream.dart';
 import '../../domain/usecases/search_web.dart';
 import '../widgets/chat_interface.dart';
 
+/// Controlador principal que gerencia a interação com modelos LLM.
+/// 
+/// Responsabilidades principais:
+/// - Gerenciar seleção e carregamento de modelos disponíveis
+/// - Processar mensagens do usuário e gerar respostas via LLM
+/// - Integrar pesquisa web para enriquecer o contexto das conversas
+/// - Gerenciar cache de conteúdo web para otimização de performance
+/// - Suportar streaming de respostas para melhor experiência do usuário
+/// - Processar modelos com capacidade de "pensamento" (série R1)
 class LlmController extends ChangeNotifier {
+  /// Caso de uso para obter modelos disponíveis.
   final GetAvailableModels _getAvailableModels;
+  
+  /// Caso de uso para gerar resposta única (não streaming).
   final GenerateResponse _generateResponse;
+  
+  /// Caso de uso para gerar resposta em streaming.
   final GenerateResponseStream _generateResponseStream;
+  
+  /// Caso de uso para realizar pesquisas na web.
   final SearchWeb _searchWeb;
 
-  // Cache para conteúdos de páginas web
+  /// Cache para armazenar conteúdos de páginas web já processadas.
+  /// Evita múltiplas requisições para a mesma URL durante uma sessão.
   final Map<String, String> _webPageContents = {};
 
+  /// Construtor do controlador com injeção de dependências.
+  /// 
+  /// Todos os casos de uso são obrigatórios para o funcionamento completo.
   LlmController({
     required GetAvailableModels getAvailableModels,
     required GenerateResponse generateResponse,
@@ -27,76 +54,116 @@ class LlmController extends ChangeNotifier {
         _generateResponseStream = generateResponseStream,
         _searchWeb = searchWeb;
 
+  // Estado dos modelos disponíveis
   List<LlmModel> _models = [];
+  /// Lista de modelos LLM disponíveis para uso.
   List<LlmModel> get models => _models;
 
   LlmModel? _selectedModel;
+  /// Modelo atualmente selecionado pelo usuário.
   LlmModel? get selectedModel => _selectedModel;
 
+  // Estado das mensagens do chat
   final List<ChatMessage> _messages = [];
+  /// Lista imutável de mensagens do chat atual.
   List<ChatMessage> get messages => List.unmodifiable(_messages);
 
+  // Estado dos resultados de pesquisa
   final List<SearchResult> _searchResults = [];
+  /// Lista imutável de resultados da última pesquisa web realizada.
   List<SearchResult> get searchResults => List.unmodifiable(_searchResults);
 
+  // Estados de carregamento e processamento
   bool _isLoading = false;
+  /// Indica se uma resposta do LLM está sendo gerada.
   bool get isLoading => _isLoading;
 
   bool _isSearching = false;
+  /// Indica se uma pesquisa web está em andamento.
   bool get isSearching => _isSearching;
 
+  // Configurações funcionais
   bool _webSearchEnabled = false;
+  /// Indica se a pesquisa web está habilitada para enriquecer o contexto.
   bool get webSearchEnabled => _webSearchEnabled;
 
   bool _streamEnabled = true;
+  /// Indica se o modo streaming está ativo para respostas em tempo real.
   bool get streamEnabled => _streamEnabled;
 
+  // Estado do processamento de "pensamento" (modelos R1)
   String? _currentThinking;
+  /// Texto atual do processo de "pensamento" dos modelos R1.
   String? get currentThinking => _currentThinking;
 
   bool _isThinking = false;
+  /// Indica se o modelo está no processo de "pensamento".
   bool get isThinking => _isThinking;
 
+  // Estado de erro
   String? _errorMessage;
+  /// Mensagem de erro atual, se houver.
   String? get errorMessage => _errorMessage;
 
+  /// Atualiza o estado de carregamento e notifica os ouvintes.
   void _setLoading(bool loading) {
     _isLoading = loading;
     notifyListeners();
   }
 
+  /// Define uma mensagem de erro e notifica os ouvintes.
   void _setError(String? error) {
     _errorMessage = error;
     notifyListeners();
   }
 
+  /// Atualiza o estado de pesquisa web e notifica os ouvintes.
   void _setSearching(bool searching) {
     _isSearching = searching;
     notifyListeners();
   }
 
+  /// Atualiza o estado de processamento de pensamento e notifica os ouvintes.
+  /// 
+  /// [thinking] - Se o modelo está pensando
+  /// [thinkingText] - Texto opcional do pensamento atual
   void _setThinking(bool thinking, [String? thinkingText]) {
     _isThinking = thinking;
     _currentThinking = thinkingText;
     notifyListeners();
   }
 
+  /// Seleciona um modelo LLM para uso e limpa erros anteriores.
+  /// 
+  /// [model] - O modelo a ser selecionado
   void selectModel(LlmModel model) {
     _selectedModel = model;
     _setError(null);
     notifyListeners();
   }
 
+  /// Alterna o estado da pesquisa web.
+  /// 
+  /// [enabled] - Se a pesquisa web deve estar habilitada
   void toggleWebSearch(bool enabled) {
     _webSearchEnabled = enabled;
     notifyListeners();
   }
 
+  /// Alterna o modo de streaming de respostas.
+  /// 
+  /// [enabled] - Se o streaming deve estar habilitado
   void toggleStreamMode(bool enabled) {
     _streamEnabled = enabled;
     notifyListeners();
   }
 
+  /// Carrega a lista de modelos LLM disponíveis.
+  /// 
+  /// Obtém todos os modelos disponíveis no servidor Ollama e seleciona
+  /// automaticamente o primeiro se nenhum estiver selecionado.
+  /// 
+  /// Throws: Define uma mensagem de erro se a operação falhar.
   Future<void> loadAvailableModels() async {
     _setLoading(true);
     _setError(null);
@@ -113,6 +180,18 @@ class LlmController extends ChangeNotifier {
     }
   }
 
+  /// Processa e envia uma mensagem do usuário para o modelo LLM.
+  /// 
+  /// Este é o método principal que orquestra todo o fluxo de processamento:
+  /// 1. Valida entrada e estado atual
+  /// 2. Realiza pesquisa web se habilitada
+  /// 3. Enriquece o prompt com contexto web
+  /// 4. Gera resposta via streaming ou modo único
+  /// 5. Processa respostas de modelos com "pensamento"
+  /// 
+  /// [content] - O texto da mensagem do usuário
+  /// 
+  /// Throws: Define mensagens de erro para validações e falhas de processamento.
   Future<void> sendMessage(String content) async {
     if (_selectedModel == null) {
       _setError('Nenhum modelo selecionado');
@@ -404,6 +483,10 @@ class LlmController extends ChangeNotifier {
     return summary;
   }
 
+  /// Limpa todo o histórico do chat e dados relacionados.
+  /// 
+  /// Remove todas as mensagens, resultados de pesquisa, cache de páginas web
+  /// e limpa qualquer mensagem de erro ativa.
   void clearChat() {
     _messages.clear();
     _searchResults.clear();
@@ -412,6 +495,9 @@ class LlmController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Remove uma mensagem específica do chat pelo índice.
+  /// 
+  /// [index] - Índice da mensagem a ser removida
   void removeMessage(int index) {
     if (index >= 0 && index < _messages.length) {
       _messages.removeAt(index);
@@ -419,13 +505,23 @@ class LlmController extends ChangeNotifier {
     }
   }
 
+  /// Limpa apenas os resultados de pesquisa e cache de páginas web.
+  /// 
+  /// Mantém o histórico de mensagens intacto.
   void clearSearchResults() {
     _searchResults.clear();
     _webPageContents.clear();
     notifyListeners();
   }
 
-  // Função para buscar conteúdo da página web usando o datasource padrão
+  /// Busca o conteúdo de uma página web usando o datasource configurado.
+  /// 
+  /// Utiliza reflexão para acessar o método fetchPageContent do datasource
+  /// se disponível. Retorna string vazia se o método não existir.
+  /// 
+  /// [url] - URL da página a ser processada
+  /// 
+  /// Returns: Conteúdo da página ou string vazia se indisponível
   Future<String> _fetchWebContent(String url) async {
     // Verifica se o dataSource tem o método fetchPageContent
     final dataSource = (_searchWeb as dynamic).dataSource;

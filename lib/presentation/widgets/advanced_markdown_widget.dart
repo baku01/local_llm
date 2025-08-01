@@ -1,14 +1,48 @@
+/// Widget avançado para renderização de Markdown.
+/// 
+/// Fornece renderização rica de Markdown com suporte a:
+/// - Syntax highlighting para código
+/// - Temas adaptativos (claro/escuro)
+/// - Links clicáveis
+/// - Tabelas e listas
+/// - Tipografia personalizada
+/// - Seleção de texto configurável
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 import 'package:flutter_highlight/themes/github.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+/// Widget para renderização avançada de conteúdo Markdown.
+/// 
+/// Este widget oferece uma experiência rica de visualização de Markdown
+/// com recursos profissionais incluindo:
+/// - Syntax highlighting para múltiplas linguagens de programação
+/// - Adaptação automática ao tema claro/escuro
+/// - Tipografia otimizada para legibilidade
+/// - Suporte a links externos
+/// - Tabelas responsivas
+/// - Blocos de código com botão de cópia
+/// 
+/// Ideal para exibir respostas de LLM que frequentemente contêm
+/// código e formatação complexa.
 class AdvancedMarkdownWidget extends StatelessWidget {
+  /// Conteúdo Markdown a ser renderizado.
   final String data;
+  
+  /// Se o texto deve ser selecionável pelo usuário.
   final bool selectable;
+  
+  /// Configuração customizada opcional para o Markdown.
   final MarkdownConfig? config;
 
+  /// Construtor do widget de Markdown avançado.
+  /// 
+  /// [data] - Conteúdo Markdown a ser renderizado
+  /// [selectable] - Se o texto deve ser selecionável (padrão: true)
+  /// [config] - Configuração customizada opcional
   const AdvancedMarkdownWidget({
     super.key,
     required this.data,
@@ -16,6 +50,10 @@ class AdvancedMarkdownWidget extends StatelessWidget {
     this.config,
   });
 
+  /// Constrói o widget de Markdown com configuração adaptativa.
+  /// 
+  /// Detecta automaticamente o tema atual e aplica configurações
+  /// apropriadas para modo claro ou escuro.
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -28,12 +66,26 @@ class AdvancedMarkdownWidget extends StatelessWidget {
     );
   }
 
+  /// Constrói a configuração de Markdown adaptada ao tema atual.
+  /// 
+  /// Cria uma configuração completa que inclui estilos para:
+  /// - Parágrafos e texto base
+  /// - Títulos de diferentes níveis
+  /// - Blocos de código com syntax highlighting
+  /// - Links interativos
+  /// - Tabelas e listas
+  /// - Citações e elementos especiais
+  /// 
+  /// [context] - Contexto para acessar tema e outras configurações
+  /// [isDark] - Se o tema escuro está ativo
+  /// 
+  /// Returns: Configuração completa de Markdown
   MarkdownConfig _buildMarkdownConfig(BuildContext context, bool isDark) {
     final theme = Theme.of(context);
     
     return MarkdownConfig(
       configs: [
-        // Paragraph styling
+        // Configuração de parágrafos base
         PConfig(
           textStyle: TextStyle(
             fontSize: 16,
@@ -42,7 +94,7 @@ class AdvancedMarkdownWidget extends StatelessWidget {
           ),
         ),
         
-        // Headers styling
+        // Configuração de cabeçalhos principais
         H1Config(
           style: TextStyle(
             fontSize: 28,

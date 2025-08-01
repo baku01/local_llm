@@ -1,7 +1,51 @@
+/// Biblioteca que define o sistema de cores revolucionário da aplicação.
+/// 
+/// Esta biblioteca contém a classe [RevolutionaryColors] que implementa
+/// um sistema completo de cores temáticas inspirado na luta popular e
+/// resistência, fornecendo paletas para temas claro e escuro, gradientes,
+/// cores semânticas e métodos utilitários para gerenciamento de cores.
+/// 
+/// O sistema inclui:
+/// - Cores primárias temáticas (revolução, esperança, união, etc.)
+/// - Paletas para temas claro e escuro
+/// - Gradientes decorativos
+/// - Cores semânticas (sucesso, erro, aviso, info)
+/// - Métodos utilitários para manipulação de cores
+/// - Paletas estendidas para variações
+library;
+
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
-/// Sistema de Cores Revolucionário - Inspirado na luta popular e resistência
+/// Sistema de Cores Revolucionário - Inspirado na luta popular e resistência.
+/// 
+/// Esta classe fornece um sistema completo de cores para a aplicação,
+/// organizando cores por categorias temáticas e funcionais. Inclui cores
+/// primárias inspiradas em temas revolucionários, paletas para temas
+/// claro e escuro, gradientes decorativos e métodos utilitários.
+/// 
+/// Exemplo de uso:
+/// ```dart
+/// // Obter cores baseadas no tema
+/// final backgroundColor = RevolutionaryColors.getBackgroundColor(isDark);
+/// final textColor = RevolutionaryColors.getPrimaryTextColor(isDark);
+/// 
+/// // Usar cores temáticas
+/// Container(
+///   color: RevolutionaryColors.kRevolutionRed,
+///   child: Text(
+///     'Texto',
+///     style: TextStyle(color: RevolutionaryColors.kTextOnDark),
+///   ),
+/// )
+/// 
+/// // Aplicar gradientes
+/// Container(
+///   decoration: BoxDecoration(
+///     gradient: RevolutionaryColors.getBackgroundGradient(isDark),
+///   ),
+/// )
+/// ```
 class RevolutionaryColors {
   // === CORES PRIMÁRIAS DA REVOLUÇÃO ===
   

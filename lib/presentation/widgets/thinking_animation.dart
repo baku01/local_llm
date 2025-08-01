@@ -1,8 +1,32 @@
+/// Biblioteca que define o widget de animação de "pensamento" da IA.
+/// 
+/// Esta biblioteca contém o widget [ThinkingAnimation] que exibe
+/// uma animação visual indicando que a IA está processando uma resposta,
+/// com efeitos shimmer, rotação e texto dinâmico.
+library;
+
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shimmer/shimmer.dart';
 
+/// Widget que exibe uma animação de "pensamento" da IA.
+/// 
+/// Este widget mostra uma animação visual elegante quando a IA está
+/// processando uma resposta, incluindo:
+/// - Texto de status dinâmico
+/// - Efeitos shimmer e rotação
+/// - Transições suaves de entrada/saída
+/// - Opção de dismissão pelo usuário
+/// 
+/// Exemplo de uso:
+/// ```dart
+/// ThinkingAnimation(
+///   thinkingText: 'Analisando sua pergunta...',
+///   isVisible: isAIThinking,
+///   onDismiss: () => setState(() => isAIThinking = false),
+/// )
+/// ```
 class ThinkingAnimation extends StatefulWidget {
   final String thinkingText;
   final bool isVisible;

@@ -1,24 +1,58 @@
+/// DataSource para pesquisas web usando diferentes provedores.
+/// 
+/// Implementa pesquisas web através de APIs públicas como DuckDuckGo,
+/// com funcionalidades de scraping de conteúdo para enriquecer
+/// as respostas dos modelos LLM com contexto web relevante.
+library;
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
 import '../../domain/entities/search_result.dart';
 import 'enhanced_web_scraper.dart';
 
+/// Interface abstrata para datasources de pesquisa web.
+/// 
+/// Define os contratos que devem ser implementados por qualquer
+/// datasource que forneça funcionalidades de pesquisa web.
 abstract class WebSearchDataSource {
+  /// Realiza uma pesquisa web baseada na query fornecida.
   Future<List<SearchResult>> search(SearchQuery query);
+  
+  /// Busca e extrai o conteúdo de uma página web específica.
   Future<String> fetchPageContent(String url);
 }
 
+/// Implementação do datasource usando a API do DuckDuckGo.
+/// 
+/// Utiliza a API pública do DuckDuckGo para realizar pesquisas web
+/// e extrai conteúdo de páginas usando web scraping avançado.
+/// Inclui fallback para métodos mais simples quando necessário.
 class DuckDuckGoSearchDataSource implements WebSearchDataSource {
+  /// Cliente HTTP para realizar requisições.
   final http.Client client;
+  
+  /// Scraper avançado para extração de conteúdo de páginas.
   final EnhancedWebScraper _scraper;
 
+  /// Construtor que inicializa o cliente HTTP e o scraper.
   DuckDuckGoSearchDataSource({required this.client}) : _scraper = EnhancedWebScraper();
 
+  /// Realiza pesquisa web usando a API do DuckDuckGo.
+  /// 
+  /// Utiliza a API Instant Answer do DuckDuckGo para obter resultados
+  /// de pesquisa sem necessidade de API key. Processa tanto tópicos
+  /// relacionados quanto definições diretas.
+  /// 
+  /// [query] - Objeto de consulta com termo e parâmetros de busca
+  /// 
+  /// Returns: Lista de [SearchResult] com os resultados encontrados
+  /// 
+  /// Throws: Exception para falhas de rede ou parsing
   @override
   Future<List<SearchResult>> search(SearchQuery query) async {
     try {
-      // Usando DuckDuckGo Instant Answer API (limitado mas funcional)
+      // Constrói URL da API DuckDuckGo Instant Answer
       final url = Uri.parse(
         'https://api.duckduckgo.com/?q=${Uri.encodeComponent(query.formattedQuery)}&format=json&no_html=1&skip_disambig=1',
       );
@@ -32,7 +66,7 @@ class DuckDuckGoSearchDataSource implements WebSearchDataSource {
       final data = json.decode(response.body) as Map<String, dynamic>;
       final results = <SearchResult>[];
 
-      // Processar resultados relacionados
+      // Processar tópicos relacionados (resultados principais)
       if (data['RelatedTopics'] != null) {
         final topics = data['RelatedTopics'] as List;
 
@@ -50,7 +84,7 @@ class DuckDuckGoSearchDataSource implements WebSearchDataSource {
         }
       }
 
-      // Se não há resultados relacionados, criar um resultado com a definição
+      // Fallback: usar definição direta se não há tópicos relacionados
       if (results.isEmpty && data['Definition'] != null) {
         results.add(
           SearchResult(
@@ -68,14 +102,25 @@ class DuckDuckGoSearchDataSource implements WebSearchDataSource {
     }
   }
 
+  /// Extrai o conteúdo de uma página web para enriquecer o contexto.
+  /// 
+  /// Utiliza um scraper avançado como método principal, com fallback
+  /// para parsing HTML simples em caso de falha. O conteúdo é formatado
+  /// em markdown para melhor integração com os modelos LLM.
+  /// 
+  /// [url] - URL da página a ser processada
+  /// 
+  /// Returns: Conteúdo da página formatado em texto/markdown
+  /// 
+  /// Throws: Exception para erros de rede ou parsing
   @override
   Future<String> fetchPageContent(String url) async {
     try {
-      // Use the enhanced scraper for better content extraction
+      // Tentativa primária: usar scraper avançado
       final scrapedContent = await _scraper.scrapeUrl(url);
       
       if (scrapedContent != null) {
-        // Return a formatted version of the scraped content
+        // Formatar conteúdo em markdown estruturado
         final buffer = StringBuffer();
         
         if (scrapedContent.title.isNotEmpty) {
@@ -87,7 +132,7 @@ class DuckDuckGoSearchDataSource implements WebSearchDataSource {
         }
         
         if (scrapedContent.content.isNotEmpty) {
-          // Limit content length
+          // Limitar tamanho do conteúdo para otimizar tokens
           const maxLength = 3000;
           final content = scrapedContent.content.length > maxLength 
               ? '${scrapedContent.content.substring(0, maxLength)}...'
@@ -100,7 +145,7 @@ class DuckDuckGoSearchDataSource implements WebSearchDataSource {
       
       throw Exception('Não foi possível extrair conteúdo da página');
     } catch (e) {
-      // Fallback to original method if enhanced scraper fails
+      // Fallback: parsing HTML simples se scraper falhar
       try {
         final response = await client.get(Uri.parse(url));
 
@@ -110,7 +155,7 @@ class DuckDuckGoSearchDataSource implements WebSearchDataSource {
 
         final document = html_parser.parse(response.body);
 
-        // Extrair texto principal, removendo scripts e estilos
+        // Remover elementos não relacionados ao conteúdo principal
         document.querySelectorAll('script, style, nav, header, footer').forEach((
           element,
         ) {
@@ -119,7 +164,7 @@ class DuckDuckGoSearchDataSource implements WebSearchDataSource {
 
         final textContent = document.body?.text ?? '';
 
-        // Limitar o tamanho do conteúdo
+        // Limitar tamanho para o fallback (menor que o método principal)
         const maxLength = 2000;
         if (textContent.length > maxLength) {
           return '${textContent.substring(0, maxLength)}...';
@@ -132,8 +177,15 @@ class DuckDuckGoSearchDataSource implements WebSearchDataSource {
     }
   }
 
+  /// Extrai um título apropriado de um texto longo.
+  /// 
+  /// Utiliza as primeiras palavras significativas do texto para
+  /// criar um título conciso e representativo.
+  /// 
+  /// [text] - Texto completo do qual extrair o título
+  /// 
+  /// Returns: Título extraído, limitado a 8 palavras
   String _extractTitle(String text) {
-    // Extrair as primeiras palavras como título
     final words = text.split(' ');
     if (words.length <= 8) return text;
     return '${words.take(8).join(' ')}...';

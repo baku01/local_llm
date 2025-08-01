@@ -1,3 +1,10 @@
+/// Layout responsivo principal da aplicação.
+/// 
+/// Gerencia a adaptação da interface para diferentes tamanhos de tela,
+/// incluindo desktop, tablet e mobile. Integra configurações, controles
+/// e o conteúdo principal de forma responsiva.
+library;
+
 import 'package:flutter/material.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -6,6 +13,13 @@ import 'settings_popup.dart';
 import '../../domain/entities/llm_model.dart';
 import '../providers/theme_provider.dart';
 
+/// Widget responsivo que adapta o layout para diferentes tamanhos de tela.
+/// 
+/// Características principais:
+/// - Adaptação automática desktop/mobile
+/// - Integração com sistema de configurações
+/// - Controles de modelo LLM e funcionalidades
+/// - Animações suaves de transição
 class ResponsiveLayout extends StatefulWidget {
   final Widget content;
   final Widget? floatingActionButton;

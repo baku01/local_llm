@@ -1,3 +1,10 @@
+/// Biblioteca que implementa um web scraper melhorado com Dio e Beautiful Soup.
+/// 
+/// Esta biblioteca contém a classe [EnhancedWebScraper] que oferece
+/// capacidades avançadas de web scraping usando a biblioteca Dio para
+/// requisições HTTP robustas e Beautiful Soup para parsing HTML sofisticado.
+library;
+
 import 'dart:convert';
 import 'dart:collection';
 import 'dart:async';
@@ -7,6 +14,20 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart' as html_dom;
 import 'package:beautiful_soup_dart/beautiful_soup.dart';
 
+/// Web scraper melhorado com Dio e Beautiful Soup para parsing avançado.
+/// 
+/// Esta classe fornece funcionalidades avançadas de web scraping:
+/// - Requisições HTTP robustas com Dio
+/// - Parsing HTML sofisticado com Beautiful Soup
+/// - Sistema de retry automático
+/// - Timeout configurável
+/// - Tratamento de erros abrangente
+/// 
+/// Exemplo de uso:
+/// ```dart
+/// final scraper = EnhancedWebScraper();
+/// final content = await scraper.scrapeUrl('https://example.com');
+/// ```
 class EnhancedWebScraper {
   final Dio _dio;
   static const int _maxRetries = 3;

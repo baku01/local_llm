@@ -1,3 +1,10 @@
+/// Interface principal de chat da aplicação.
+/// 
+/// Widget responsável por exibir o histórico de mensagens,
+/// área de entrada de texto e indicadores de estado como
+/// carregamento e processamento de "pensamento".
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -6,14 +13,34 @@ import 'animated_logo.dart';
 import 'thinking_animation.dart';
 import 'advanced_markdown_widget.dart';
 
+/// Widget principal da interface de chat.
+/// 
+/// Gerencia a exibição de:
+/// - Lista de mensagens do histórico
+/// - Estado vazio com logo animado
+/// - Indicadores de carregamento e processamento
+/// - Área de entrada de texto com botão de envio
+/// - Animações de "pensamento" para modelos R1
 class ChatInterface extends StatelessWidget {
+  /// Lista de mensagens do chat atual.
   final List<ChatMessage> messages;
+  
+  /// Controlador do campo de entrada de texto.
   final TextEditingController textController;
+  
+  /// Callback executado quando uma mensagem é enviada.
   final VoidCallback onSendMessage;
+  
+  /// Indica se uma resposta está sendo gerada.
   final bool isLoading;
+  
+  /// Indica se o modelo está no processo de "pensamento".
   final bool isThinking;
+  
+  /// Texto atual do pensamento (para modelos R1).
   final String? currentThinking;
 
+  /// Construtor da interface de chat.
   const ChatInterface({
     super.key,
     required this.messages,

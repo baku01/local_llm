@@ -1,20 +1,66 @@
+/// Popup de configurações da aplicação.
+/// 
+/// Widget modal que exibe todas as configurações disponíveis da aplicação,
+/// incluindo seleção de modelos LLM, configurações de pesquisa web,
+/// controles de streaming e ações de limpeza do chat.
+library;
+
 import 'package:flutter/material.dart';
 import '../../domain/entities/llm_model.dart';
 
+/// Popup modal para configurações da aplicação LLM.
+/// 
+/// Este widget apresenta uma interface completa de configurações que inclui:
+/// - Seleção de modelo LLM ativo
+/// - Toggle para pesquisa web
+/// - Toggle para modo streaming
+/// - Botão para limpar histórico do chat
+/// - Botão para atualizar lista de modelos
+/// - Tratamento de estados de carregamento e erro
+/// 
+/// O popup mantém estado interno sincronizado com as configurações
+/// externas e propaga mudanças através de callbacks.
 class SettingsPopup extends StatefulWidget {
+  /// Lista de modelos LLM disponíveis para seleção.
   final List<LlmModel> models;
+  
+  /// Modelo atualmente selecionado.
   final LlmModel? selectedModel;
+  
+  /// Callback executado quando um novo modelo é selecionado.
   final ValueChanged<LlmModel?> onModelSelected;
+  
+  /// Indica se a aplicação está carregando modelos.
   final bool isLoading;
+  
+  /// Callback para atualizar a lista de modelos.
   final VoidCallback onRefreshModels;
+  
+  /// Mensagem de erro atual, se houver.
   final String? errorMessage;
+  
+  /// Estado atual da pesquisa web.
   final bool webSearchEnabled;
+  
+  /// Callback para alternar pesquisa web.
   final ValueChanged<bool> onWebSearchToggle;
+  
+  /// Indica se uma pesquisa web está em andamento.
   final bool isSearching;
+  
+  /// Estado atual do modo streaming.
   final bool streamEnabled;
+  
+  /// Callback para alternar modo streaming.
   final ValueChanged<bool> onStreamToggle;
+  
+  /// Callback opcional para limpar o chat.
   final VoidCallback? onClearChat;
 
+  /// Construtor do popup de configurações.
+  /// 
+  /// Todos os parâmetros relacionados a callbacks são obrigatórios
+  /// para garantir funcionalidade completa do popup.
   const SettingsPopup({
     super.key,
     required this.models,
@@ -35,10 +81,18 @@ class SettingsPopup extends StatefulWidget {
   State<SettingsPopup> createState() => _SettingsPopupState();
 }
 
+/// Estado interno do popup de configurações.
+/// 
+/// Gerencia os valores locais dos toggles e sincroniza com
+/// as configurações externas através de callbacks.
 class _SettingsPopupState extends State<SettingsPopup> {
+  /// Estado local do toggle de pesquisa web.
   late bool _webSearchEnabled;
+  
+  /// Estado local do toggle de streaming.
   late bool _streamEnabled;
 
+  /// Inicializa o estado com os valores atuais das configurações.
   @override
   void initState() {
     super.initState();
@@ -46,6 +100,10 @@ class _SettingsPopupState extends State<SettingsPopup> {
     _streamEnabled = widget.streamEnabled;
   }
 
+  /// Atualiza o estado local quando as configurações externas mudam.
+  /// 
+  /// Garante que o popup sempre reflita o estado atual da aplicação
+  /// mesmo se as configurações forem alteradas externamente.
   @override
   void didUpdateWidget(SettingsPopup oldWidget) {
     super.didUpdateWidget(oldWidget);

@@ -1,9 +1,33 @@
+/// Biblioteca que define o widget de logo animado da aplicação.
+/// 
+/// Esta biblioteca contém o widget [AnimatedLogo] que exibe o logo
+/// da aplicação com animações suaves usando Rive, incluindo opções
+/// de tamanho, cor e animação de introdução.
+library;
+
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 // import 'package:flutter_animate/flutter_animate.dart'; // Unused
 import 'package:rive/rive.dart';
 import '../theme/theme_colors.dart';
 
+/// Widget de logo animado com suporte a Rive e customização visual.
+/// 
+/// Este widget exibe o logo da aplicação com animações suaves e
+/// permite personalização de:
+/// - Tamanho do logo
+/// - Cor personalizada
+/// - Animação de introdução
+/// - Integração com animações Rive
+/// 
+/// Exemplo de uso:
+/// ```dart
+/// AnimatedLogo(
+///   size: 64,
+///   color: Colors.blue,
+///   showIntro: true,
+/// )
+/// ```
 class AnimatedLogo extends StatefulWidget {
   final double size;
   final Color? color;
