@@ -8,7 +8,7 @@ abstract class LlmRepository {
     required String modelName,
     bool stream = false,
   });
-  
+
   Stream<String> generateResponseStream({
     required String prompt,
     required String modelName,

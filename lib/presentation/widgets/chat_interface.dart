@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+
 import '../../domain/entities/llm_response.dart';
-import 'thinking_animation.dart';
 import 'animated_logo.dart';
+import 'thinking_animation.dart';
+import 'advanced_markdown_widget.dart';
 
 class ChatInterface extends StatelessWidget {
   final List<ChatMessage> messages;
@@ -24,201 +26,269 @@ class ChatInterface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: messages.isEmpty
-              ? _buildEmptyState(context)
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[index];
-                    return ChatBubble(message: message)
-                        .animate()
-                        .fadeIn(duration: 400.ms, delay: (50).ms)
-                        .slideY(begin: 0.2, end: 0, curve: Curves.easeOutCubic)
-                        .scale(begin: const Offset(0.95, 0.95), end: const Offset(1.0, 1.0));
-                  },
-                ),
-        ),
-        if (isThinking && currentThinking != null)
-          ThinkingAnimation(
-            thinkingText: currentThinking!,
-            isVisible: true,
+    final theme = Theme.of(context);
+
+    return Container(
+      color: theme.scaffoldBackgroundColor,
+      child: Column(
+        children: [
+          Expanded(
+            child: messages.isEmpty
+                ? _buildEmptyState(context)
+                : _buildMessageList(context),
           ),
-        if (isLoading)
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          if (isThinking && currentThinking != null)
+            ThinkingAnimation(thinkingText: currentThinking!, isVisible: true),
+          if (isLoading) _buildLoadingIndicator(context),
+          _buildInputArea(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageList(BuildContext context) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: messages.length,
+      itemBuilder: (context, index) {
+        final message = messages[index];
+        return ChatBubble(message: message)
+            .animate()
+            .fadeIn(duration: 500.ms, delay: (index * 50).ms)
+            .slideX(
+              begin: message.isUser ? 0.3 : -0.3,
+              end: 0,
+              curve: Curves.easeOutCubic,
+              duration: 600.ms,
+            )
+            .scale(
+              begin: const Offset(0.9, 0.9),
+              end: const Offset(1.0, 1.0),
+              curve: Curves.easeOutBack,
+              duration: 500.ms,
+            );
+      },
+    );
+  }
+
+  Widget _buildLoadingIndicator(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: theme.colorScheme.primary,
             ),
-            child: Row(
-              children: [
-                if (isThinking)
-                  ThinkingIndicator(isThinking: true)
-                else ...[
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+          ),
+          const SizedBox(width: 16),
+          Text(
+            'Gerando resposta...',
+            style: TextStyle(
+              color: theme.colorScheme.onSurface,
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 200.ms);
+  }
+
+  Widget _buildInputArea(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        border: Border(
+          top: BorderSide(
+            color: theme.colorScheme.outline.withValues(alpha: 0.2),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: Container(
+              constraints: const BoxConstraints(maxHeight: 120),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
+              ),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                  width: 1,
+                ),
+              ),
+              child: TextField(
+                controller: textController,
+                maxLines: null,
+                minLines: 1,
+                decoration: InputDecoration(
+                  hintText: 'Digite sua mensagem...',
+                  border: InputBorder.none,
+                  hintStyle: TextStyle(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    fontSize: 16,
                   ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Gerando resposta...',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontWeight: FontWeight.w500,
-                    ),
+                ),
+                style: TextStyle(
+                  fontSize: 16,
+                  height: 1.4,
+                  color: theme.colorScheme.onSurface,
+                ),
+                onSubmitted: (_) => onSendMessage(),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          GestureDetector(
+            onTap: isLoading ? null : onSendMessage,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: isLoading 
+                    ? theme.colorScheme.onSurface.withValues(alpha: 0.3)
+                    : theme.colorScheme.primary,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: isLoading ? null : [
+                  BoxShadow(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
                 ],
-              ],
-            ),
-          ).animate().fadeIn(duration: 200.ms),
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            border: Border(
-              top: BorderSide(
-                color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
-                width: 1,
               ),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: textController,
-                  maxLines: null,
-                  keyboardType: TextInputType.multiline,
-                  decoration: InputDecoration(
-                    hintText: 'Digite sua mensagem...',
-                    hintStyle: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(28),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(28),
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
-                        width: 2,
-                      ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
-                    ),
-                    filled: true,
-                    fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
-                  ),
-                  onSubmitted: (_) => onSendMessage(),
-                ),
-              ),
-              const SizedBox(width: 16),
-              AnimatedContainer(
+              child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
-                child: FilledButton.icon(
-                  onPressed: isLoading ? null : onSendMessage,
-                  icon: Icon(
-                    isLoading ? Icons.hourglass_empty : Icons.send_rounded,
-                    size: 18,
-                  ),
-                  label: Text(isLoading ? 'Enviando...' : 'Enviar'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    elevation: isLoading ? 0 : 2,
-                  ),
-                ),
+                child: isLoading
+                    ? SizedBox(
+                        key: const ValueKey('loading'),
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Icon(
+                        key: const ValueKey('send'),
+                        Icons.send_rounded,
+                        size: 20,
+                        color: Colors.white,
+                      ),
               ),
-            ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildEmptyState(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          AnimatedLogo(
-            size: 140,
-            color: theme.colorScheme.primary,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Revolução da Inteligência Popular!',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.8,
-            ),
-            textAlign: TextAlign.center,
-          )
-              .animate()
-              .fadeIn(duration: 600.ms, delay: 200.ms)
-              .slideY(begin: 0.3, end: 0),
-          const SizedBox(height: 8),
-          Text(
-            'A inteligência artificial a serviço do povo!\nUnidos pela democratização do conhecimento.',
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontStyle: FontStyle.italic,
-            ),
-            textAlign: TextAlign.center,
-          )
-              .animate()
-              .fadeIn(duration: 600.ms, delay: 400.ms)
-              .slideY(begin: 0.3, end: 0),
-          const SizedBox(height: 32),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _SuggestionChip(
-                label: 'Explique teoria marxista de forma didática',
-                onTap: () => _fillSuggestion('Explique conceitos de teoria marxista de forma didática'),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedLogo(size: 100, color: theme.colorScheme.primary, showIntro: true),
+            const SizedBox(height: 32),
+            Text(
+                  'Local LLM Chat',
+                  style: TextStyle(
+                    fontSize: 28,
+                    color: theme.colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.5,
+                  ),
+                  textAlign: TextAlign.center,
+                )
+                .animate()
+                .fadeIn(duration: 800.ms, delay: 400.ms)
+                .slideY(begin: 0.2, end: 0, curve: Curves.easeOutCubic),
+            const SizedBox(height: 12),
+            Text(
+                  'Converse com modelos de IA localmente',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    fontWeight: FontWeight.w400,
+                  ),
+                  textAlign: TextAlign.center,
+                )
+                .animate()
+                .fadeIn(duration: 800.ms, delay: 600.ms)
+                .slideY(begin: 0.2, end: 0, curve: Curves.easeOutCubic),
+            const SizedBox(height: 40),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: GridView.count(
+                shrinkWrap: true,
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 3.5,
+                children: [
+                  _SuggestionCard(
+                    icon: Icons.code,
+                    label: 'Ajuda com código',
+                    onTap: () => _fillSuggestion('Me ajude a escrever um código'),
+                  ),
+                  _SuggestionCard(
+                    icon: Icons.lightbulb_outline,
+                    label: 'Ideias criativas',
+                    onTap: () => _fillSuggestion('Preciso de ideias criativas para'),
+                  ),
+                  _SuggestionCard(
+                    icon: Icons.school,
+                    label: 'Explicar conceitos',
+                    onTap: () => _fillSuggestion('Explique de forma simples o conceito de'),
+                  ),
+                  _SuggestionCard(
+                    icon: Icons.analytics,
+                    label: 'Análise de dados',
+                    onTap: () => _fillSuggestion('Ajude-me a analisar estes dados'),
+                  ),
+                ],
               ),
-              _SuggestionChip(
-                label: 'Analise questões sociais brasileiras',
-                onTap: () => _fillSuggestion('Analise as principais questões sociais do Brasil atual'),
-              ),
-              _SuggestionChip(
-                label: 'Pesquise movimentos populares',
-                onTap: () => _fillSuggestion('Pesquise informações sobre movimentos populares e sociais'),
-              ),
-              _SuggestionChip(
-                label: 'Discuta tecnologia e sociedade',
-                onTap: () => _fillSuggestion('Como a tecnologia pode servir à democratização do conhecimento?'),
-              ),
-            ],
-          )
-              .animate()
-              .fadeIn(duration: 600.ms, delay: 600.ms)
-              .slideY(begin: 0.3, end: 0),
-        ],
+            ).animate().fadeIn(duration: 800.ms, delay: 800.ms).slideY(begin: 0.2, end: 0, curve: Curves.easeOutCubic),
+          ],
+        ),
       ),
     );
   }
@@ -228,26 +298,28 @@ class ChatInterface extends StatelessWidget {
   }
 }
 
-class _SuggestionChip extends StatefulWidget {
+class _SuggestionCard extends StatefulWidget {
+  final IconData icon;
   final String label;
   final VoidCallback onTap;
 
-  const _SuggestionChip({
+  const _SuggestionCard({
+    required this.icon,
     required this.label,
     required this.onTap,
   });
 
   @override
-  State<_SuggestionChip> createState() => _SuggestionChipState();
+  State<_SuggestionCard> createState() => _SuggestionCardState();
 }
 
-class _SuggestionChipState extends State<_SuggestionChip> {
+class _SuggestionCardState extends State<_SuggestionCard> {
   bool _isHovered = false;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -255,47 +327,60 @@ class _SuggestionChipState extends State<_SuggestionChip> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          curve: Curves.easeInOutCubic,
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: _isHovered 
+            color: _isHovered
                 ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                : theme.colorScheme.primaryContainer.withValues(alpha: 0.8),
-            borderRadius: BorderRadius.circular(24),
+                : theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: _isHovered 
-                  ? theme.colorScheme.primary.withValues(alpha: 0.4)
-                  : theme.colorScheme.outline.withValues(alpha: 0.2),
-              width: _isHovered ? 1.5 : 1,
+              color: _isHovered
+                  ? theme.colorScheme.primary.withValues(alpha: 0.3)
+                  : theme.colorScheme.outline.withValues(alpha: 0.3),
+              width: 1,
             ),
-            boxShadow: _isHovered ? [
-              BoxShadow(
-                color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ] : null,
+            boxShadow: _isHovered
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
           ),
-          transform: Matrix4.identity()..scale(_isHovered ? 1.02 : 1.0),
+          transform: Matrix4.identity()..translate(0.0, _isHovered ? -2.0 : 0.0),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.auto_awesome,
-                size: 16,
-                color: _isHovered 
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                widget.label,
-                style: TextStyle(
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: _isHovered
+                      ? theme.colorScheme.primary.withValues(alpha: 0.2)
+                      : theme.colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  widget.icon,
+                  size: 18,
                   color: _isHovered 
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.onPrimaryContainer,
-                  fontSize: 14,
-                  fontWeight: _isHovered ? FontWeight.w600 : FontWeight.w500,
+                      ? theme.colorScheme.primary 
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  widget.label,
+                  style: TextStyle(
+                    color: _isHovered
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.onSurface,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],
@@ -340,124 +425,137 @@ class ChatMessage {
 class ChatBubble extends StatefulWidget {
   final ChatMessage message;
 
-  const ChatBubble({
-    super.key,
-    required this.message,
-  });
+  const ChatBubble({super.key, required this.message});
 
   @override
   State<ChatBubble> createState() => _ChatBubbleState();
 }
 
-class _ChatBubbleState extends State<ChatBubble> {
+class _ChatBubbleState extends State<ChatBubble>
+    with SingleTickerProviderStateMixin {
   bool _isHovered = false;
+  late AnimationController _controller;
+  late Animation<double> _offsetAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 220),
+      vsync: this,
+    )..forward();
+    _offsetAnim = Tween<double>(
+      begin: widget.message.isUser ? 24.0 : -24.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          mainAxisAlignment: widget.message.isUser 
-              ? MainAxisAlignment.end 
-              : MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-          if (!widget.message.isUser) ...[
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              child: CircleAvatar(
-                radius: 16,
-                backgroundColor: widget.message.isError 
-                    ? theme.colorScheme.error
-                    : theme.colorScheme.primary,
-                child: Icon(
-                  widget.message.isError ? Icons.error : Icons.psychology_rounded,
-                  size: 16,
-                  color: theme.colorScheme.onPrimary,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-          ],
-          Flexible(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeInOut,
-              constraints: const BoxConstraints(maxWidth: 600),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: widget.message.isUser 
-                    ? theme.colorScheme.primary
-                    : widget.message.isError
-                        ? theme.colorScheme.errorContainer
-                        : theme.colorScheme.surfaceContainer,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: _isHovered ? [
-                  BoxShadow(
-                    color: theme.colorScheme.shadow.withValues(alpha: 0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ] : null,
-              ),
-              transform: Matrix4.identity()..scale(_isHovered ? 1.01 : 1.0),
-              child: Column(
+      child: AnimatedBuilder(
+        animation: _offsetAnim,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: Offset(_offsetAnim.value, 0),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                mainAxisAlignment: widget.message.isUser
+                    ? MainAxisAlignment.end
+                    : MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    widget.message.content,
-                    style: TextStyle(
-                      color: widget.message.isUser 
-                          ? theme.colorScheme.onPrimary
-                          : widget.message.isError
-                              ? theme.colorScheme.onErrorContainer
-                              : theme.colorScheme.onSurface,
-                      fontSize: 15,
-                      height: 1.4,
+                  if (!widget.message.isUser) ...[
+                    // Avatar
+                  ],
+                  Flexible(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOutCubic,
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: widget.message.isUser
+                            ? theme.colorScheme.primary
+                            : widget.message.isError
+                            ? theme.colorScheme.error.withValues(alpha: 0.1)
+                            : theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: widget.message.isUser
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.outline.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: _isHovered ? 12 : 8,
+                            offset: const Offset(0, 2),
+                            spreadRadius: 0,
+                          ),
+                        ],
+                      ),
+                      transform: Matrix4.identity()
+                        ..scale(_isHovered ? 1.01 : 1.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          widget.message.isUser
+                              ? Text(
+                                  widget.message.content,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    height: 1.4,
+                                  ),
+                                )
+                              : AdvancedMarkdownWidget(
+                                  data: widget.message.content,
+                                  selectable: true,
+                                ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _formatTime(widget.message.timestamp),
+                            style: TextStyle(
+                              color: widget.message.isUser
+                                  ? Colors.white.withValues(alpha: 0.7)
+                                  : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    _formatTime(widget.message.timestamp),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: widget.message.isUser 
-                          ? theme.colorScheme.onPrimary.withValues(alpha: 0.7)
-                          : theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
+                  if (widget.message.isUser) ...[
+                    // Avatar
+                  ],
                 ],
               ),
             ),
-          ),
-          if (widget.message.isUser) ...[
-            const SizedBox(width: 12),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              child: CircleAvatar(
-                radius: 16,
-                backgroundColor: theme.colorScheme.secondary,
-                child: Icon(
-                  Icons.person_rounded,
-                  size: 16,
-                  color: theme.colorScheme.onSecondary,
-                ),
-              ),
-            ),
-          ],
-        ],
-        ),
+          );
+        },
       ),
     );
   }
 
   String _formatTime(DateTime time) {
     return '${time.hour.toString().padLeft(2, '0')}:'
-           '${time.minute.toString().padLeft(2, '0')}';
+        '${time.minute.toString().padLeft(2, '0')}';
   }
 }

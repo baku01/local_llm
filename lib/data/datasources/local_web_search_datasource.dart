@@ -16,12 +16,13 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
 
   LocalWebSearchDataSource({required this.client});
 
-  String get _randomUserAgent => _userAgents[Random().nextInt(_userAgents.length)];
+  String get _randomUserAgent =>
+      _userAgents[Random().nextInt(_userAgents.length)];
 
   @override
   Future<List<SearchResult>> search(SearchQuery query) async {
     final results = <SearchResult>[];
-    
+
     try {
       // Tentar múltiplas fontes de pesquisa
       final futures = [
@@ -29,9 +30,9 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
         _searchBing(query),
         _searchDuckDuckGo(query),
       ];
-      
+
       final allResults = await Future.wait(futures, eagerError: false);
-      
+
       // Combinar resultados únicos
       final seenUrls = <String>{};
       for (final searchResults in allResults) {
@@ -44,7 +45,7 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
         }
         if (results.length >= query.maxResults) break;
       }
-      
+
       return results.take(query.maxResults).toList();
     } catch (e) {
       // print('Erro na pesquisa web local: $e');
@@ -56,12 +57,13 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
     try {
       final encodedQuery = Uri.encodeComponent(query.formattedQuery);
       final url = 'https://www.google.com/search?q=$encodedQuery&num=10';
-      
+
       final response = await client.get(
         Uri.parse(url),
         headers: {
           'User-Agent': _randomUserAgent,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept':
+              'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
           'Accept-Encoding': 'gzip, deflate',
           'Connection': 'keep-alive',
@@ -84,12 +86,13 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
     try {
       final encodedQuery = Uri.encodeComponent(query.formattedQuery);
       final url = 'https://www.bing.com/search?q=$encodedQuery&count=10';
-      
+
       final response = await client.get(
         Uri.parse(url),
         headers: {
           'User-Agent': _randomUserAgent,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept':
+              'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
         },
       );
@@ -109,12 +112,13 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
     try {
       final encodedQuery = Uri.encodeComponent(query.formattedQuery);
       final url = 'https://html.duckduckgo.com/html/?q=$encodedQuery';
-      
+
       final response = await client.get(
         Uri.parse(url),
         headers: {
           'User-Agent': _randomUserAgent,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept':
+              'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
         },
       );
@@ -136,29 +140,36 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
 
     // Seletores para resultados do Google
     final searchResults = document.querySelectorAll('div.g, div[data-ved]');
-    
+
     for (final element in searchResults) {
       try {
-        final titleElement = element.querySelector('h3') ?? element.querySelector('a h3');
-        final linkElement = element.querySelector('a[href^="http"]') ?? element.querySelector('a[href^="/url"]');
-        final snippetElement = element.querySelector('div[data-sncf], .VwiC3b, .s3v9rd, .hgKElc');
+        final titleElement =
+            element.querySelector('h3') ?? element.querySelector('a h3');
+        final linkElement =
+            element.querySelector('a[href^="http"]') ??
+            element.querySelector('a[href^="/url"]');
+        final snippetElement = element.querySelector(
+          'div[data-sncf], .VwiC3b, .s3v9rd, .hgKElc',
+        );
 
         if (titleElement != null && linkElement != null) {
           String url = linkElement.attributes['href'] ?? '';
-          
+
           // Limpar URLs do Google
           if (url.startsWith('/url?')) {
             final uri = Uri.parse('https://google.com$url');
             url = uri.queryParameters['url'] ?? url;
           }
-          
+
           if (url.startsWith('http') && !url.contains('google.com')) {
-            results.add(SearchResult(
-              title: _cleanText(titleElement.text),
-              url: url,
-              snippet: _cleanText(snippetElement?.text ?? ''),
-              timestamp: DateTime.now(),
-            ));
+            results.add(
+              SearchResult(
+                title: _cleanText(titleElement.text),
+                url: url,
+                snippet: _cleanText(snippetElement?.text ?? ''),
+                timestamp: DateTime.now(),
+              ),
+            );
           }
         }
       } catch (e) {
@@ -174,22 +185,26 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
     final results = <SearchResult>[];
 
     final searchResults = document.querySelectorAll('.b_algo, .b_algo_group');
-    
+
     for (final element in searchResults) {
       try {
         final titleElement = element.querySelector('h2 a, .b_title a');
-        final snippetElement = element.querySelector('.b_caption p, .b_snippet');
+        final snippetElement = element.querySelector(
+          '.b_caption p, .b_snippet',
+        );
 
         if (titleElement != null) {
           final url = titleElement.attributes['href'] ?? '';
-          
+
           if (url.startsWith('http') && !url.contains('bing.com')) {
-            results.add(SearchResult(
-              title: _cleanText(titleElement.text),
-              url: url,
-              snippet: _cleanText(snippetElement?.text ?? ''),
-              timestamp: DateTime.now(),
-            ));
+            results.add(
+              SearchResult(
+                title: _cleanText(titleElement.text),
+                url: url,
+                snippet: _cleanText(snippetElement?.text ?? ''),
+                timestamp: DateTime.now(),
+              ),
+            );
           }
         }
       } catch (e) {
@@ -205,22 +220,28 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
     final results = <SearchResult>[];
 
     final searchResults = document.querySelectorAll('.result, .web-result');
-    
+
     for (final element in searchResults) {
       try {
-        final titleElement = element.querySelector('.result__title a, .result__a');
-        final snippetElement = element.querySelector('.result__snippet, .result__body');
+        final titleElement = element.querySelector(
+          '.result__title a, .result__a',
+        );
+        final snippetElement = element.querySelector(
+          '.result__snippet, .result__body',
+        );
 
         if (titleElement != null) {
           final url = titleElement.attributes['href'] ?? '';
-          
+
           if (url.startsWith('http')) {
-            results.add(SearchResult(
-              title: _cleanText(titleElement.text),
-              url: url,
-              snippet: _cleanText(snippetElement?.text ?? ''),
-              timestamp: DateTime.now(),
-            ));
+            results.add(
+              SearchResult(
+                title: _cleanText(titleElement.text),
+                url: url,
+                snippet: _cleanText(snippetElement?.text ?? ''),
+                timestamp: DateTime.now(),
+              ),
+            );
           }
         }
       } catch (e) {
@@ -245,34 +266,41 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
         Uri.parse(url),
         headers: {
           'User-Agent': _randomUserAgent,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept':
+              'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
         },
       );
-      
+
       if (response.statusCode != 200) {
         throw Exception('Falha ao carregar página: ${response.statusCode}');
       }
 
       final document = html_parser.parse(response.body);
-      
+
       // Remover elementos desnecessários
-      document.querySelectorAll('script, style, nav, header, footer, .ads, .advertisement, .sidebar').forEach((element) {
-        element.remove();
-      });
+      document
+          .querySelectorAll(
+            'script, style, nav, header, footer, .ads, .advertisement, .sidebar',
+          )
+          .forEach((element) {
+            element.remove();
+          });
 
       // Tentar extrair conteúdo principal
-      dom.Element? mainContent = document.querySelector('main, article, .content, .post, .entry');
+      dom.Element? mainContent = document.querySelector(
+        'main, article, .content, .post, .entry',
+      );
       mainContent ??= document.querySelector('body');
 
       final textContent = mainContent?.text ?? '';
-      
+
       // Limitar o tamanho do conteúdo
       const maxLength = 3000;
       if (textContent.length > maxLength) {
         return '${textContent.substring(0, maxLength)}...';
       }
-      
+
       return _cleanText(textContent);
     } catch (e) {
       throw Exception('Erro ao buscar conteúdo da página: $e');

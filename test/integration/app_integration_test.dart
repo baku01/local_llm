@@ -8,7 +8,9 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('App Integration Tests', () {
-    testWidgets('app should start without crashing', (WidgetTester tester) async {
+    testWidgets('app should start without crashing', (
+      WidgetTester tester,
+    ) async {
       // Launch the app
       app.main();
       await tester.pumpAndSettle();
@@ -17,13 +19,18 @@ void main() {
       expect(find.text('Revolução IA - Ferramenta Popular'), findsOneWidget);
     });
 
-    testWidgets('should show welcome screen when no messages', (WidgetTester tester) async {
+    testWidgets('should show welcome screen when no messages', (
+      WidgetTester tester,
+    ) async {
       app.main();
       await tester.pumpAndSettle();
 
       // Should show welcome message
       expect(find.text('Revolução da Inteligência Popular!'), findsOneWidget);
-      expect(find.text('A inteligência artificial a serviço do povo!'), findsOneWidget);
+      expect(
+        find.text('A inteligência artificial a serviço do povo!'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('should show suggestion chips', (WidgetTester tester) async {
@@ -31,7 +38,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should show revolutionary suggestion chips
-      expect(find.text('Explique teoria marxista de forma didática'), findsOneWidget);
+      expect(
+        find.text('Explique teoria marxista de forma didática'),
+        findsOneWidget,
+      );
       expect(find.text('Analise questões sociais brasileiras'), findsOneWidget);
       expect(find.text('Pesquise movimentos populares'), findsOneWidget);
       expect(find.text('Discuta tecnologia e sociedade'), findsOneWidget);
@@ -94,7 +104,9 @@ void main() {
       expect(find.text('🔴 Pela democratização da tecnologia'), findsOneWidget);
     });
 
-    testWidgets('suggestion chips should be tappable', (WidgetTester tester) async {
+    testWidgets('suggestion chips should be tappable', (
+      WidgetTester tester,
+    ) async {
       app.main();
       await tester.pumpAndSettle();
 
@@ -106,11 +118,16 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify text was filled in input field
-      expect(find.text('Explique conceitos de teoria marxista de forma didática'), findsOneWidget);
+      expect(
+        find.text('Explique conceitos de teoria marxista de forma didática'),
+        findsOneWidget,
+      );
     });
 
     group('Error Handling Tests', () {
-      testWidgets('should handle empty message gracefully', (WidgetTester tester) async {
+      testWidgets('should handle empty message gracefully', (
+        WidgetTester tester,
+      ) async {
         app.main();
         await tester.pumpAndSettle();
 
@@ -125,7 +142,9 @@ void main() {
         // Implementation depends on error handling
       });
 
-      testWidgets('should handle network errors gracefully', (WidgetTester tester) async {
+      testWidgets('should handle network errors gracefully', (
+        WidgetTester tester,
+      ) async {
         app.main();
         await tester.pumpAndSettle();
 
@@ -136,7 +155,9 @@ void main() {
     });
 
     group('Theme Tests', () {
-      testWidgets('should apply revolutionary theme colors', (WidgetTester tester) async {
+      testWidgets('should apply revolutionary theme colors', (
+        WidgetTester tester,
+      ) async {
         app.main();
         await tester.pumpAndSettle();
 
@@ -148,7 +169,9 @@ void main() {
     });
 
     group('Accessibility Tests', () {
-      testWidgets('should have proper semantic labels', (WidgetTester tester) async {
+      testWidgets('should have proper semantic labels', (
+        WidgetTester tester,
+      ) async {
         app.main();
         await tester.pumpAndSettle();
 
@@ -157,7 +180,9 @@ void main() {
         expect(find.text('Enviar'), findsOneWidget);
       });
 
-      testWidgets('should support keyboard navigation', (WidgetTester tester) async {
+      testWidgets('should support keyboard navigation', (
+        WidgetTester tester,
+      ) async {
         app.main();
         await tester.pumpAndSettle();
 
@@ -170,14 +195,16 @@ void main() {
     });
 
     group('Performance Tests', () {
-      testWidgets('app should load within reasonable time', (WidgetTester tester) async {
+      testWidgets('app should load within reasonable time', (
+        WidgetTester tester,
+      ) async {
         final stopwatch = Stopwatch()..start();
-        
+
         app.main();
         await tester.pumpAndSettle();
-        
+
         stopwatch.stop();
-        
+
         // App should load within 5 seconds
         expect(stopwatch.elapsedMilliseconds, lessThan(5000));
         expect(find.text('Revolução IA - Ferramenta Popular'), findsOneWidget);
@@ -188,16 +215,18 @@ void main() {
         await tester.pumpAndSettle();
 
         // Test suggestion chip animations
-        final chip = find.text('Explique teoria marxista de forma didática').first;
-        
+        final chip = find
+            .text('Explique teoria marxista de forma didática')
+            .first;
+
         // Hover simulation (if supported)
         final gesture = await tester.createGesture();
         await gesture.addPointer(location: tester.getCenter(chip));
         await tester.pump();
-        
+
         // Should not crash during animations
         expect(find.text('Revolução da Inteligência Popular!'), findsOneWidget);
-        
+
         await gesture.removePointer();
       });
     });

@@ -14,12 +14,14 @@ class LlmController extends ChangeNotifier {
   final GenerateResponseStream _generateResponseStream;
   final SearchWeb _searchWeb;
 
+  // Cache para conteúdos de páginas web
+  final Map<String, String> _webPageContents = {};
+
   LlmController({
     required GetAvailableModels getAvailableModels,
     required GenerateResponse generateResponse,
     required GenerateResponseStream generateResponseStream,
     required SearchWeb searchWeb,
-    required FetchWebContent fetchWebContent,
   })  : _getAvailableModels = getAvailableModels,
         _generateResponse = generateResponse,
         _generateResponseStream = generateResponseStream,
@@ -123,10 +125,10 @@ class LlmController extends ChangeNotifier {
     }
 
     _setError(null);
-    
+
     // Limpar resultados de pesquisa anteriores
     _searchResults.clear();
-    
+
     // Adiciona mensagem do usuário
     final userMessage = ChatMessage.fromUser(content.trim());
     _messages.add(userMessage);
@@ -139,15 +141,18 @@ class LlmController extends ChangeNotifier {
       _setSearching(true);
       try {
         await _performWebSearch(content.trim());
-        
+
         if (_searchResults.isNotEmpty) {
+          // Buscar conteúdo das páginas principais dos resultados
+          await _fetchAndAttachWebContents();
+
           // Adicionar contexto da pesquisa ao prompt
           final searchContext = _buildSearchContext();
           finalPrompt = '$content\n\nInformações relevantes da web:\n$searchContext';
-          
+
           // Adicionar mensagem informativa sobre a pesquisa
           final searchInfo = ChatMessage(
-            content: 'Encontrei ${_searchResults.length} resultados relevantes na web que incluí no contexto.',
+            content: 'Encontrei ${_searchResults.length} resultados relevantes na web e resumi o conteúdo principal para o contexto.',
             isUser: false,
             timestamp: DateTime.now(),
             isError: false,
@@ -167,7 +172,7 @@ class LlmController extends ChangeNotifier {
 
     // Verificar se é um modelo que "pensa" (R1 series)
     final isThinkingModel = _selectedModel!.name.toLowerCase().contains('r1');
-    
+
     if (isThinkingModel) {
       _setThinking(true, 'Analisando a pergunta e estruturando a resposta...');
     }
@@ -190,7 +195,7 @@ class LlmController extends ChangeNotifier {
 
       // Processar resposta com pensamento
       final processedResponse = _processThinkingResponse(response);
-      
+
       // Adiciona resposta do LLM
       final llmMessage = ChatMessage.fromResponse(processedResponse);
       _messages.add(llmMessage);
@@ -223,7 +228,7 @@ class LlmController extends ChangeNotifier {
       isError: false,
     );
     _messages.add(streamingMessage);
-    
+
     final messageIndex = _messages.length - 1;
     final contentBuffer = StringBuffer();
     bool isInThinkingMode = false;
@@ -252,7 +257,7 @@ class LlmController extends ChangeNotifier {
               // Finaliza pensamento
               thinkingBuffer.write(chunk.substring(0, thinkEnd));
               _setThinking(false, thinkingBuffer.toString());
-              
+
               // Adiciona conteúdo após a tag </think>
               final remainingContent = chunk.substring(thinkEnd + 8);
               if (remainingContent.isNotEmpty) {
@@ -303,16 +308,16 @@ class LlmController extends ChangeNotifier {
       // Extrair o pensamento
       final thinkStart = response.content.indexOf('<think>');
       final thinkEnd = response.content.indexOf('</think>');
-      
+
       if (thinkStart != -1 && thinkEnd != -1) {
         final thinkingText = response.content.substring(
           thinkStart + 7, // length of '<think>'
           thinkEnd,
         );
-        
+
         // Mostrar o pensamento por um tempo antes da resposta
         _setThinking(false, thinkingText);
-        
+
         // Criar mensagem de pensamento
         final thinkingMessage = ChatMessage(
           content: thinkingText,
@@ -322,12 +327,12 @@ class LlmController extends ChangeNotifier {
         );
         _messages.add(thinkingMessage);
         notifyListeners();
-        
+
         // Remover tags de pensamento da resposta final
         final cleanContent = response.content
             .replaceAll(RegExp(r'<think>.*?</think>', dotAll: true), '')
             .trim();
-        
+
         return LlmResponse(
           content: cleanContent,
           model: response.model,
@@ -336,13 +341,13 @@ class LlmController extends ChangeNotifier {
         );
       }
     }
-    
+
     return response;
   }
 
   Future<void> _performWebSearch(String query) async {
     _searchResults.clear();
-    
+
     final searchQuery = SearchQuery(
       query: query,
       maxResults: 3,
@@ -352,9 +357,23 @@ class LlmController extends ChangeNotifier {
     _searchResults.addAll(results);
   }
 
+  // Busca e armazena o conteúdo das páginas dos resultados de pesquisa
+  Future<void> _fetchAndAttachWebContents() async {
+    for (final result in _searchResults) {
+      if (result.url.isNotEmpty && !_webPageContents.containsKey(result.url)) {
+        try {
+          final content = await _fetchWebContent(result.url);
+          _webPageContents[result.url] = content;
+        } catch (e) {
+          _webPageContents[result.url] = '';
+        }
+      }
+    }
+  }
+
   String _buildSearchContext() {
     final buffer = StringBuffer();
-    
+
     for (int i = 0; i < _searchResults.length; i++) {
       final result = _searchResults[i];
       buffer.writeln('${i + 1}. ${result.title}');
@@ -362,15 +381,33 @@ class LlmController extends ChangeNotifier {
       if (result.url.isNotEmpty) {
         buffer.writeln('   Fonte: ${result.url}');
       }
+      // Adiciona resumo do conteúdo da página, se disponível
+      final pageContent = _webPageContents[result.url];
+      if (pageContent != null && pageContent.isNotEmpty) {
+        buffer.writeln('   Resumo da página:');
+        buffer.writeln('   ${_summarizeContent(pageContent)}');
+      }
       buffer.writeln();
     }
-    
+
     return buffer.toString();
+  }
+
+  // Função simples para resumir o conteúdo da página (pode ser aprimorada)
+  String _summarizeContent(String content) {
+    // Limita a 3 frases ou 400 caracteres
+    final sentences = content.split(RegExp(r'(?<=[.!?])\s+'));
+    final summary = sentences.take(3).join(' ');
+    if (summary.length > 400) {
+      return '${summary.substring(0, 400)}...';
+    }
+    return summary;
   }
 
   void clearChat() {
     _messages.clear();
     _searchResults.clear();
+    _webPageContents.clear();
     _setError(null);
     notifyListeners();
   }
@@ -384,6 +421,17 @@ class LlmController extends ChangeNotifier {
 
   void clearSearchResults() {
     _searchResults.clear();
+    _webPageContents.clear();
     notifyListeners();
+  }
+
+  // Função para buscar conteúdo da página web usando o datasource padrão
+  Future<String> _fetchWebContent(String url) async {
+    // Verifica se o dataSource tem o método fetchPageContent
+    final dataSource = (_searchWeb as dynamic).dataSource;
+    if (dataSource != null && dataSource.fetchPageContent != null) {
+      return await dataSource.fetchPageContent(url);
+    }
+    return '';
   }
 }

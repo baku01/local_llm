@@ -37,9 +37,4 @@ class SearchQuery {
   }
 }
 
-enum SearchType {
-  general,
-  news,
-  academic,
-  images,
-}
+enum SearchType { general, news, academic, images }

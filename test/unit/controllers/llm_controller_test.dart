@@ -37,9 +37,6 @@ void main() {
         generateResponse: mockGenerateResponse,
         generateResponseStream: mockGenerateResponseStream,
         searchWeb: mockSearchWeb,
-        fetchWebContent:
-            mockSearchWeb
-                as FetchWebContent, // Corrigido para correspondência de tipo
       );
     });
 

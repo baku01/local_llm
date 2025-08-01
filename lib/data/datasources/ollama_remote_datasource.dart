@@ -10,7 +10,7 @@ abstract class OllamaRemoteDataSource {
     required String modelName,
     bool stream = false,
   });
-  
+
   Stream<String> generateResponseStream({
     required String prompt,
     required String modelName,
@@ -30,14 +30,14 @@ class OllamaRemoteDataSourceImpl implements OllamaRemoteDataSource {
   Future<List<LlmModelDto>> getAvailableModels() async {
     try {
       final response = await dio.get('$baseUrl/api/tags');
-      
+
       if (response.statusCode != 200) {
         throw Exception('Falha ao carregar modelos: ${response.statusCode}');
       }
 
       final data = response.data as Map<String, dynamic>;
       final models = data['models'] as List<dynamic>;
-      
+
       return models
           .map((model) => LlmModelDto.fromJson(model as Map<String, dynamic>))
           .toList();
@@ -61,11 +61,7 @@ class OllamaRemoteDataSourceImpl implements OllamaRemoteDataSource {
           headers: {'Content-Type': 'application/json'},
           receiveTimeout: const Duration(minutes: 5),
         ),
-        data: {
-          'model': modelName,
-          'prompt': prompt,
-          'stream': stream,
-        },
+        data: {'model': modelName, 'prompt': prompt, 'stream': stream},
       );
 
       if (response.statusCode != 200) {
@@ -93,29 +89,27 @@ class OllamaRemoteDataSourceImpl implements OllamaRemoteDataSource {
           receiveTimeout: const Duration(minutes: 5),
           responseType: ResponseType.stream,
         ),
-        data: {
-          'model': modelName,
-          'prompt': prompt,
-          'stream': true,
-        },
+        data: {'model': modelName, 'prompt': prompt, 'stream': true},
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Falha ao gerar resposta stream: ${response.statusCode}');
+        throw Exception(
+          'Falha ao gerar resposta stream: ${response.statusCode}',
+        );
       }
 
       final stream = response.data as ResponseBody;
       String buffer = '';
-      
+
       await for (final chunk in stream.stream) {
         final chunkStr = utf8.decode(chunk);
         buffer += chunkStr;
-        
+
         while (buffer.contains('\n')) {
           final lineEnd = buffer.indexOf('\n');
           final line = buffer.substring(0, lineEnd).trim();
           buffer = buffer.substring(lineEnd + 1);
-          
+
           if (line.isNotEmpty) {
             try {
               final jsonData = json.decode(line);
@@ -123,7 +117,7 @@ class OllamaRemoteDataSourceImpl implements OllamaRemoteDataSource {
               if (content != null && content.isNotEmpty) {
                 yield content;
               }
-              
+
               // Verifica se é o último chunk
               final done = jsonData['done'] as bool? ?? false;
               if (done) {

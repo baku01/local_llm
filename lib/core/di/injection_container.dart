@@ -42,17 +42,21 @@ class InjectionContainer {
   }
 
   void _setupNetworking() {
-    _dio = Dio(BaseOptions(
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(minutes: 5),
-      sendTimeout: const Duration(seconds: 30),
-    ));
+    _dio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(minutes: 5),
+        sendTimeout: const Duration(seconds: 30),
+      ),
+    );
 
-    _dio.interceptors.add(LogInterceptor(
-      requestBody: true,
-      responseBody: true,
-      logPrint: (object) => debugPrint('[DIO] $object'),
-    ));
+    _dio.interceptors.add(
+      LogInterceptor(
+        requestBody: true,
+        responseBody: true,
+        logPrint: (object) => debugPrint('[DIO] $object'),
+      ),
+    );
 
     _httpClient = RobustHttpClient();
   }
@@ -63,19 +67,13 @@ class InjectionContainer {
       baseUrl: 'http://localhost:11434',
     );
 
-    _searchDataSource = LocalWebSearchDataSource(
-      client: _httpClient,
-    );
+    _searchDataSource = LocalWebSearchDataSource(client: _httpClient);
   }
 
   void _setupRepositories() {
-    _repository = LlmRepositoryImpl(
-      remoteDataSource: _remoteDataSource,
-    );
+    _repository = LlmRepositoryImpl(remoteDataSource: _remoteDataSource);
 
-    _searchRepository = SearchRepositoryImpl(
-      dataSource: _searchDataSource,
-    );
+    _searchRepository = SearchRepositoryImpl(dataSource: _searchDataSource);
   }
 
   void _setupUseCases() {
@@ -92,7 +90,6 @@ class InjectionContainer {
       generateResponse: _generateResponse,
       generateResponseStream: _generateResponseStream,
       searchWeb: _searchWeb,
-      fetchWebContent: _fetchWebContent,
     );
   }
 

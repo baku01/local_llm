@@ -7,14 +7,16 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:local_llm/presentation/widgets/desktop_layout.dart';
+import 'package:local_llm/presentation/widgets/minimal_desktop_layout.dart';
 
 void main() {
-  testWidgets('DesktopLayout should render sidebar and content', (WidgetTester tester) async {
+  testWidgets('MinimalDesktopLayout should render sidebar and content', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: DesktopLayout(
+          body: MinimalDesktopLayout(
             sidebar: const Text('Sidebar Content'),
             content: const Text('Main Content'),
           ),

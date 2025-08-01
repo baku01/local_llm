@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import '../controllers/llm_controller.dart';
-import '../widgets/desktop_layout.dart';
-import '../widgets/settings_sidebar.dart';
+import '../widgets/responsive_layout.dart';
 import '../widgets/chat_interface.dart';
+import '../providers/theme_provider.dart';
 
 class HomePage extends StatefulWidget {
   final LlmController controller;
+  final ThemeProvider themeProvider;
 
   const HomePage({
-    super.key,
-    required this.controller,
+    super.key, 
+    required this.controller, 
+    required this.themeProvider,
   });
 
   @override
@@ -49,71 +51,32 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.psychology_rounded, 
-                size: 24,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Text('Revolução IA - Ferramenta Popular'),
-          ],
-        ),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
-        shadowColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        actions: [
-          if (widget.controller.messages.isNotEmpty)
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              child: IconButton.outlined(
-                icon: const Icon(Icons.clear_all_rounded),
-                onPressed: () => _showClearChatDialog(),
-                tooltip: 'Limpar conversa',
-                style: IconButton.styleFrom(
-                  padding: const EdgeInsets.all(12),
-                ),
-              ),
-            ),
-        ],
-      ),
-      body: DesktopLayout(
-        sidebar: SettingsSidebar(
-          models: widget.controller.models,
-          selectedModel: widget.controller.selectedModel,
-          onModelSelected: (model) {
-            if (model != null) {
-              widget.controller.selectModel(model);
-            }
-          },
-          isLoading: widget.controller.isLoading,
-          onRefreshModels: widget.controller.loadAvailableModels,
-          errorMessage: widget.controller.errorMessage,
-          webSearchEnabled: widget.controller.webSearchEnabled,
-          onWebSearchToggle: widget.controller.toggleWebSearch,
-          isSearching: widget.controller.isSearching,
-          streamEnabled: widget.controller.streamEnabled,
-          onStreamToggle: widget.controller.toggleStreamMode,
-        ),
-        content: ChatInterface(
-          messages: widget.controller.messages,
-          textController: _messageController,
-          onSendMessage: _sendMessage,
-          isLoading: widget.controller.isLoading || widget.controller.isSearching,
-          isThinking: widget.controller.isThinking,
-          currentThinking: widget.controller.currentThinking,
-        ),
+    return ResponsiveLayout(
+      models: widget.controller.models,
+      selectedModel: widget.controller.selectedModel,
+      onModelSelected: (model) {
+        if (model != null) {
+          widget.controller.selectModel(model);
+        }
+      },
+      isLoading: widget.controller.isLoading,
+      onRefreshModels: widget.controller.loadAvailableModels,
+      errorMessage: widget.controller.errorMessage,
+      webSearchEnabled: widget.controller.webSearchEnabled,
+      onWebSearchToggle: widget.controller.toggleWebSearch,
+      isSearching: widget.controller.isSearching,
+      streamEnabled: widget.controller.streamEnabled,
+      onStreamToggle: widget.controller.toggleStreamMode,
+      onClearChat: widget.controller.messages.isNotEmpty ? () => _showClearChatDialog() : null,
+      themeProvider: widget.themeProvider,
+      content: ChatInterface(
+        messages: widget.controller.messages,
+        textController: _messageController,
+        onSendMessage: _sendMessage,
+        isLoading:
+            widget.controller.isLoading || widget.controller.isSearching,
+        isThinking: widget.controller.isThinking,
+        currentThinking: widget.controller.currentThinking,
       ),
     );
   }

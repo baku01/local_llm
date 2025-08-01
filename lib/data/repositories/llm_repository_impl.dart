@@ -6,9 +6,7 @@ import '../datasources/ollama_remote_datasource.dart';
 class LlmRepositoryImpl implements LlmRepository {
   final OllamaRemoteDataSource remoteDataSource;
 
-  const LlmRepositoryImpl({
-    required this.remoteDataSource,
-  });
+  const LlmRepositoryImpl({required this.remoteDataSource});
 
   @override
   Future<List<LlmModel>> getAvailableModels() async {
@@ -34,10 +32,7 @@ class LlmRepositoryImpl implements LlmRepository {
       );
       return responseDto.toEntity();
     } catch (e) {
-      return LlmResponse.error(
-        'Falha ao gerar resposta: $e',
-        modelName,
-      );
+      return LlmResponse.error('Falha ao gerar resposta: $e', modelName);
     }
   }
 

@@ -5,10 +5,7 @@ class GenerateResponseStream {
 
   const GenerateResponseStream(this.repository);
 
-  Stream<String> call({
-    required String prompt,
-    required String modelName,
-  }) {
+  Stream<String> call({required String prompt, required String modelName}) {
     return repository.generateResponseStream(
       prompt: prompt,
       modelName: modelName,
