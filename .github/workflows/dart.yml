@@ -7,9 +7,15 @@ name: Flutter
 
 on:
   push:
+<<<<<<< HEAD
     branches: ["main"]
   pull_request:
     branches: ["main"]
+=======
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+>>>>>>> 545a248af6411e29be7a587ede1f539910fd4330
 
 jobs:
   build:
@@ -18,7 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+<<<<<<< HEAD
       # Set up Flutter SDK
+=======
+>>>>>>> 545a248af6411e29be7a587ede1f539910fd4330
       - uses: subosito/flutter-action@v2
         with:
           channel: "stable"
