@@ -7,7 +7,6 @@ library;
 
 import 'package:flutter/material.dart';
 import '../controllers/llm_controller.dart';
-import '../widgets/responsive_layout.dart';
 import '../widgets/chat_interface.dart';
 import '../providers/theme_provider.dart';
 
@@ -76,30 +75,12 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveLayout(
-      models: widget.controller.models,
-      selectedModel: widget.controller.selectedModel,
-      onModelSelected: (model) {
-        if (model != null) {
-          widget.controller.selectModel(model);
-        }
-      },
-      isLoading: widget.controller.isLoading,
-      onRefreshModels: widget.controller.loadAvailableModels,
-      errorMessage: widget.controller.errorMessage,
-      webSearchEnabled: widget.controller.webSearchEnabled,
-      onWebSearchToggle: widget.controller.toggleWebSearch,
-      isSearching: widget.controller.isSearching,
-      streamEnabled: widget.controller.streamEnabled,
-      onStreamToggle: widget.controller.toggleStreamMode,
-      onClearChat: widget.controller.messages.isNotEmpty ? () => _showClearChatDialog() : null,
-      themeProvider: widget.themeProvider,
-      content: ChatInterface(
+    return Scaffold(
+      body: ChatInterface(
         messages: widget.controller.messages,
         textController: _messageController,
         onSendMessage: _sendMessage,
-        isLoading:
-            widget.controller.isLoading || widget.controller.isSearching,
+        isLoading: widget.controller.isLoading || widget.controller.isSearching,
         isThinking: widget.controller.isThinking,
         currentThinking: widget.controller.currentThinking,
       ),

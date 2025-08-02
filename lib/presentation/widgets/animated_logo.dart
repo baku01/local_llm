@@ -9,7 +9,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 // import 'package:flutter_animate/flutter_animate.dart'; // Unused
 import 'package:rive/rive.dart';
-import '../theme/theme_colors.dart';
+import '../theme/unified_theme.dart';
 
 /// Widget de logo animado com suporte a Rive e customização visual.
 /// 
@@ -125,7 +125,7 @@ class _AnimatedLogoState extends State<AnimatedLogo>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final primaryColor = widget.color ?? ThemeColors.kAccent;
+    final primaryColor = widget.color ?? AppTheme.kAccent;
 
     return SizedBox(
       width: widget.size,

@@ -1,15 +1,16 @@
 /// Popup de configurações da aplicação.
-/// 
+///
 /// Widget modal que exibe todas as configurações disponíveis da aplicação,
 /// incluindo seleção de modelos LLM, configurações de pesquisa web,
 /// controles de streaming e ações de limpeza do chat.
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../domain/entities/llm_model.dart';
 
 /// Popup modal para configurações da aplicação LLM.
-/// 
+///
 /// Este widget apresenta uma interface completa de configurações que inclui:
 /// - Seleção de modelo LLM ativo
 /// - Toggle para pesquisa web
@@ -17,48 +18,48 @@ import '../../domain/entities/llm_model.dart';
 /// - Botão para limpar histórico do chat
 /// - Botão para atualizar lista de modelos
 /// - Tratamento de estados de carregamento e erro
-/// 
+///
 /// O popup mantém estado interno sincronizado com as configurações
 /// externas e propaga mudanças através de callbacks.
 class SettingsPopup extends StatefulWidget {
   /// Lista de modelos LLM disponíveis para seleção.
   final List<LlmModel> models;
-  
+
   /// Modelo atualmente selecionado.
   final LlmModel? selectedModel;
-  
+
   /// Callback executado quando um novo modelo é selecionado.
   final ValueChanged<LlmModel?> onModelSelected;
-  
+
   /// Indica se a aplicação está carregando modelos.
   final bool isLoading;
-  
+
   /// Callback para atualizar a lista de modelos.
   final VoidCallback onRefreshModels;
-  
+
   /// Mensagem de erro atual, se houver.
   final String? errorMessage;
-  
+
   /// Estado atual da pesquisa web.
   final bool webSearchEnabled;
-  
+
   /// Callback para alternar pesquisa web.
   final ValueChanged<bool> onWebSearchToggle;
-  
+
   /// Indica se uma pesquisa web está em andamento.
   final bool isSearching;
-  
+
   /// Estado atual do modo streaming.
   final bool streamEnabled;
-  
+
   /// Callback para alternar modo streaming.
   final ValueChanged<bool> onStreamToggle;
-  
+
   /// Callback opcional para limpar o chat.
   final VoidCallback? onClearChat;
 
   /// Construtor do popup de configurações.
-  /// 
+  ///
   /// Todos os parâmetros relacionados a callbacks são obrigatórios
   /// para garantir funcionalidade completa do popup.
   const SettingsPopup({
@@ -82,13 +83,13 @@ class SettingsPopup extends StatefulWidget {
 }
 
 /// Estado interno do popup de configurações.
-/// 
+///
 /// Gerencia os valores locais dos toggles e sincroniza com
 /// as configurações externas através de callbacks.
 class _SettingsPopupState extends State<SettingsPopup> {
   /// Estado local do toggle de pesquisa web.
   late bool _webSearchEnabled;
-  
+
   /// Estado local do toggle de streaming.
   late bool _streamEnabled;
 
@@ -101,7 +102,7 @@ class _SettingsPopupState extends State<SettingsPopup> {
   }
 
   /// Atualiza o estado local quando as configurações externas mudam.
-  /// 
+  ///
   /// Garante que o popup sempre reflita o estado atual da aplicação
   /// mesmo se as configurações forem alteradas externamente.
   @override
@@ -114,168 +115,254 @@ class _SettingsPopupState extends State<SettingsPopup> {
       _streamEnabled = widget.streamEnabled;
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Container(
-        width: 400,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              children: [
-                Icon(
-                  Icons.settings,
-                  color: theme.colorScheme.primary,
-                  size: 24,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Configurações',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-                const Spacer(),
-                if (widget.onClearChat != null)
-                  IconButton(
-                    onPressed: () {
-                      widget.onClearChat!();
-                      Navigator.of(context).pop();
-                    },
-                    icon: Icon(
-                      Icons.clear_all,
-                      color: theme.colorScheme.error,
-                    ),
-                    tooltip: 'Limpar conversa',
-                  ),
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close),
-                  tooltip: 'Fechar',
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          elevation: 10,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: 450,
+            padding: const EdgeInsets.all(0),
+            decoration: BoxDecoration(
+              color: theme.cardColor,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                  spreadRadius: -6,
                 ),
               ],
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // Model Selection
-            _buildSection(
-              context,
-              'Modelo LLM',
-              _buildModelDropdown(context),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // Web Search Toggle  
-            _buildSection(
-              context,
-              'Busca Web',
-              _buildToggle(
-                context,
-                'Ativar busca na web',
-                _webSearchEnabled,
-                (value) {
-                  setState(() {
-                    _webSearchEnabled = value;
-                  });
-                  widget.onWebSearchToggle(value);
-                },
-                widget.isSearching,
+              border: Border.all(
+                color: theme.colorScheme.outline.withOpacity(0.1),
+                width: 1,
               ),
             ),
-            
-            const SizedBox(height: 20),
-            
-            // Stream Toggle
-            _buildSection(
-              context,
-              'Streaming',
-              _buildToggle(
-                context,
-                'Resposta em tempo real',
-                _streamEnabled,
-                (value) {
-                  setState(() {
-                    _streamEnabled = value;
-                  });
-                  widget.onStreamToggle(value);
-                },
-                false,
-              ),
-            ),
-            
-            // Error Message
-            if (widget.errorMessage != null) ...[
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      color: theme.colorScheme.error,
-                      size: 16,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header com gradiente
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        theme.colorScheme.primary,
+                        theme.colorScheme.secondary,
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        widget.errorMessage!,
-                        style: TextStyle(
-                          color: theme.colorScheme.error,
-                          fontSize: 12,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(28),
+                      topRight: Radius.circular(28),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(14),
                         ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
+                        child: Icon(
+                          Icons.settings,
+                          color: Colors.white,
+                          size: 24,
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 16),
+                      Text(
+                        'Configurações',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (widget.onClearChat != null)
+                        IconButton(
+                          onPressed: () {
+                            widget.onClearChat!();
+                            Navigator.of(context).pop();
+                          },
+                          icon: Icon(
+                            Icons.delete_outline_rounded,
+                            color: Colors.white.withOpacity(0.9),
+                            size: 24,
+                          ),
+                          tooltip: 'Limpar conversa',
+                        ),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: Icon(
+                          Icons.close_rounded,
+                          color: Colors.white.withOpacity(0.9),
+                          size: 24,
+                        ),
+                        tooltip: 'Fechar',
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-            
-            const SizedBox(height: 20),
-            
-            // Action buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Fechar'),
-                ),
-                const SizedBox(width: 12),
-                FilledButton(
-                  onPressed: widget.onRefreshModels,
-                  child: const Text('Atualizar Modelos'),
+
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Model Selection
+                      _buildSection(
+                        context,
+                        'Modelo LLM',
+                        _buildModelDropdown(context),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Web Search Toggle
+                      _buildSection(
+                        context,
+                        'Busca Web',
+                        _buildToggle(
+                          context,
+                          'Ativar busca na web',
+                          _webSearchEnabled,
+                          (value) {
+                            setState(() {
+                              _webSearchEnabled = value;
+                            });
+                            widget.onWebSearchToggle(value);
+                          },
+                          widget.isSearching,
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Stream Toggle
+                      _buildSection(
+                        context,
+                        'Streaming',
+                        _buildToggle(
+                          context,
+                          'Resposta em tempo real',
+                          _streamEnabled,
+                          (value) {
+                            setState(() {
+                              _streamEnabled = value;
+                            });
+                            widget.onStreamToggle(value);
+                          },
+                          false,
+                        ),
+                      ),
+
+                      // Error Message
+                      if (widget.errorMessage != null) ...[
+                        const SizedBox(height: 24),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.error.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: theme.colorScheme.error.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                color: theme.colorScheme.error,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  widget.errorMessage!,
+                                  style: TextStyle(
+                                    color: theme.colorScheme.error,
+                                    fontSize: 14,
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: 24),
+
+                      // Action buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          OutlinedButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text('Fechar'),
+                          ),
+                          const SizedBox(width: 16),
+                          ElevatedButton(
+                            onPressed: widget.onRefreshModels,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.refresh, size: 18),
+                                const SizedBox(width: 8),
+                                const Text('Atualizar Modelos'),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
+          ),
+        )
+        .animate()
+        .fadeIn(duration: 300.ms)
+        .scale(begin: const Offset(0.95, 0.95), end: const Offset(1, 1));
   }
 
   Widget _buildSection(BuildContext context, String title, Widget child) {
     final theme = Theme.of(context);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -295,14 +382,14 @@ class _SettingsPopupState extends State<SettingsPopup> {
 
   Widget _buildModelDropdown(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     // Remove duplicate models
     final uniqueModels = <String, LlmModel>{};
     for (final model in widget.models) {
       uniqueModels[model.name] = model;
     }
     final cleanModels = uniqueModels.values.toList();
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -341,7 +428,7 @@ class _SettingsPopupState extends State<SettingsPopup> {
     bool isLoading,
   ) {
     final theme = Theme.of(context);
-    
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(

@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'core/di/injection_container.dart';
 import 'presentation/pages/home_page.dart';
 import 'presentation/providers/theme_provider.dart';
@@ -154,14 +155,21 @@ class _MyAppState extends State<MyApp> {
         builder: (context, themeProvider, child) {
           return MaterialApp(
             title: 'Local LLM Chat',
-            theme: _buildMaterialLightTheme(),
-            darkTheme: _buildMaterialDarkTheme(),
+            theme: themeProvider.buildLightTheme(),
+            darkTheme: themeProvider.buildDarkTheme(),
             themeMode: themeProvider.themeMode,
             home: HomePage(
               controller: widget.di.controller,
               themeProvider: themeProvider,
             ),
             debugShowCheckedModeBanner: false,
+            builder: (context, child) {
+              // Configuração global de animações
+              return Animate(
+                effects: [FadeEffect(duration: 400.ms)],
+                child: child!,
+              );
+            },
           );
         },
       ),

@@ -9,7 +9,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
 import '../../domain/entities/search_result.dart';
-import 'enhanced_web_scraper.dart';
 
 /// Interface abstrata para datasources de pesquisa web.
 /// 
@@ -32,11 +31,8 @@ class DuckDuckGoSearchDataSource implements WebSearchDataSource {
   /// Cliente HTTP para realizar requisições.
   final http.Client client;
   
-  /// Scraper avançado para extração de conteúdo de páginas.
-  final EnhancedWebScraper _scraper;
-
-  /// Construtor que inicializa o cliente HTTP e o scraper.
-  DuckDuckGoSearchDataSource({required this.client}) : _scraper = EnhancedWebScraper();
+  /// Construtor que inicializa o cliente HTTP.
+  DuckDuckGoSearchDataSource({required this.client});
 
   /// Realiza pesquisa web usando a API do DuckDuckGo.
   /// 
@@ -116,64 +112,30 @@ class DuckDuckGoSearchDataSource implements WebSearchDataSource {
   @override
   Future<String> fetchPageContent(String url) async {
     try {
-      // Tentativa primária: usar scraper avançado
-      final scrapedContent = await _scraper.scrapeUrl(url);
-      
-      if (scrapedContent != null) {
-        // Formatar conteúdo em markdown estruturado
-        final buffer = StringBuffer();
-        
-        if (scrapedContent.title.isNotEmpty) {
-          buffer.writeln('# ${scrapedContent.title}\n');
-        }
-        
-        if (scrapedContent.description.isNotEmpty) {
-          buffer.writeln('*${scrapedContent.description}*\n');
-        }
-        
-        if (scrapedContent.content.isNotEmpty) {
-          // Limitar tamanho do conteúdo para otimizar tokens
-          const maxLength = 3000;
-          final content = scrapedContent.content.length > maxLength 
-              ? '${scrapedContent.content.substring(0, maxLength)}...'
-              : scrapedContent.content;
-          buffer.writeln(content);
-        }
-        
-        return buffer.toString();
+      final response = await client.get(Uri.parse(url));
+
+      if (response.statusCode != 200) {
+        throw Exception('Falha ao carregar página: ${response.statusCode}');
       }
-      
-      throw Exception('Não foi possível extrair conteúdo da página');
-    } catch (e) {
-      // Fallback: parsing HTML simples se scraper falhar
-      try {
-        final response = await client.get(Uri.parse(url));
 
-        if (response.statusCode != 200) {
-          throw Exception('Falha ao carregar página: ${response.statusCode}');
-        }
+      final document = html_parser.parse(response.body);
 
-        final document = html_parser.parse(response.body);
+      // Remover elementos não relacionados ao conteúdo principal
+      document.querySelectorAll('script, style, nav, header, footer').forEach((element) {
+        element.remove();
+      });
 
-        // Remover elementos não relacionados ao conteúdo principal
-        document.querySelectorAll('script, style, nav, header, footer').forEach((
-          element,
-        ) {
-          element.remove();
-        });
+      final textContent = document.body?.text ?? '';
 
-        final textContent = document.body?.text ?? '';
-
-        // Limitar tamanho para o fallback (menor que o método principal)
-        const maxLength = 2000;
-        if (textContent.length > maxLength) {
-          return '${textContent.substring(0, maxLength)}...';
-        }
-
-        return textContent;
-      } catch (fallbackError) {
-        throw Exception('Erro ao buscar conteúdo da página: $fallbackError');
+      // Limitar tamanho para o fallback (menor que o método principal)
+      const maxLength = 2000;
+      if (textContent.length > maxLength) {
+        return '${textContent.substring(0, maxLength)}...';
       }
+
+      return textContent;
+    } catch (error) {
+      throw Exception('Erro ao buscar conteúdo da página: $error');
     }
   }
 

@@ -148,14 +148,35 @@ class ChatInterface extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: theme.cardColor,
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
         border: Border(
           top: BorderSide(
-            color: theme.colorScheme.outline.withValues(alpha: 0.2),
+            color: theme.colorScheme.outline.withOpacity(0.1),
             width: 1,
           ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, -3),
+            spreadRadius: -3,
+          ),
+        ],
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            theme.cardColor,
+            Color.lerp(theme.cardColor, 
+                theme.colorScheme.primary.withOpacity(0.03), 0.5) ?? theme.cardColor,
+          ],
         ),
       ),
       child: Row(
@@ -166,15 +187,23 @@ class ChatInterface extends StatelessWidget {
               constraints: const BoxConstraints(maxHeight: 120),
               padding: const EdgeInsets.symmetric(
                 horizontal: 20,
-                vertical: 16,
+                vertical: 12,
               ),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                  color: theme.colorScheme.outline.withOpacity(0.2),
                   width: 1,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                    spreadRadius: -3,
+                  ),
+                ],
               ),
               child: TextField(
                 controller: textController,
@@ -184,13 +213,40 @@ class ChatInterface extends StatelessWidget {
                   hintText: 'Digite sua mensagem...',
                   border: InputBorder.none,
                   hintStyle: TextStyle(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    color: theme.colorScheme.onSurface.withOpacity(0.5),
                     fontSize: 16,
+                  ),
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.attach_file_rounded,
+                          color: theme.colorScheme.primary.withOpacity(0.7),
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          // Implementar anexo de arquivos no futuro
+                        },
+                        tooltip: 'Anexar arquivo (em breve)',
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.mic_rounded,
+                          color: theme.colorScheme.primary.withOpacity(0.7),
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          // Implementar reconhecimento de voz no futuro
+                        },
+                        tooltip: 'Entrada por voz (em breve)',
+                      ),
+                    ],
                   ),
                 ),
                 style: TextStyle(
                   fontSize: 16,
-                  height: 1.4,
+                  height: 1.5,
                   color: theme.colorScheme.onSurface,
                 ),
                 onSubmitted: (_) => onSendMessage(),
@@ -202,18 +258,29 @@ class ChatInterface extends StatelessWidget {
             onTap: isLoading ? null : onSendMessage,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              width: 48,
-              height: 48,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
+                gradient: isLoading 
+                    ? null
+                    : LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          theme.colorScheme.primary,
+                          theme.colorScheme.secondary,
+                        ],
+                      ),
                 color: isLoading 
-                    ? theme.colorScheme.onSurface.withValues(alpha: 0.3)
-                    : theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(12),
+                    ? theme.colorScheme.onSurface.withOpacity(0.3)
+                    : null,
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: isLoading ? null : [
                   BoxShadow(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    color: theme.colorScheme.primary.withOpacity(0.4),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                    spreadRadius: -3,
                   ),
                 ],
               ),
@@ -222,8 +289,8 @@ class ChatInterface extends StatelessWidget {
                 child: isLoading
                     ? SizedBox(
                         key: const ValueKey('loading'),
-                        width: 20,
-                        height: 20,
+                        width: 24,
+                        height: 24,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           color: Colors.white,
@@ -232,12 +299,13 @@ class ChatInterface extends StatelessWidget {
                     : Icon(
                         key: const ValueKey('send'),
                         Icons.send_rounded,
-                        size: 20,
+                        size: 22,
                         color: Colors.white,
                       ),
               ),
             ),
-          ),
+          ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+            .shimmer(duration: 3.seconds, delay: 1.seconds, color: Colors.white.withOpacity(0.3), size: 0.4),
         ],
       ),
     );
@@ -496,15 +564,45 @@ class _ChatBubbleState extends State<ChatBubble>
           return Transform.translate(
             offset: Offset(_offsetAnim.value, 0),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
+              padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(
                 mainAxisAlignment: widget.message.isUser
                     ? MainAxisAlignment.end
                     : MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (!widget.message.isUser) ...[
-                    // Avatar
+                  if (!widget.message.isUser) ...[                  
+                    Container(
+                      width: 36,
+                      height: 36,
+                      margin: const EdgeInsets.only(right: 12, top: 4),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            theme.colorScheme.secondary,
+                            theme.colorScheme.primary,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.colorScheme.primary.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                            spreadRadius: -2,
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.smart_toy_outlined,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
                   ],
                   Flexible(
                     child: AnimatedContainer(
@@ -512,30 +610,40 @@ class _ChatBubbleState extends State<ChatBubble>
                       curve: Curves.easeOutCubic,
                       constraints: const BoxConstraints(maxWidth: 600),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                        horizontal: 20,
+                        vertical: 16,
                       ),
                       decoration: BoxDecoration(
                         color: widget.message.isUser
                             ? theme.colorScheme.primary
                             : widget.message.isError
-                            ? theme.colorScheme.error.withValues(alpha: 0.1)
+                            ? theme.colorScheme.error.withOpacity(0.1)
                             : theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: widget.message.isUser
                               ? theme.colorScheme.primary
-                              : theme.colorScheme.outline.withValues(alpha: 0.3),
+                              : theme.colorScheme.outline.withOpacity(0.2),
                           width: 1,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: _isHovered ? 12 : 8,
-                            offset: const Offset(0, 2),
-                            spreadRadius: 0,
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: _isHovered ? 16 : 10,
+                            offset: const Offset(0, 4),
+                            spreadRadius: -2,
                           ),
                         ],
+                        gradient: widget.message.isUser
+                            ? LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  theme.colorScheme.primary,
+                                  Color.lerp(theme.colorScheme.primary, theme.colorScheme.secondary, 0.4) ?? theme.colorScheme.primary,
+                                ],
+                              )
+                            : null,
                       ),
                       transform: Matrix4.identity()
                         ..scale(_isHovered ? 1.01 : 1.0),
@@ -548,7 +656,7 @@ class _ChatBubbleState extends State<ChatBubble>
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 15,
-                                    height: 1.4,
+                                    height: 1.5,
                                   ),
                                 )
                               : AdvancedMarkdownWidget(
@@ -556,21 +664,72 @@ class _ChatBubbleState extends State<ChatBubble>
                                   selectable: true,
                                 ),
                           const SizedBox(height: 8),
-                          Text(
-                            _formatTime(widget.message.timestamp),
-                            style: TextStyle(
-                              color: widget.message.isUser
-                                  ? Colors.white.withValues(alpha: 0.7)
-                                  : theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _formatTime(widget.message.timestamp),
+                                style: TextStyle(
+                                  color: widget.message.isUser
+                                      ? Colors.white.withOpacity(0.7)
+                                      : theme.colorScheme.onSurface.withOpacity(0.6),
+                                  fontSize: 12,
+                                ),
+                              ),
+                              if (!widget.message.isUser && _isHovered)
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.copy_outlined,
+                                        size: 16,
+                                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                      ),
+                                      onPressed: () {
+                                        // Implementar cópia para clipboard
+                                      },
+                                      tooltip: 'Copiar',
+                                      constraints: BoxConstraints.tight(Size(24, 24)),
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.thumb_up_alt_outlined,
+                                        size: 16,
+                                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                      ),
+                                      onPressed: () {
+                                        // Implementar feedback positivo
+                                      },
+                                      tooltip: 'Útil',
+                                      constraints: BoxConstraints.tight(Size(24, 24)),
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                  ],
+                                ),
+                          ],
+                      )],
                       ),
                     ),
                   ),
-                  if (widget.message.isUser) ...[
-                    // Avatar
+                  if (widget.message.isUser) ...[                  
+                    Container(
+                      width: 36,
+                      height: 36,
+                      margin: const EdgeInsets.only(left: 12, top: 4),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.person_outline,
+                          color: theme.colorScheme.primary,
+                          size: 20,
+                        ),
+                      ),
+                    ),
                   ],
                 ],
               ),

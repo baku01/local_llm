@@ -5,6 +5,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import '../theme/unified_theme.dart';
 
 /// Provider responsável pelo gerenciamento de temas da aplicação.
 /// 
@@ -86,5 +87,15 @@ class ThemeProvider extends ChangeNotifier {
       case ThemeMode.system:
         return 'Sistema';
     }
+  }
+  
+  /// Constrói o tema claro da aplicação.
+  ThemeData buildLightTheme() {
+    return AppTheme.lightTheme;
+  }
+
+  /// Constrói o tema escuro da aplicação.
+  ThemeData buildDarkTheme() {
+    return AppTheme.darkTheme;
   }
 }
