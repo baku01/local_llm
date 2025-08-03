@@ -11,12 +11,12 @@ class EnhancedChatBubble extends StatefulWidget {
   final bool isError;
   
   const EnhancedChatBubble({
-    Key? key,
+    super.key,
     required this.message,
     required this.isUser,
     required this.timestamp,
     this.isError = false,
-  }) : super(key: key);
+  });
   
   @override
   State<EnhancedChatBubble> createState() => _EnhancedChatBubbleState();
@@ -54,7 +54,7 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(_isHovered ? 0.08 : 0.05),
+                color: Colors.black.withValues(alpha: _isHovered ? 0.08 : 0.05),
                 blurRadius: _isHovered ? 12 : 8,
                 offset: Offset(0, _isHovered ? 4 : 2),
                 spreadRadius: _isHovered ? 1 : 0,
@@ -86,7 +86,7 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
                 Text(
                   _formatTime(widget.timestamp),
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 12,
                   ),
                 ),
@@ -95,7 +95,7 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
           ),
         ),
       ).animate(target: _isCopied ? 1 : 0)
-        .shimmer(duration: 600.ms, color: theme.colorScheme.primary.withOpacity(0.3))
+        .shimmer(duration: 600.ms, color: theme.colorScheme.primary.withValues(alpha: 0.3))
         .then(delay: 200.ms)
         .fadeOut(duration: 400.ms),
     );
@@ -127,8 +127,8 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
           _formatTime(widget.timestamp),
           style: TextStyle(
             color: widget.isUser 
-                ? Colors.white.withOpacity(0.7) 
-                : theme.colorScheme.onSurface.withOpacity(0.6),
+                ? Colors.white.withValues(alpha: 0.7) 
+                : theme.colorScheme.onSurface.withValues(alpha: 0.6),
             fontSize: 12,
           ),
         ),
@@ -147,7 +147,7 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
         child: Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surface.withOpacity(0.8),
+            color: theme.colorScheme.surface.withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(4),
           ),
           child: Row(
@@ -158,7 +158,7 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
                 size: 14,
                 color: _isCopied 
                     ? theme.colorScheme.primary 
-                    : theme.colorScheme.onSurface.withOpacity(0.7),
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
               if (_isCopied) ...[
                 const SizedBox(width: 4),
@@ -181,7 +181,7 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
     if (widget.isUser) {
       return theme.colorScheme.primary;
     } else if (widget.isError) {
-      return theme.colorScheme.error.withOpacity(0.1);
+      return theme.colorScheme.error.withValues(alpha: 0.1);
     } else {
       return _isHovered 
           ? (isDark ? AppTheme.kDarkSurface : AppTheme.kLightSurface)
@@ -193,11 +193,11 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
     if (widget.isUser) {
       return Colors.transparent;
     } else if (widget.isError) {
-      return theme.colorScheme.error.withOpacity(0.2);
+      return theme.colorScheme.error.withValues(alpha: 0.2);
     } else {
       return _isHovered 
-          ? theme.colorScheme.primary.withOpacity(0.3)
-          : theme.colorScheme.outline.withOpacity(0.2);
+          ? theme.colorScheme.primary.withValues(alpha: 0.3)
+          : theme.colorScheme.outline.withValues(alpha: 0.2);
     }
   }
   

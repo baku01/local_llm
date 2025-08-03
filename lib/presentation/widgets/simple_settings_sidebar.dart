@@ -39,113 +39,126 @@ class SimpleSettingsSidebar extends StatelessWidget {
     return Container(
       color: theme.cardColor,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.settings,
-                color: theme.colorScheme.primary,
-                size: 20,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Config',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (onClearChat != null)
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 32,
-                    minHeight: 32,
-                  ),
-                  onPressed: onClearChat,
-                  icon: Icon(
-                    Icons.clear_all,
-                    color: theme.colorScheme.error,
-                    size: 18,
-                  ),
-                  tooltip: 'Limpar conversa',
-                ),
-            ],
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // Model Selection
-          _buildSection(
-            context,
-            'Modelo',
-            _buildModelDropdown(context),
-          ),
-          
-          const SizedBox(height: 12),
-          
-          // Web Search Toggle  
-          _buildToggle(
-            context,
-            'Busca web',
-            webSearchEnabled,
-            onWebSearchToggle,
-            isSearching,
-          ),
-          
-          const SizedBox(height: 12),
-          
-          // Stream Toggle
-          _buildToggle(
-            context,
-            'Streaming',
-            streamEnabled,
-            onStreamToggle,
-            false,
-          ),
-          
-          const Spacer(),
-          
-          // Error Message
-          if (errorMessage != null)
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.error.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    color: theme.colorScheme.error,
-                    size: 12,
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      errorMessage!,
-                      style: TextStyle(
-                        color: theme.colorScheme.error,
-                        fontSize: 10,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+              child: IntrinsicHeight(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.settings,
+                          color: theme.colorScheme.primary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Config',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (onClearChat != null)
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 32,
+                              minHeight: 32,
+                            ),
+                            onPressed: onClearChat,
+                            icon: Icon(
+                              Icons.clear_all,
+                              color: theme.colorScheme.error,
+                              size: 18,
+                            ),
+                            tooltip: 'Limpar conversa',
+                          ),
+                      ],
                     ),
-                  ),
-                ],
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Model Selection
+                    _buildSection(
+                      context,
+                      'Modelo',
+                      _buildModelDropdown(context),
+                    ),
+                    
+                    const SizedBox(height: 12),
+                    
+                    // Web Search Toggle  
+                    _buildToggle(
+                      context,
+                      'Busca web',
+                      webSearchEnabled,
+                      onWebSearchToggle,
+                      isSearching,
+                    ),
+                    
+                    const SizedBox(height: 12),
+                    
+                    // Stream Toggle
+                    _buildToggle(
+                      context,
+                      'Streaming',
+                      streamEnabled,
+                      onStreamToggle,
+                      false,
+                    ),
+                    
+                    const Spacer(),
+                    
+                    // Error Message
+                    if (errorMessage != null)
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.error.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              color: theme.colorScheme.error,
+                              size: 12,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                errorMessage!,
+                                style: TextStyle(
+                                  color: theme.colorScheme.error,
+                                  fontSize: 10,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
-        ],
+          );
+        },
       ),
     ).animate().fadeIn(duration: 300.ms);
   }

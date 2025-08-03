@@ -1,7 +1,11 @@
-/// Sistema unificado de tema para a aplicação
+
 import 'package:flutter/material.dart';
 import 'typography.dart';
 
+/// Tema unificado para a aplicação
+/// 
+/// Define cores, estilos e configurações visuais consistentes
+/// para toda a aplicação.
 class AppTheme {
   // Cores primárias
   static const Color kPrimary = Color(0xFF7F5AF0); 
@@ -51,6 +55,34 @@ class AppTheme {
       ),
       textTheme: AppTypography.buildTextTheme(ThemeData.dark().textTheme),
       cardColor: kDarkCardBg,
+    );
+  }
+
+  /// Cria um efeito de vidro (glass effect) para containers
+  static BoxDecoration glassEffect({
+    required bool isDark,
+    double opacity = 0.1,
+    double blur = 10,
+  }) {
+    return BoxDecoration(
+      color: isDark 
+          ? Colors.white.withValues(alpha: opacity)
+          : Colors.black.withValues(alpha: opacity),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: isDark 
+            ? Colors.white.withValues(alpha: 0.2)
+            : Colors.black.withValues(alpha: 0.1),
+        width: 1,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
+          blurRadius: blur,
+          offset: const Offset(0, 4),
+          spreadRadius: -2,
+        ),
+      ],
     );
   }
 }

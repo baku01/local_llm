@@ -7,7 +7,9 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'dart:ui';
 import 'animated_logo.dart';
+import '../../theme/theme.dart';
 
 /// Widget de layout desktop minimalista com sidebar retrátil.
 ///
@@ -138,62 +140,86 @@ class _MinimalDesktopLayoutState extends State<MinimalDesktopLayout>
           Expanded(
             child: Container(
               margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: theme.cardColor,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: theme.colorScheme.outline.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
-                    spreadRadius: 0,
+                         child: ClipRRect(
+                           borderRadius: BorderRadius.circular(20),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                  child: Container(
+                    decoration: AppTheme.glassEffect(
+                      isDark: theme.brightness == Brightness.dark,
+                      opacity: 0.1,
+                      blur: 15,
+                    ).copyWith(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: theme.colorScheme.outline.withValues(alpha: 0.15),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 32,
+                          offset: const Offset(0, 12),
+                          spreadRadius: 0,
                   ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: widget.content,
-              ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: widget.content,
+                      ),
+                    ),
+                  ),
+                ),
             ),
           ),
 
           // Animated sidebar overlay
-          AnimatedBuilder(
-            animation: _sidebarAnimation,
-            builder: (context, child) {
-              return Transform.translate(
-                offset: Offset(_isSidebarExpanded ? 0 : 320, 0),
-                child: Container(
-                  width: 320,
-                  height: double.infinity,
-                  margin: const EdgeInsets.only(top: 16, right: 16, bottom: 16),
-                  decoration: BoxDecoration(
-                    color: theme.cardColor,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: theme.colorScheme.outline.withValues(alpha: 0.2),
-                      width: 1,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 32,
-                        offset: const Offset(-4, 8),
-                        spreadRadius: 0,
+          RepaintBoundary(
+            child: AnimatedBuilder(
+              animation: _sidebarAnimation,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(_isSidebarExpanded ? 0 : 320, 0),
+                  child: Container(
+                    width: 320,
+                    height: double.infinity,
+                    margin: const EdgeInsets.only(top: 16, right: 16, bottom: 16),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                        child: Container(
+                          decoration: AppTheme.glassEffect(
+                            isDark: theme.brightness == Brightness.dark,
+                            opacity: 0.15,
+                            blur: 15,
+                          ).copyWith(
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: theme.colorScheme.outline.withValues(alpha: 0.2),
+                              width: 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.12),
+                                blurRadius: 40,
+                                offset: const Offset(-6, 10),
+                                spreadRadius: 0,
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: widget.sidebar,
+                          ),
+                        ),
                       ),
-                    ],
+                    ),
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: widget.sidebar,
-                  ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ],
       ),

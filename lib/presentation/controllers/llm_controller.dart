@@ -5,6 +5,7 @@
 /// streaming de respostas e cache de conteúdo.
 library;
 
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/llm_model.dart';
 import '../../domain/entities/llm_response.dart';
@@ -13,7 +14,7 @@ import '../../domain/usecases/get_available_models.dart';
 import '../../domain/usecases/generate_response.dart';
 import '../../domain/usecases/generate_response_stream.dart';
 import '../../domain/usecases/search_web.dart';
-import '../widgets/chat_interface.dart';
+import '../../models/chat_message.dart';
 
 /// Controlador principal que gerencia a interação com modelos LLM.
 /// 
@@ -40,6 +41,12 @@ class LlmController extends ChangeNotifier {
   /// Cache para armazenar conteúdos de páginas web já processadas.
   /// Evita múltiplas requisições para a mesma URL durante uma sessão.
   final Map<String, String> _webPageContents = {};
+
+  /// Timer para throttling de notificações durante streaming.
+  Timer? _notificationTimer;
+  
+  /// Controla se há uma notificação pendente.
+  bool _hasPendingNotification = false;
 
   /// Construtor do controlador com injeção de dependências.
   /// 
@@ -108,19 +115,19 @@ class LlmController extends ChangeNotifier {
   /// Atualiza o estado de carregamento e notifica os ouvintes.
   void _setLoading(bool loading) {
     _isLoading = loading;
-    notifyListeners();
+    _notifyListenersThrottled();
   }
 
   /// Define uma mensagem de erro e notifica os ouvintes.
   void _setError(String? error) {
     _errorMessage = error;
-    notifyListeners();
+    _notifyListenersThrottled();
   }
 
   /// Atualiza o estado de pesquisa web e notifica os ouvintes.
   void _setSearching(bool searching) {
     _isSearching = searching;
-    notifyListeners();
+    _notifyListenersThrottled();
   }
 
   /// Atualiza o estado de processamento de pensamento e notifica os ouvintes.
@@ -128,9 +135,30 @@ class LlmController extends ChangeNotifier {
   /// [thinking] - Se o modelo está pensando
   /// [thinkingText] - Texto opcional do pensamento atual
   void _setThinking(bool thinking, [String? thinkingText]) {
-    _isThinking = thinking;
-    _currentThinking = thinkingText;
-    notifyListeners();
+    bool shouldNotify = false;
+    
+    if (_isThinking != thinking) {
+      _isThinking = thinking;
+      shouldNotify = true;
+    }
+    
+    // Para texto de pensamento, só atualiza se mudou significativamente
+    if (thinkingText != null && (_currentThinking != thinkingText || shouldNotify)) {
+      // Durante streaming, só atualiza se a diferença for significativa
+      if (!_isThinking || shouldNotify || 
+          (_currentThinking?.length ?? 0) == 0 ||
+          (thinkingText.length - (_currentThinking?.length ?? 0)) > 15) {
+        _currentThinking = thinkingText;
+        shouldNotify = true;
+      }
+    } else if (thinkingText == null && _currentThinking != null) {
+      _currentThinking = null;
+      shouldNotify = true;
+    }
+    
+    if (shouldNotify) {
+      _notifyListenersThrottled();
+    }
   }
 
   /// Seleciona um modelo LLM para uso e limpa erros anteriores.
@@ -139,7 +167,7 @@ class LlmController extends ChangeNotifier {
   void selectModel(LlmModel model) {
     _selectedModel = model;
     _setError(null);
-    notifyListeners();
+    _notifyListenersThrottled();
   }
 
   /// Alterna o estado da pesquisa web.
@@ -147,7 +175,7 @@ class LlmController extends ChangeNotifier {
   /// [enabled] - Se a pesquisa web deve estar habilitada
   void toggleWebSearch(bool enabled) {
     _webSearchEnabled = enabled;
-    notifyListeners();
+    _notifyListenersThrottled();
   }
 
   /// Alterna o modo de streaming de respostas.
@@ -155,7 +183,7 @@ class LlmController extends ChangeNotifier {
   /// [enabled] - Se o streaming deve estar habilitado
   void toggleStreamMode(bool enabled) {
     _streamEnabled = enabled;
-    notifyListeners();
+    _notifyListenersThrottled();
   }
 
   /// Carrega a lista de modelos LLM disponíveis.
@@ -209,9 +237,13 @@ class LlmController extends ChangeNotifier {
     _searchResults.clear();
 
     // Adiciona mensagem do usuário
-    final userMessage = ChatMessage.fromUser(content.trim());
+    final userMessage = ChatMessage(
+      text: content.trim(),
+      isUser: true,
+      timestamp: DateTime.now(),
+    );
     _messages.add(userMessage);
-    notifyListeners();
+    _notifyListenersThrottled();
 
     String finalPrompt = content.trim();
 
@@ -231,13 +263,12 @@ class LlmController extends ChangeNotifier {
 
           // Adicionar mensagem informativa sobre a pesquisa
           final searchInfo = ChatMessage(
-            content: 'Encontrei ${_searchResults.length} resultados relevantes na web e resumi o conteúdo principal para o contexto.',
+            text: 'Encontrei ${_searchResults.length} resultados relevantes na web e resumi o conteúdo principal para o contexto.',
             isUser: false,
             timestamp: DateTime.now(),
-            isError: false,
           );
           _messages.add(searchInfo);
-          notifyListeners();
+          _notifyListenersThrottled();
         }
       } catch (e) {
         debugPrint('Erro na pesquisa web: $e');
@@ -275,8 +306,13 @@ class LlmController extends ChangeNotifier {
       // Processar resposta com pensamento
       final processedResponse = _processThinkingResponse(response);
 
-      // Adiciona resposta do LLM
-      final llmMessage = ChatMessage.fromResponse(processedResponse);
+      // Adiciona resposta do LLM com pensamento se disponível
+      final llmMessage = ChatMessage(
+        text: processedResponse.content,
+        isUser: false,
+        timestamp: DateTime.now(),
+        thinkingText: _currentThinking,
+      );
       _messages.add(llmMessage);
 
       if (processedResponse.isError) {
@@ -285,10 +321,9 @@ class LlmController extends ChangeNotifier {
     } catch (e) {
       // Adiciona mensagem de erro
       final errorMessage = ChatMessage(
-        content: 'Erro ao gerar resposta: $e',
+        text: 'Erro ao gerar resposta: $e',
         isUser: false,
         timestamp: DateTime.now(),
-        isError: true,
       );
       _messages.add(errorMessage);
       _setError('Erro ao gerar resposta: $e');
@@ -299,27 +334,20 @@ class LlmController extends ChangeNotifier {
   }
 
   Future<void> _handleStreamingResponse(String prompt, bool isThinkingModel) async {
-    // Cria mensagem vazia para streaming
-    final streamingMessage = ChatMessage(
-      content: '',
-      isUser: false,
-      timestamp: DateTime.now(),
-      isError: false,
-    );
-    _messages.add(streamingMessage);
-
-    final messageIndex = _messages.length - 1;
     final contentBuffer = StringBuffer();
     bool isInThinkingMode = false;
     final thinkingBuffer = StringBuffer();
+    ChatMessage? streamingMessage;
+    int? messageIndex;
 
     try {
       await for (final chunk in _generateResponseStream(
         prompt: prompt,
         modelName: _selectedModel!.name,
       )) {
-        if (isThinkingModel && chunk.contains('<think>')) {
+        if (chunk.contains('<think>')) {
           isInThinkingMode = true;
+          _setThinking(true, '');
           final thinkStart = chunk.indexOf('<think>');
           if (thinkStart != -1) {
             // Adiciona conteúdo antes da tag <think>
@@ -327,9 +355,10 @@ class LlmController extends ChangeNotifier {
               contentBuffer.write(chunk.substring(0, thinkStart));
             }
             // Começa a capturar pensamento
-            thinkingBuffer.write(chunk.substring(thinkStart + 7));
+            final thinkContent = chunk.substring(thinkStart + 7);
+            thinkingBuffer.write(thinkContent);
           }
-        } else if (isThinkingModel && isInThinkingMode) {
+        } else if (isInThinkingMode) {
           if (chunk.contains('</think>')) {
             final thinkEnd = chunk.indexOf('</think>');
             if (thinkEnd != -1) {
@@ -341,6 +370,16 @@ class LlmController extends ChangeNotifier {
               final remainingContent = chunk.substring(thinkEnd + 8);
               if (remainingContent.isNotEmpty) {
                 contentBuffer.write(remainingContent);
+                // Cria mensagem apenas quando há conteúdo real
+                if (streamingMessage == null) {
+                  streamingMessage = ChatMessage(
+                    text: '',
+                    isUser: false,
+                    timestamp: DateTime.now(),
+                  );
+                  _messages.add(streamingMessage);
+                  messageIndex = _messages.length - 1;
+                }
               }
               isInThinkingMode = false;
             } else {
@@ -353,26 +392,46 @@ class LlmController extends ChangeNotifier {
           }
         } else {
           contentBuffer.write(chunk);
+          // Cria mensagem apenas quando há conteúdo real
+          if (streamingMessage == null) {
+            streamingMessage = ChatMessage(
+              text: '',
+              isUser: false,
+              timestamp: DateTime.now(),
+            );
+            _messages.add(streamingMessage);
+            messageIndex = _messages.length - 1;
+          }
         }
 
-        // Atualiza a mensagem com o conteúdo atual
-        if (!isInThinkingMode && contentBuffer.isNotEmpty) {
-          _messages[messageIndex] = ChatMessage(
-            content: contentBuffer.toString(),
-            isUser: false,
-            timestamp: streamingMessage.timestamp,
-            isError: false,
-          );
-          notifyListeners();
-        }
+        // Atualiza a mensagem apenas se ela foi criada
+         if (streamingMessage != null && messageIndex != null) {
+           _messages[messageIndex] = ChatMessage(
+             text: contentBuffer.toString(),
+             isUser: false,
+             timestamp: streamingMessage.timestamp,
+             thinkingText: thinkingBuffer.isNotEmpty ? thinkingBuffer.toString() : null,
+           );
+           _notifyListenersThrottled();
+         }
+      }
+      
+      // Garantir que a mensagem final tenha o pensamento completo
+      if (thinkingBuffer.isNotEmpty && messageIndex != null && streamingMessage != null) {
+        _messages[messageIndex] = ChatMessage(
+          text: contentBuffer.toString(),
+          isUser: false,
+          timestamp: streamingMessage.timestamp,
+          thinkingText: thinkingBuffer.toString(),
+        );
+        _notifyListenersThrottled();
       }
     } catch (e) {
       // Adiciona mensagem de erro
       final errorMessage = ChatMessage(
-        content: 'Erro ao gerar resposta: $e',
+        text: 'Erro ao gerar resposta: $e',
         isUser: false,
         timestamp: DateTime.now(),
-        isError: true,
       );
       _messages.add(errorMessage);
       _setError('Erro ao gerar resposta: $e');
@@ -397,15 +456,8 @@ class LlmController extends ChangeNotifier {
         // Mostrar o pensamento por um tempo antes da resposta
         _setThinking(false, thinkingText);
 
-        // Criar mensagem de pensamento
-        final thinkingMessage = ChatMessage(
-          content: thinkingText,
-          isUser: false,
-          timestamp: DateTime.now(),
-          isError: false,
-        );
-        _messages.add(thinkingMessage);
-        notifyListeners();
+        // Armazenar o pensamento para exibição junto com a resposta final
+        // Não criar mensagem separada, será exibida junto com a resposta
 
         // Remover tags de pensamento da resposta final
         final cleanContent = response.content
@@ -427,13 +479,20 @@ class LlmController extends ChangeNotifier {
   Future<void> _performWebSearch(String query) async {
     _searchResults.clear();
 
-    final searchQuery = SearchQuery(
-      query: query,
-      maxResults: 3,
-    );
+    try {
+      final searchQuery = SearchQuery(
+        query: query,
+        maxResults: 3,
+      );
 
-    final results = await _searchWeb(searchQuery);
-    _searchResults.addAll(results);
+      debugPrint('Iniciando pesquisa web para: $query');
+      final results = await _searchWeb(searchQuery);
+      debugPrint('Pesquisa web retornou ${results.length} resultados');
+      _searchResults.addAll(results);
+    } catch (e) {
+      debugPrint('Erro na pesquisa web: $e');
+      // Não propagar o erro para não interromper o fluxo
+    }
   }
 
   // Busca e armazena o conteúdo das páginas dos resultados de pesquisa
@@ -492,7 +551,7 @@ class LlmController extends ChangeNotifier {
     _searchResults.clear();
     _webPageContents.clear();
     _setError(null);
-    notifyListeners();
+    _notifyListenersThrottled();
   }
 
   /// Remove uma mensagem específica do chat pelo índice.
@@ -501,7 +560,7 @@ class LlmController extends ChangeNotifier {
   void removeMessage(int index) {
     if (index >= 0 && index < _messages.length) {
       _messages.removeAt(index);
-      notifyListeners();
+      _notifyListenersThrottled();
     }
   }
 
@@ -511,7 +570,7 @@ class LlmController extends ChangeNotifier {
   void clearSearchResults() {
     _searchResults.clear();
     _webPageContents.clear();
-    notifyListeners();
+    _notifyListenersThrottled();
   }
 
   /// Busca o conteúdo de uma página web usando o datasource configurado.
@@ -529,5 +588,34 @@ class LlmController extends ChangeNotifier {
       return await dataSource.fetchPageContent(url);
     }
     return '';
+  }
+
+  /// Implementa throttling para notificações, reduzindo rebuilds excessivos.
+  /// 
+  /// Durante operações de streaming, agrupa notificações em intervalos de 100ms
+  /// para melhorar a performance da UI.
+  void _notifyListenersThrottled() {
+    if (_isLoading && _streamEnabled) {
+      // Durante streaming, usar throttling
+      _hasPendingNotification = true;
+      _notificationTimer?.cancel();
+      _notificationTimer = Timer(const Duration(milliseconds: 100), () {
+        if (_hasPendingNotification) {
+          _hasPendingNotification = false;
+          notifyListeners();
+        }
+      });
+    } else {
+      // Para operações não-streaming, notificar imediatamente
+      _notificationTimer?.cancel();
+      _hasPendingNotification = false;
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _notificationTimer?.cancel();
+    super.dispose();
   }
 }

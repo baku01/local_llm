@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:local_llm/domain/entities/llm_model.dart';
 import 'package:local_llm/domain/entities/search_result.dart';
-import 'package:local_llm/presentation/widgets/chat_interface.dart';
+import 'package:local_llm/models/chat_message.dart';
 
 void main() {
   group('Simple Tests - No External Dependencies', () {
@@ -39,18 +39,21 @@ void main() {
 
     group('ChatMessage Tests', () {
       test('should create user message correctly', () {
-        final message = ChatMessage.fromUser('Hello world');
+        final message = ChatMessage(
+          text: 'Hello world',
+          isUser: true,
+          timestamp: DateTime.now(),
+        );
 
-        expect(message.content, 'Hello world');
+        expect(message.text, 'Hello world');
         expect(message.isUser, true);
-        expect(message.isError, false);
         expect(message.timestamp, isNotNull);
       });
 
       test('should format time correctly', () {
         final now = DateTime.now();
         final message = ChatMessage(
-          content: 'test',
+          text: 'test',
           isUser: true,
           timestamp: now,
         );
