@@ -1,0 +1,144 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+env:
+  FLUTTER_VERSION: '3.24.3'
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ steps.get_version.outputs.VERSION }}
+        draft: false
+        prerelease: false
+        body: |
+          ## 🚀 Nova Versão: ${{ steps.get_version.outputs.VERSION }}
+          
+          ### 📋 Principais Mudanças
+          - Melhorias na interface do usuário
+          - Otimizações de performance
+          - Correções de bugs
+          - Novas funcionalidades de busca estratégica
+          
+          ### 📦 Downloads
+          Escolha o arquivo apropriado para seu sistema operacional:
+          - **Linux**: `local-llm-linux.tar.gz`
+          - **macOS**: `local-llm-macos.zip`
+          - **Windows**: `local-llm-windows.zip`
+          
+          ### 🔧 Requisitos do Sistema
+          - Sistema operacional: Linux, macOS ou Windows
+          - Ollama instalado e configurado
+          - Conexão com internet para funcionalidades de busca
+
+  build-and-upload:
+    name: Build and Upload
+    needs: create-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            artifact_name: local-llm-linux.tar.gz
+            build_path: build/linux/x64/release/bundle
+          - os: macos-latest
+            platform: macos
+            artifact_name: local-llm-macos.zip
+            build_path: build/macos/Build/Products/Release
+          - os: windows-latest
+            platform: windows
+            artifact_name: local-llm-windows.zip
+            build_path: build/windows/x64/runner/Release
+            
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        cache: true
+        
+    - name: Install dependencies
+      run: flutter pub get
+      
+    - name: Install Linux dependencies
+      if: matrix.platform == 'linux'
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install -y ninja-build libgtk-3-dev
+        
+    - name: Enable desktop support
+      run: |
+        flutter config --enable-${{ matrix.platform }}-desktop
+        
+    - name: Build application
+      run: flutter build ${{ matrix.platform }} --release
+      
+    - name: Create archive (Linux)
+      if: matrix.platform == 'linux'
+      run: |
+        cd ${{ matrix.build_path }}
+        tar -czf ../../../../../${{ matrix.artifact_name }} .
+        
+    - name: Create archive (macOS)
+      if: matrix.platform == 'macos'
+      run: |
+        cd ${{ matrix.build_path }}
+        zip -r ../../../../../${{ matrix.artifact_name }} .
+        
+    - name: Create archive (Windows)
+      if: matrix.platform == 'windows'
+      run: |
+        cd ${{ matrix.build_path }}
+        powershell Compress-Archive -Path * -DestinationPath ../../../../../${{ matrix.artifact_name }}
+        
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./${{ matrix.artifact_name }}
+        asset_name: ${{ matrix.artifact_name }}
+        asset_content_type: application/octet-stream
+
+  notify-release:
+    name: Notify Release
+    needs: [create-release, build-and-upload]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+    - name: Release notification
+      run: |
+        echo "✅ Release ${{ steps.get_version.outputs.VERSION }} criado com sucesso!"
+        echo "📦 Artefatos disponíveis para download"
+        echo "🔗 URL: https://github.com/${{ github.repository }}/releases/tag/${{ steps.get_version.outputs.VERSION }}"
