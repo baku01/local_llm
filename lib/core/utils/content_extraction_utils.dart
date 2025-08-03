@@ -501,17 +501,25 @@ class ContentExtractionUtils {
   static ContentType _classifyContentType(
       html_dom.Document doc, String content) {
     // Check for common patterns
-    if (doc.querySelector('article') != null) return ContentType.article;
-    if (doc.querySelector('.blog-post, .post') != null)
+    if (doc.querySelector('article') != null) {
+      return ContentType.article;
+    }
+    if (doc.querySelector('.blog-post, .post') != null) {
       return ContentType.blogPost;
-    if (doc.querySelector('.news, .news-article') != null)
+    }
+    if (doc.querySelector('.news, .news-article') != null) {
       return ContentType.news;
+    }
     if (content.contains('recipe') ||
-        doc.querySelector('[itemtype*="Recipe"]') != null)
+        doc.querySelector('[itemtype*="Recipe"]') != null) {
       return ContentType.recipe;
-    if (doc.querySelector('.product, [itemtype*="Product"]') != null)
+    }
+    if (doc.querySelector('.product, [itemtype*="Product"]') != null) {
       return ContentType.product;
-    if (content.length < 500) return ContentType.shortForm;
+    }
+    if (content.length < 500) {
+      return ContentType.shortForm;
+    }
 
     return ContentType.webpage;
   }

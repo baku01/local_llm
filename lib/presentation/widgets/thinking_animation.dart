@@ -273,8 +273,9 @@ class _TypewriterTextState extends State<_TypewriterText>
       DateTime lastUpdate = DateTime.now();
       animation.addListener(() {
         final now = DateTime.now();
-        if (now.difference(lastUpdate).inMilliseconds < 50)
+        if (now.difference(lastUpdate).inMilliseconds < 50) {
           return; // Throttle de 50ms
+        }
         lastUpdate = now;
 
         final charCount = animation.value.floor().clamp(0, widget.text.length);
