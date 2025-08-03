@@ -17,18 +17,23 @@ class ChatPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Use select to prevent unnecessary rebuilds
-    final messages = ref.watch(llmControllerProvider.select((controller) => controller.messages));
-    final selectedModel = ref.watch(llmControllerProvider.select((controller) => controller.selectedModel));
-    final isReplying = ref.watch(llmControllerProvider.select((controller) => controller.isLoading));
-    final isThinking = ref.watch(llmControllerProvider.select((controller) => controller.isThinking));
-    final currentThinking = ref.watch(llmControllerProvider.select((controller) => controller.currentThinking));
-    
+    final messages = ref.watch(
+        llmControllerProvider.select((controller) => controller.messages));
+    final selectedModel = ref.watch(
+        llmControllerProvider.select((controller) => controller.selectedModel));
+    final isReplying = ref.watch(
+        llmControllerProvider.select((controller) => controller.isLoading));
+    final isThinking = ref.watch(
+        llmControllerProvider.select((controller) => controller.isThinking));
+    final currentThinking = ref.watch(llmControllerProvider
+        .select((controller) => controller.currentThinking));
+
     // Only access the controller for method calls, not watching
     final llmController = ref.read(llmControllerProvider.notifier);
-    
+
     // Sincronizar apenas quando necessário para evitar loops
     ref.listen(selectedModelProvider, (previous, next) {
-      if (next != null && 
+      if (next != null &&
           (selectedModel == null || selectedModel.name != next.name)) {
         final domainModel = LlmModel(
           name: next.name,
@@ -48,7 +53,9 @@ class ChatPage extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                selectedModel?.description ?? selectedModel?.name ?? 'Selecionar Modelo',
+                selectedModel?.description ??
+                    selectedModel?.name ??
+                    'Selecionar Modelo',
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(width: 8),
@@ -79,22 +86,25 @@ class ChatPage extends ConsumerWidget {
                 ? _buildEmptyState(context)
                 : ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    itemCount: messages.length + (isReplying ? 1 : 0) + (isThinking ? 1 : 0),
+                    itemCount: messages.length +
+                        (isReplying ? 1 : 0) +
+                        (isThinking ? 1 : 0),
                     itemBuilder: (context, index) {
                       // Show thinking animation if model is thinking
                       if (isThinking && index == 0) {
                         return Padding(
-                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                           child: ThinkingAnimation(
-                             thinkingText: currentThinking ?? 'Analisando...',
-                             isVisible: true,
-                           ),
-                         );
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          child: ThinkingAnimation(
+                            thinkingText: currentThinking ?? 'Analisando...',
+                            isVisible: true,
+                          ),
+                        );
                       }
-                      
+
                       // Adjust index for thinking animation
                       final messageIndex = isThinking ? index - 1 : index;
-                      
+
                       if (messageIndex == messages.length && isReplying) {
                         return ChatBubble(
                           message: ChatMessage(
@@ -110,13 +120,14 @@ class ChatPage extends ConsumerWidget {
                               curve: Curves.easeOutCubic,
                             );
                       }
-                      
+
                       final message = messages[messageIndex];
-                      
+
                       return ChatBubble(
                         message: message,
                         thinkingText: message.thinkingText,
-                        showThinking: !message.isUser && message.thinkingText != null,
+                        showThinking:
+                            !message.isUser && message.thinkingText != null,
                       ).animate().fadeIn(duration: 300.ms).slideY(
                             begin: 0.1,
                             end: 0,
@@ -156,7 +167,10 @@ class ChatPage extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.3),
                     blurRadius: 24,
                     offset: const Offset(0, 8),
                   ),
@@ -167,46 +181,58 @@ class ChatPage extends ConsumerWidget {
                 size: 60,
                 color: Colors.white,
               ),
-            ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-                .shimmer(duration: 2000.ms, color: Colors.white.withValues(alpha: 0.3))
+            )
+                .animate(
+                    onPlay: (controller) => controller.repeat(reverse: true))
+                .shimmer(
+                    duration: 2000.ms,
+                    color: Colors.white.withValues(alpha: 0.3))
                 .scale(
                   begin: const Offset(1.0, 1.0),
                   end: const Offset(1.05, 1.05),
                   duration: 2000.ms,
                 ),
-            
+
             const SizedBox(height: 32),
-            
+
             // Título moderno
             Text(
               'Local LLM Chat',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                foreground: Paint()
-                  ..shader = LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.secondary,
-                    ],
-                  ).createShader(const Rect.fromLTWH(0.0, 0.0, 200.0, 70.0)),
-              ),
+                    foreground: Paint()
+                      ..shader = LinearGradient(
+                        colors: [
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(context).colorScheme.secondary,
+                        ],
+                      ).createShader(
+                          const Rect.fromLTWH(0.0, 0.0, 200.0, 70.0)),
+                  ),
               textAlign: TextAlign.center,
-            ).animate().fadeIn(duration: 800.ms, delay: 200.ms)
+            )
+                .animate()
+                .fadeIn(duration: 800.ms, delay: 200.ms)
                 .slideY(begin: 0.3, end: 0),
-            
+
             const SizedBox(height: 16),
-            
+
             // Subtítulo
             Text(
               'Converse com modelos de IA localmente\ncom privacidade total',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.7),
+                  ),
               textAlign: TextAlign.center,
-            ).animate().fadeIn(duration: 800.ms, delay: 400.ms)
+            )
+                .animate()
+                .fadeIn(duration: 800.ms, delay: 400.ms)
                 .slideY(begin: 0.3, end: 0),
-            
+
             const SizedBox(height: 48),
-            
+
             // Cards de sugestão modernos
             Wrap(
               spacing: 16,
@@ -237,7 +263,9 @@ class ChatPage extends ConsumerWidget {
                   subtitle: 'Insights profundos',
                 ),
               ],
-            ).animate().fadeIn(duration: 800.ms, delay: 600.ms)
+            )
+                .animate()
+                .fadeIn(duration: 800.ms, delay: 600.ms)
                 .slideY(begin: 0.3, end: 0),
           ],
         ),
@@ -252,7 +280,7 @@ class ChatPage extends ConsumerWidget {
     required String subtitle,
   }) {
     final theme = Theme.of(context);
-    
+
     // Mapear títulos para sugestões específicas
     String getSuggestionText() {
       switch (title) {
@@ -268,11 +296,12 @@ class ChatPage extends ConsumerWidget {
           return 'Como posso ajudar você hoje?';
       }
     }
-    
+
     return GestureDetector(
       onTap: () {
         // Usar o provider para preencher o campo de texto com a sugestão
-        final ref = ProviderScope.containerOf(context).read(suggestionTextProvider.notifier);
+        final ref = ProviderScope.containerOf(context)
+            .read(suggestionTextProvider.notifier);
         ref.state = getSuggestionText();
       },
       child: Container(
@@ -351,7 +380,7 @@ class ChatPage extends ConsumerWidget {
             final screenHeight = MediaQuery.of(context).size.height;
             final maxHeight = screenHeight * 0.8;
             final minHeight = screenHeight * 0.3;
-            
+
             return Container(
               constraints: BoxConstraints(
                 maxHeight: maxHeight,
@@ -399,9 +428,12 @@ class ChatPage extends ConsumerWidget {
                             ),
                             IconButton(
                               onPressed: () {
-                                ref.read(availableModelsProvider.notifier).refresh();
+                                ref
+                                    .read(availableModelsProvider.notifier)
+                                    .refresh();
                               },
-                              icon: PhosphorIcon(PhosphorIcons.arrowClockwise()),
+                              icon:
+                                  PhosphorIcon(PhosphorIcons.arrowClockwise()),
                             ),
                           ],
                         ),
@@ -422,18 +454,24 @@ class ChatPage extends ConsumerWidget {
 
                             return ListView.builder(
                               shrinkWrap: true,
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               itemCount: models.length,
                               itemBuilder: (context, index) {
                                 final model = models[index];
-                                final isSelected = selectedModel?.name == model.name;
+                                final isSelected =
+                                    selectedModel?.name == model.name;
 
                                 return AnimatedContainer(
                                   duration: const Duration(milliseconds: 200),
-                                  margin: const EdgeInsets.symmetric(vertical: 2),
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 2),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .primary
+                                            .withValues(alpha: 0.1)
                                         : null,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -441,9 +479,13 @@ class ChatPage extends ConsumerWidget {
                                     title: Text(
                                       model.name,
                                       style: TextStyle(
-                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w600
+                                            : FontWeight.w500,
                                         color: isSelected
-                                            ? Theme.of(context).colorScheme.primary
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .primary
                                             : null,
                                       ),
                                       overflow: TextOverflow.ellipsis,
@@ -453,23 +495,30 @@ class ChatPage extends ConsumerWidget {
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         color: isSelected
-                                            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.7)
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                                .withValues(alpha: 0.7)
                                             : null,
                                       ),
                                     ),
                                     trailing: isSelected
                                         ? AnimatedScale(
                                             scale: isSelected ? 1.0 : 0.0,
-                                            duration: const Duration(milliseconds: 200),
+                                            duration: const Duration(
+                                                milliseconds: 200),
                                             child: PhosphorIcon(
                                               PhosphorIcons.check(),
-                                              color: Theme.of(context).colorScheme.primary,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
                                             ),
                                           )
                                         : null,
                                     onTap: () {
                                       // Usar setState para atualização imediata sem rebuild
-                                      final notifier = ref.read(selectedModelProvider.notifier);
+                                      final notifier = ref
+                                          .read(selectedModelProvider.notifier);
                                       notifier.state = model;
                                       Navigator.pop(context);
                                     },
@@ -507,13 +556,19 @@ class ChatPage extends ConsumerWidget {
                                     error.toString(),
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.7),
                                     ),
                                   ),
                                   const SizedBox(height: 16),
                                   ElevatedButton(
                                     onPressed: () {
-                                      ref.read(availableModelsProvider.notifier).refresh();
+                                      ref
+                                          .read(
+                                              availableModelsProvider.notifier)
+                                          .refresh();
                                     },
                                     child: const Text('Tentar novamente'),
                                   ),

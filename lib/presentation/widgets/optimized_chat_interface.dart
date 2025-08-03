@@ -1,5 +1,5 @@
 /// Interface de chat otimizada anti-flickering.
-/// 
+///
 /// Demonstra o uso dos widgets otimizados para streaming sem tremulação.
 library;
 
@@ -13,10 +13,12 @@ class OptimizedChatInterface extends ConsumerStatefulWidget {
   const OptimizedChatInterface({super.key});
 
   @override
-  ConsumerState<OptimizedChatInterface> createState() => _OptimizedChatInterfaceState();
+  ConsumerState<OptimizedChatInterface> createState() =>
+      _OptimizedChatInterfaceState();
 }
 
-class _OptimizedChatInterfaceState extends ConsumerState<OptimizedChatInterface> {
+class _OptimizedChatInterfaceState
+    extends ConsumerState<OptimizedChatInterface> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -33,7 +35,7 @@ class _OptimizedChatInterfaceState extends ConsumerState<OptimizedChatInterface>
 
     // Use seu controller otimizado aqui
     // ref.read(optimizedLlmControllerProvider).sendMessage(text);
-    
+
     _textController.clear();
     _scrollToBottom();
   }
@@ -55,7 +57,7 @@ class _OptimizedChatInterfaceState extends ConsumerState<OptimizedChatInterface>
     // Para demonstração, vou usar um mock de dados
     // Na implementação real, você usaria:
     // final streamingMessages = ref.watch(optimizedLlmControllerProvider.select((c) => c.streamingMessages));
-    
+
     return Scaffold(
       body: Column(
         children: [
@@ -82,7 +84,7 @@ class _OptimizedChatInterfaceState extends ConsumerState<OptimizedChatInterface>
   Widget _buildOptimizedMessageItem(int index) {
     // Mock de dados - substitua pela implementação real
     final isUser = index % 2 == 0;
-    
+
     if (isUser) {
       return _buildUserMessage("Mensagem do usuário $index");
     } else {
@@ -125,7 +127,7 @@ class _OptimizedChatInterfaceState extends ConsumerState<OptimizedChatInterface>
   Widget _buildAIStreamingMessage(int index) {
     // Mock stream - substitua pelo stream real da mensagem
     final mockStream = _createMockStream(index);
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16, right: 50),
       child: Row(
@@ -149,7 +151,10 @@ class _OptimizedChatInterfaceState extends ConsumerState<OptimizedChatInterface>
                     bottomRight: Radius.circular(20),
                   ),
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .outline
+                        .withValues(alpha: 0.2),
                   ),
                 ),
                 onStreamComplete: () {
@@ -210,18 +215,19 @@ class _OptimizedChatInterfaceState extends ConsumerState<OptimizedChatInterface>
 
   /// Mock stream para demonstração - substitua pela implementação real
   Stream<String> _createMockStream(int index) async* {
-    final text = "Esta é uma resposta simulada em streaming para a mensagem $index. "
-                "O texto vai aparecendo progressivamente, como se fosse digitado pela IA. "
-                "Note que não há flickering porque usamos otimizações específicas!";
-    
+    final text =
+        "Esta é uma resposta simulada em streaming para a mensagem $index. "
+        "O texto vai aparecendo progressivamente, como se fosse digitado pela IA. "
+        "Note que não há flickering porque usamos otimizações específicas!";
+
     // Simular streaming chunk por chunk
     final words = text.split(' ');
     String accumulated = '';
-    
+
     for (int i = 0; i < words.length; i++) {
       accumulated += (i == 0 ? '' : ' ') + words[i];
       yield accumulated;
-      
+
       // Simular delay entre chunks
       await Future.delayed(const Duration(milliseconds: 100));
     }

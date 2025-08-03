@@ -26,8 +26,6 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
     _controller.addListener(_onTextChanged);
   }
 
-
-
   @override
   void dispose() {
     _controller.removeListener(_onTextChanged);
@@ -61,7 +59,7 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
       isUser: true,
       timestamp: DateTime.now(),
     );
-    
+
     ref.read(chatMessagesProvider.notifier).addMessage(userMessage);
     _controller.clear();
 
@@ -71,10 +69,10 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
 
   void _generateLLMResponse(String userMessage, String modelName) async {
     ref.read(isReplyingProvider.notifier).state = true;
-    
+
     try {
       final llmController = ref.read(llmControllerProvider);
-      
+
       // Garantir que o modelo selecionado esteja sincronizado
       final selectedModel = ref.read(selectedModelProvider);
       if (selectedModel != null) {
@@ -92,23 +90,22 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
         _showNoModelSelectedSnackBar();
         return;
       }
-       
+
       // Sincronizar configurações
       final webSearchEnabled = ref.read(webSearchEnabledProvider);
       final streamModeEnabled = ref.read(streamModeEnabledProvider);
-      
+
       debugPrint('Web search enabled: $webSearchEnabled');
       debugPrint('Stream mode enabled: $streamModeEnabled');
-      
+
       llmController.toggleWebSearch(webSearchEnabled);
       llmController.toggleStreamMode(streamModeEnabled);
-      
+
       // Usar o método sendMessage do controller que já integra webscraping
       await llmController.sendMessage(userMessage);
-      
+
       // Sincronizar mensagens do controller com o provider
       _syncMessagesFromController(llmController);
-      
     } catch (e) {
       debugPrint('Erro ao gerar resposta LLM: $e');
       // Em caso de erro, mostrar mensagem de erro
@@ -122,11 +119,11 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
       ref.read(isReplyingProvider.notifier).state = false;
     }
   }
-  
+
   void _syncMessagesFromController(LlmController controller) {
     // Limpar mensagens atuais e sincronizar com o controller
     ref.read(chatMessagesProvider.notifier).clearMessages();
-    
+
     for (final message in controller.messages) {
       ref.read(chatMessagesProvider.notifier).addMessage(message);
     }
@@ -146,7 +143,7 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
     final theme = Theme.of(context);
     final isReplying = ref.watch(isReplyingProvider);
     final suggestionText = ref.watch(suggestionTextProvider);
-    
+
     // Aplicar sugestão quando disponível
     if (suggestionText.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -165,116 +162,121 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
             opacity: 0.1,
             blur: 20,
           ).copyWith(
-             border: Border(
-               top: BorderSide(
-                 color: theme.colorScheme.outline.withValues(alpha: 0.1),
-                 width: 1,
-               ),
-             ),
-           ),
-           child: Row(
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(28),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
-                  decoration: AppTheme.glassEffect(
-                    isDark: theme.brightness == Brightness.dark,
-                    opacity: 0.2,
-                    blur: 10,
-                  ).copyWith(
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(
-                      color: theme.colorScheme.outline.withValues(alpha: 0.15),
-                      width: 1,
-                    ),
-                  ),
-              child: TextField(
-                controller: _controller,
-                enabled: !isReplying,
-                maxLines: null,
-                textCapitalization: TextCapitalization.sentences,
-                style: TextStyle(
-                  fontSize: 16,
-                  height: 1.4,
-                  color: theme.colorScheme.onSurface,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Digite sua mensagem...',
-                  hintStyle: TextStyle(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                    fontSize: 16,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 16,
-                  ),
-                ),
-                onSubmitted: (_) => _sendMessage(),
-              ),
-                ),
+            border: Border(
+              top: BorderSide(
+                color: theme.colorScheme.outline.withValues(alpha: 0.1),
+                width: 1,
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          RepaintBoundary(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                gradient: (_isEmpty || isReplying) 
-                    ? null
-                    : LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          theme.colorScheme.primary,
-                          theme.colorScheme.secondary,
-                        ],
-                      ),
-                color: (_isEmpty || isReplying) 
-                    ? theme.colorScheme.surface
-                    : null,
-                borderRadius: BorderRadius.circular(28),
-                boxShadow: (_isEmpty || isReplying) 
-                    ? null
-                    : [
-                        BoxShadow(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.4),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
+          child: Row(
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      decoration: AppTheme.glassEffect(
+                        isDark: theme.brightness == Brightness.dark,
+                        opacity: 0.2,
+                        blur: 10,
+                      ).copyWith(
+                        borderRadius: BorderRadius.circular(28),
+                        border: Border.all(
+                          color:
+                              theme.colorScheme.outline.withValues(alpha: 0.15),
+                          width: 1,
                         ),
-                      ],
-              ),
-              child: IconButton(
-                onPressed: (_isEmpty || isReplying) ? null : _sendMessage,
-                icon: isReplying 
-                    ? SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                      ),
+                      child: TextField(
+                        controller: _controller,
+                        enabled: !isReplying,
+                        maxLines: null,
+                        textCapitalization: TextCapitalization.sentences,
+                        style: TextStyle(
+                          fontSize: 16,
+                          height: 1.4,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Digite sua mensagem...',
+                          hintStyle: TextStyle(
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.5),
+                            fontSize: 16,
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
                           ),
                         ),
-                      )
-                    : Icon(
-                        Icons.send_rounded,
-                        color: (_isEmpty || isReplying) 
-                            ? theme.colorScheme.onSurface.withValues(alpha: 0.3)
-                            : Colors.white,
-                        size: 24,
+                        onSubmitted: (_) => _sendMessage(),
                       ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
+              const SizedBox(width: 12),
+              RepaintBoundary(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: (_isEmpty || isReplying)
+                        ? null
+                        : LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              theme.colorScheme.primary,
+                              theme.colorScheme.secondary,
+                            ],
+                          ),
+                    color: (_isEmpty || isReplying)
+                        ? theme.colorScheme.surface
+                        : null,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: (_isEmpty || isReplying)
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: theme.colorScheme.primary
+                                  .withValues(alpha: 0.4),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                  ),
+                  child: IconButton(
+                    onPressed: (_isEmpty || isReplying) ? null : _sendMessage,
+                    icon: isReplying
+                        ? SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.5),
+                              ),
+                            ),
+                          )
+                        : Icon(
+                            Icons.send_rounded,
+                            color: (_isEmpty || isReplying)
+                                ? theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.3)
+                                : Colors.white,
+                            size: 24,
+                          ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

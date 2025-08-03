@@ -1,5 +1,5 @@
 /// Providers centralizados da aplicação seguindo Clean Architecture.
-/// 
+///
 /// Este arquivo contém todos os providers necessários para injeção de dependência,
 /// organizados por camadas: Data Sources, Repositories, Use Cases e Controllers.
 library;
@@ -67,7 +67,8 @@ final ollamaDataSourceProvider = Provider<OllamaRemoteDataSource>((ref) {
 });
 
 /// Provider para o data source de busca web inteligente.
-final webSearchDataSourceProvider = Provider<IntelligentWebSearchDataSource>((ref) {
+final webSearchDataSourceProvider =
+    Provider<IntelligentWebSearchDataSource>((ref) {
   final client = ref.watch(httpClientProvider);
   return IntelligentWebSearchDataSource(
     client: client,
@@ -137,7 +138,8 @@ final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);
 final selectedModelProvider = StateProvider<LlmModel?>((ref) => null);
 
 /// Provider para as mensagens do chat.
-final chatMessagesProvider = StateNotifierProvider<ChatMessagesNotifier, List<ChatMessage>>((ref) {
+final chatMessagesProvider =
+    StateNotifierProvider<ChatMessagesNotifier, List<ChatMessage>>((ref) {
   return ChatMessagesNotifier();
 });
 
@@ -147,7 +149,7 @@ final llmControllerProvider = ChangeNotifierProvider<LlmController>((ref) {
   final generateResponse = ref.watch(generateResponseProvider);
   final generateStream = ref.watch(generateResponseStreamProvider);
   final searchWeb = ref.watch(searchWebProvider);
-  
+
   return LlmController(
     getAvailableModels: getModels,
     generateResponse: generateResponse,
@@ -157,7 +159,9 @@ final llmControllerProvider = ChangeNotifierProvider<LlmController>((ref) {
 });
 
 /// Provider para os modelos disponíveis.
-final availableModelsProvider = StateNotifierProvider<AvailableModelsNotifier, AsyncValue<List<LlmModel>>>((ref) {
+final availableModelsProvider =
+    StateNotifierProvider<AvailableModelsNotifier, AsyncValue<List<LlmModel>>>(
+        (ref) {
   final getModels = ref.watch(getAvailableModelsProvider);
   return AvailableModelsNotifier(getModels);
 });
@@ -215,10 +219,12 @@ class ChatMessagesNotifier extends StateNotifier<List<ChatMessage>> {
 }
 
 /// Notifier para gerenciar o estado dos modelos disponíveis.
-class AvailableModelsNotifier extends StateNotifier<AsyncValue<List<LlmModel>>> {
+class AvailableModelsNotifier
+    extends StateNotifier<AsyncValue<List<LlmModel>>> {
   final GetAvailableModels _getAvailableModels;
 
-  AvailableModelsNotifier(this._getAvailableModels) : super(const AsyncValue.loading()) {
+  AvailableModelsNotifier(this._getAvailableModels)
+      : super(const AsyncValue.loading()) {
     loadModels();
   }
 

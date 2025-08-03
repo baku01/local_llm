@@ -226,15 +226,16 @@ class _SettingsPopupState extends State<SettingsPopup> {
                           ),
 
                           // Mensagem de erro
-                           if (widget.errorMessage != null) ...[
-                             const SizedBox(height: 24),
+                          if (widget.errorMessage != null) ...[
+                            const SizedBox(height: 24),
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: theme.colorScheme.errorContainer,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: theme.colorScheme.error.withValues(alpha: 0.3),
+                                  color: theme.colorScheme.error
+                                      .withValues(alpha: 0.3),
                                 ),
                               ),
                               child: Row(
@@ -249,7 +250,8 @@ class _SettingsPopupState extends State<SettingsPopup> {
                                     child: Text(
                                       widget.errorMessage!,
                                       style: TextStyle(
-                                        color: theme.colorScheme.onErrorContainer,
+                                        color:
+                                            theme.colorScheme.onErrorContainer,
                                         fontSize: 14,
                                       ),
                                       maxLines: 3,
@@ -313,7 +315,8 @@ class _SettingsPopupState extends State<SettingsPopup> {
           );
         },
       ),
-    ).animate()
+    )
+        .animate()
         .fadeIn(duration: 300.ms)
         .scale(begin: const Offset(0.95, 0.95), end: const Offset(1, 1));
   }
@@ -340,7 +343,7 @@ class _SettingsPopupState extends State<SettingsPopup> {
 
   Widget _buildModelDropdown(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     // Remove duplicatas baseado no nome do modelo
     final uniqueModels = <String, LlmModel>{};
     for (final model in widget.models) {

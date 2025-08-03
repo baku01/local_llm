@@ -15,7 +15,7 @@ void main() {
     // Test that the LocalLLMApp widget can be created without throwing
     const app = LocalLLMApp();
     expect(app, isA<LocalLLMApp>());
-    
+
     // Test that it can be wrapped in ProviderScope
     const wrappedApp = ProviderScope(child: LocalLLMApp());
     expect(wrappedApp, isA<ProviderScope>());

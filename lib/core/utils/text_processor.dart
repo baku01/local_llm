@@ -1,5 +1,5 @@
 /// Processador avançado de texto para análise de conteúdo web.
-/// 
+///
 /// Este módulo fornece funcionalidades de processamento de linguagem natural
 /// para normalização, limpeza e análise de texto, otimizado para conteúdo web
 /// em português e inglês.
@@ -8,7 +8,7 @@ library;
 import 'dart:math' as math;
 
 /// Processador de texto com funcionalidades avançadas de NLP.
-/// 
+///
 /// Implementa algoritmos de processamento de texto incluindo:
 /// - Normalização e limpeza de texto
 /// - Remoção de elementos HTML e markup
@@ -22,25 +22,54 @@ class TextProcessor {
   static final _punctuationRegex = RegExp(r'[^\w\s]');
   static final _numberRegex = RegExp(r'\b\d+\b');
   static final _urlRegex = RegExp(r'https?://[^\s]+');
-  static final _emailRegex = RegExp(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b');
-
+  static final _emailRegex =
+      RegExp(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b');
 
   /// Palavras comuns em português que podem indicar qualidade de conteúdo.
   static const _qualityIndicators = {
-    'introdução', 'conclusão', 'resumo', 'exemplo', 'definição', 'conceito',
-    'importante', 'fundamental', 'essencial', 'principais', 'características',
-    'vantagens', 'desvantagens', 'benefícios', 'como', 'quando', 'onde', 'porque',
-    'introduction', 'conclusion', 'summary', 'example', 'definition', 'concept',
-    'important', 'essential', 'main', 'characteristics',
-    'advantages', 'disadvantages', 'benefits', 'how', 'when', 'where', 'why',
+    'introdução',
+    'conclusão',
+    'resumo',
+    'exemplo',
+    'definição',
+    'conceito',
+    'importante',
+    'fundamental',
+    'essencial',
+    'principais',
+    'características',
+    'vantagens',
+    'desvantagens',
+    'benefícios',
+    'como',
+    'quando',
+    'onde',
+    'porque',
+    'introduction',
+    'conclusion',
+    'summary',
+    'example',
+    'definition',
+    'concept',
+    'important',
+    'essential',
+    'main',
+    'characteristics',
+    'advantages',
+    'disadvantages',
+    'benefits',
+    'how',
+    'when',
+    'where',
+    'why',
   };
 
   /// Processa e normaliza texto para análise.
-  /// 
+  ///
   /// [text] - Texto original a ser processado
   /// [preserveStructure] - Se deve preservar quebras de linha e estrutura
   /// [removeNumbers] - Se deve remover números do texto
-  /// 
+  ///
   /// Returns: Texto processado e normalizado
   String processText(
     String text, {
@@ -123,34 +152,30 @@ class TextProcessor {
   String _normalizePunctuation(String text) {
     // Preservar pontuação importante
     String processed = text;
-    
+
     // Normalizar aspas
-    processed = processed
-        .replaceAll('"', '"')
-        .replaceAll('"', '"')
-        .replaceAll(''', "'")
+    processed =
+        processed.replaceAll('"', '"').replaceAll('"', '"').replaceAll(''', "'")
         .replaceAll(''', "'");
 
     // Normalizar travessões
-    processed = processed
-        .replaceAll('—', '-')
-        .replaceAll('–', '-');
+    processed = processed.replaceAll('—', '-').replaceAll('–', '-');
 
     return processed;
   }
 
   /// Extrai palavras-chave relevantes do texto.
-  /// 
+  ///
   /// [text] - Texto para extração
   /// [maxKeywords] - Número máximo de palavras-chave a retornar
-  /// 
+  ///
   /// Returns: Lista de palavras-chave ordenadas por relevância
   List<String> extractKeywords(String text, {int maxKeywords = 10}) {
     if (text.isEmpty) return [];
 
     final processed = processText(text);
     final words = processed.split(' ').where((w) => w.length > 2).toList();
-    
+
     if (words.isEmpty) return [];
 
     // Calcular frequência de palavras
@@ -166,16 +191,16 @@ class TextProcessor {
     for (final entry in wordFreq.entries) {
       final word = entry.key;
       final freq = entry.value;
-      
+
       // Term Frequency
       final tf = freq / totalWords;
-      
+
       // Bônus para palavras de qualidade
       final qualityBonus = _qualityIndicators.contains(word) ? 1.5 : 1.0;
-      
+
       // Penalidade para palavras muito comuns
       final commonPenalty = freq > totalWords * 0.1 ? 0.5 : 1.0;
-      
+
       wordScores[word] = tf * qualityBonus * commonPenalty;
     }
 
@@ -183,17 +208,14 @@ class TextProcessor {
     final sortedWords = wordScores.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
-    return sortedWords
-        .take(maxKeywords)
-        .map((entry) => entry.key)
-        .toList();
+    return sortedWords.take(maxKeywords).map((entry) => entry.key).toList();
   }
 
   /// Extrai sentenças principais do texto.
-  /// 
+  ///
   /// [text] - Texto para extração
   /// [maxSentences] - Número máximo de sentenças a retornar
-  /// 
+  ///
   /// Returns: Lista de sentenças ordenadas por relevância
   List<String> extractKeySentences(String text, {int maxSentences = 3}) {
     if (text.isEmpty) return [];
@@ -213,22 +235,21 @@ class TextProcessor {
 
     // Pontuar sentenças baseado em palavras-chave
     final sentenceScores = <String, double>{};
-    
+
     for (final sentence in sentences) {
       final sentenceWords = processText(sentence).split(' ');
-      final keywordMatches = sentenceWords
-          .where((word) => keywordSet.contains(word))
-          .length;
-      
+      final keywordMatches =
+          sentenceWords.where((word) => keywordSet.contains(word)).length;
+
       // Pontuação baseada em densidade de palavras-chave
       final keywordDensity = keywordMatches / sentenceWords.length;
-      
+
       // Bônus para sentenças de tamanho ideal
       final lengthScore = _calculateLengthScore(sentence.length);
-      
+
       // Bônus para sentenças com indicadores de qualidade
       final qualityScore = _calculateSentenceQualityScore(sentence);
-      
+
       sentenceScores[sentence] = keywordDensity * lengthScore * qualityScore;
     }
 
@@ -265,7 +286,8 @@ class TextProcessor {
     }
 
     // Penalidade para sentenças com muitos números ou símbolos
-    final specialCharCount = sentence.replaceAll(RegExp(r'[a-zA-Z\s]'), '').length;
+    final specialCharCount =
+        sentence.replaceAll(RegExp(r'[a-zA-Z\s]'), '').length;
     if (specialCharCount > sentence.length * 0.3) {
       score *= 0.7;
     }
@@ -274,9 +296,9 @@ class TextProcessor {
   }
 
   /// Detecta idioma básico do texto (português ou inglês).
-  /// 
+  ///
   /// [text] - Texto para análise
-  /// 
+  ///
   /// Returns: 'pt' para português, 'en' para inglês, 'unknown' para indeterminado
   String detectLanguage(String text) {
     if (text.length < 50) return 'unknown';
@@ -286,20 +308,56 @@ class TextProcessor {
 
     // Palavras indicativas de português
     const ptIndicators = {
-      'que', 'não', 'com', 'uma', 'para', 'são', 'como', 'mais', 'por', 'sua',
-      'seu', 'ela', 'ele', 'isso', 'essa', 'este', 'esta', 'muito', 'também',
+      'que',
+      'não',
+      'com',
+      'uma',
+      'para',
+      'são',
+      'como',
+      'mais',
+      'por',
+      'sua',
+      'seu',
+      'ela',
+      'ele',
+      'isso',
+      'essa',
+      'este',
+      'esta',
+      'muito',
+      'também',
     };
 
     // Palavras indicativas de inglês
     const enIndicators = {
-      'the', 'and', 'that', 'have', 'for', 'not', 'with', 'you', 'this', 'but',
-      'his', 'from', 'they', 'she', 'her', 'been', 'than', 'its', 'who', 'did',
+      'the',
+      'and',
+      'that',
+      'have',
+      'for',
+      'not',
+      'with',
+      'you',
+      'this',
+      'but',
+      'his',
+      'from',
+      'they',
+      'she',
+      'her',
+      'been',
+      'than',
+      'its',
+      'who',
+      'did',
     };
 
     int ptScore = 0;
     int enScore = 0;
 
-    for (final word in words.take(100)) { // Analisar apenas primeiras 100 palavras
+    for (final word in words.take(100)) {
+      // Analisar apenas primeiras 100 palavras
       if (ptIndicators.contains(word)) ptScore++;
       if (enIndicators.contains(word)) enScore++;
     }
@@ -310,17 +368,16 @@ class TextProcessor {
   }
 
   /// Calcula índice de legibilidade do texto.
-  /// 
+  ///
   /// [text] - Texto para análise
-  /// 
+  ///
   /// Returns: Pontuação de legibilidade (0.0 a 1.0, maior = mais legível)
   double calculateReadabilityScore(String text) {
     if (text.isEmpty) return 0.0;
 
-    final sentences = text.split(RegExp(r'[.!?]+'))
-        .where((s) => s.trim().isNotEmpty)
-        .length;
-    
+    final sentences =
+        text.split(RegExp(r'[.!?]+')).where((s) => s.trim().isNotEmpty).length;
+
     if (sentences == 0) return 0.0;
 
     final words = processText(text).split(' ').length;

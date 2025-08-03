@@ -9,7 +9,7 @@ class EnhancedChatBubble extends StatefulWidget {
   final bool isUser;
   final DateTime timestamp;
   final bool isError;
-  
+
   const EnhancedChatBubble({
     super.key,
     required this.message,
@@ -17,7 +17,7 @@ class EnhancedChatBubble extends StatefulWidget {
     required this.timestamp,
     this.isError = false,
   });
-  
+
   @override
   State<EnhancedChatBubble> createState() => _EnhancedChatBubbleState();
 }
@@ -26,12 +26,12 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
   bool _isHovered = false;
   bool _isPressed = false;
   bool _isCopied = false;
-  
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -65,7 +65,14 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
               width: 1,
             ),
           ),
-          transform: Matrix4.identity()..translate(0.0, _isPressed ? 1.0 : _isHovered ? -1.0 : 0.0),
+          transform: Matrix4.identity()
+            ..translate(
+                0.0,
+                _isPressed
+                    ? 1.0
+                    : _isHovered
+                        ? -1.0
+                        : 0.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -94,13 +101,16 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
             ],
           ),
         ),
-      ).animate(target: _isCopied ? 1 : 0)
-        .shimmer(duration: 600.ms, color: theme.colorScheme.primary.withValues(alpha: 0.3))
-        .then(delay: 200.ms)
-        .fadeOut(duration: 400.ms),
+      )
+          .animate(target: _isCopied ? 1 : 0)
+          .shimmer(
+              duration: 600.ms,
+              color: theme.colorScheme.primary.withValues(alpha: 0.3))
+          .then(delay: 200.ms)
+          .fadeOut(duration: 400.ms),
     );
   }
-  
+
   Widget _buildMessageContent(ThemeData theme, bool isDark) {
     if (widget.isUser) {
       return Text(
@@ -118,7 +128,7 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
       );
     }
   }
-  
+
   Widget _buildBottomRow(ThemeData theme, bool isDark) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -126,18 +136,17 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
         Text(
           _formatTime(widget.timestamp),
           style: TextStyle(
-            color: widget.isUser 
-                ? Colors.white.withValues(alpha: 0.7) 
+            color: widget.isUser
+                ? Colors.white.withValues(alpha: 0.7)
                 : theme.colorScheme.onSurface.withValues(alpha: 0.6),
             fontSize: 12,
           ),
         ),
-        if (_isHovered && !widget.isUser)
-          _buildCopyButton(theme, isDark),
+        if (_isHovered && !widget.isUser) _buildCopyButton(theme, isDark),
       ],
     );
   }
-  
+
   Widget _buildCopyButton(ThemeData theme, bool isDark) {
     return Material(
       color: Colors.transparent,
@@ -156,8 +165,8 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
               Icon(
                 _isCopied ? Icons.check : Icons.copy,
                 size: 14,
-                color: _isCopied 
-                    ? theme.colorScheme.primary 
+                color: _isCopied
+                    ? theme.colorScheme.primary
                     : theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
               if (_isCopied) ...[
@@ -176,43 +185,43 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
       ),
     );
   }
-  
+
   Color _getBubbleColor(ThemeData theme, bool isDark) {
     if (widget.isUser) {
       return theme.colorScheme.primary;
     } else if (widget.isError) {
       return theme.colorScheme.error.withValues(alpha: 0.1);
     } else {
-      return _isHovered 
+      return _isHovered
           ? (isDark ? AppTheme.kDarkSurface : AppTheme.kLightSurface)
           : (isDark ? AppTheme.kDarkCardBg : AppTheme.kLightCardBg);
     }
   }
-  
+
   Color _getBorderColor(ThemeData theme, bool isDark) {
     if (widget.isUser) {
       return Colors.transparent;
     } else if (widget.isError) {
       return theme.colorScheme.error.withValues(alpha: 0.2);
     } else {
-      return _isHovered 
+      return _isHovered
           ? theme.colorScheme.primary.withValues(alpha: 0.3)
           : theme.colorScheme.outline.withValues(alpha: 0.2);
     }
   }
-  
+
   void _copyToClipboard() {
     Clipboard.setData(ClipboardData(text: widget.message));
     setState(() => _isCopied = true);
     HapticFeedback.lightImpact();
-    
+
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() => _isCopied = false);
       }
     });
   }
-  
+
   String _formatTime(DateTime time) {
     return '${time.hour.toString().padLeft(2, '0')}:'
         '${time.minute.toString().padLeft(2, '0')}';

@@ -1,5 +1,5 @@
 /// Widget de pensamento otimizado para eliminar flickering.
-/// 
+///
 /// Implementa:
 /// - Debounce de atualizações de texto
 /// - RepaintBoundary para isolar pinturas
@@ -14,10 +14,10 @@ import 'package:flutter/material.dart';
 class OptimizedThinkingWidget extends StatefulWidget {
   /// Notifier para o texto de pensamento em tempo real
   final ValueNotifier<String?> thinkingNotifier;
-  
+
   /// Se o widget deve estar visível
   final bool isVisible;
-  
+
   /// Duração do debounce para atualizações
   final Duration debounceDuration;
 
@@ -29,19 +29,19 @@ class OptimizedThinkingWidget extends StatefulWidget {
   });
 
   @override
-  State<OptimizedThinkingWidget> createState() => _OptimizedThinkingWidgetState();
+  State<OptimizedThinkingWidget> createState() =>
+      _OptimizedThinkingWidgetState();
 }
 
 class _OptimizedThinkingWidgetState extends State<OptimizedThinkingWidget>
     with TickerProviderStateMixin {
-  
   // Controllers para animações
   late AnimationController _pulseController;
   late AnimationController _fadeController;
-  
+
   // Timer para debounce
   Timer? _debounceTimer;
-  
+
   // Estado local para evitar rebuilds desnecessários
   String _displayedText = '';
   bool _isExpanded = false;
@@ -49,21 +49,21 @@ class _OptimizedThinkingWidgetState extends State<OptimizedThinkingWidget>
   @override
   void initState() {
     super.initState();
-    
+
     // Inicializar controladores
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     // Escutar mudanças com debounce
     widget.thinkingNotifier.addListener(_onThinkingChanged);
-    
+
     // Inicializar estado
     _updateVisibility();
   }
@@ -71,12 +71,12 @@ class _OptimizedThinkingWidgetState extends State<OptimizedThinkingWidget>
   @override
   void didUpdateWidget(OptimizedThinkingWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (oldWidget.thinkingNotifier != widget.thinkingNotifier) {
       oldWidget.thinkingNotifier.removeListener(_onThinkingChanged);
       widget.thinkingNotifier.addListener(_onThinkingChanged);
     }
-    
+
     if (oldWidget.isVisible != widget.isVisible) {
       _updateVisibility();
     }
@@ -273,10 +273,7 @@ class _OptimizedThinkingWidgetState extends State<OptimizedThinkingWidget>
   }
 
   String _cleanThinkingText(String text) {
-    return text
-        .replaceAll('<think>', '')
-        .replaceAll('</think>', '')
-        .trim();
+    return text.replaceAll('<think>', '').replaceAll('</think>', '').trim();
   }
 }
 
@@ -309,7 +306,7 @@ class _OptimizedTextDisplayState extends State<OptimizedTextDisplay> {
     }
 
     _lastText = widget.text;
-    
+
     return RepaintBoundary(
       child: Text(
         widget.text,
@@ -343,13 +340,17 @@ class OptimizedThinkingPainter extends CustomPainter {
     for (int i = 0; i < dotCount; i++) {
       final delay = i * 0.3;
       final adjustedProgress = ((progress - delay) % 1.0).clamp(0.0, 1.0);
-      
+
       // Suavizar a animação
-      final opacity = (0.3 + 0.7 * (0.5 + 0.5 * 
-          (adjustedProgress < 0.5 
-              ? adjustedProgress * 2 
-              : 2 - adjustedProgress * 2))).clamp(0.0, 1.0);
-      
+      final opacity = (0.3 +
+              0.7 *
+                  (0.5 +
+                      0.5 *
+                          (adjustedProgress < 0.5
+                              ? adjustedProgress * 2
+                              : 2 - adjustedProgress * 2)))
+          .clamp(0.0, 1.0);
+
       final scale = 0.7 + 0.3 * opacity;
 
       paint.color = color.withValues(alpha: opacity);
@@ -381,7 +382,8 @@ class InlineThinkingIndicator extends StatefulWidget {
   });
 
   @override
-  State<InlineThinkingIndicator> createState() => _InlineThinkingIndicatorState();
+  State<InlineThinkingIndicator> createState() =>
+      _InlineThinkingIndicatorState();
 }
 
 class _InlineThinkingIndicatorState extends State<InlineThinkingIndicator>
@@ -395,7 +397,7 @@ class _InlineThinkingIndicatorState extends State<InlineThinkingIndicator>
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    
+
     if (widget.isThinking) {
       _controller.repeat();
     }
@@ -404,7 +406,7 @@ class _InlineThinkingIndicatorState extends State<InlineThinkingIndicator>
   @override
   void didUpdateWidget(InlineThinkingIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (widget.isThinking != oldWidget.isThinking) {
       if (widget.isThinking) {
         _controller.repeat();
@@ -424,8 +426,8 @@ class _InlineThinkingIndicatorState extends State<InlineThinkingIndicator>
   Widget build(BuildContext context) {
     if (!widget.isThinking) return const SizedBox.shrink();
 
-    final effectiveColor = widget.color ?? 
-        Theme.of(context).colorScheme.primary;
+    final effectiveColor =
+        widget.color ?? Theme.of(context).colorScheme.primary;
 
     return RepaintBoundary(
       child: SizedBox(

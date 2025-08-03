@@ -1,22 +1,22 @@
 /// Entidade que representa um modelo de linguagem LLM disponível.
-/// 
+///
 /// Esta classe define as propriedades básicas de um modelo LLM que pode
 /// ser usado na aplicação, incluindo metadados como tamanho e data de modificação.
 class LlmModel {
   /// Nome único do modelo (por exemplo: "llama2", "mistral").
   final String name;
-  
+
   /// Descrição opcional do modelo fornecida pelo servidor.
   final String? description;
-  
+
   /// Data da última modificação do modelo no servidor.
   final DateTime? modifiedAt;
-  
+
   /// Tamanho do modelo em bytes, se disponível.
   final int? size;
 
   /// Construtor da entidade LlmModel.
-  /// 
+  ///
   /// [name] é obrigatório pois é o identificador único do modelo.
   /// Demais propriedades são opcionais e dependem da disponibilidade
   /// de informações do servidor Ollama.
@@ -28,7 +28,7 @@ class LlmModel {
   });
 
   /// Comparação de igualdade baseada apenas no nome do modelo.
-  /// 
+  ///
   /// Dois modelos são considerados iguais se possuem o mesmo nome,
   /// independente de outros metadados.
   @override

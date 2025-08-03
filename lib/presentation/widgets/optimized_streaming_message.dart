@@ -1,5 +1,5 @@
 /// Widget otimizado para exibição de mensagens em streaming sem flickering.
-/// 
+///
 /// Implementa várias técnicas de otimização:
 /// - ValueNotifier para atualizações isoladas
 /// - RepaintBoundary para evitar repaints desnecessários
@@ -15,22 +15,22 @@ import 'package:flutter/scheduler.dart';
 class OptimizedStreamingMessage extends StatefulWidget {
   /// Stream de chunks de texto que chegam incrementalmente
   final Stream<String> textStream;
-  
+
   /// Estilo do texto
   final TextStyle? style;
-  
+
   /// Padding interno
   final EdgeInsets? padding;
-  
+
   /// Decoração do container
   final BoxDecoration? decoration;
-  
+
   /// Callback chamado quando o streaming termina
   final VoidCallback? onStreamComplete;
-  
+
   /// Intervalo mínimo entre atualizações (throttling)
   final Duration throttleDuration;
-  
+
   /// Se deve mostrar cursor piscando durante digitação
   final bool showCursor;
 
@@ -46,51 +46,51 @@ class OptimizedStreamingMessage extends StatefulWidget {
   });
 
   @override
-  State<OptimizedStreamingMessage> createState() => _OptimizedStreamingMessageState();
+  State<OptimizedStreamingMessage> createState() =>
+      _OptimizedStreamingMessageState();
 }
 
 class _OptimizedStreamingMessageState extends State<OptimizedStreamingMessage>
     with TickerProviderStateMixin {
-  
   /// ValueNotifier para texto atual - permite updates isolados
   late final ValueNotifier<String> _textNotifier;
-  
+
   /// Controlador para animação do cursor
   late final AnimationController _cursorController;
-  
+
   /// Timer para throttling de atualizações
   Timer? _throttleTimer;
-  
+
   /// Buffer para acumular chunks antes de atualizar UI
   final StringBuffer _textBuffer = StringBuffer();
-  
+
   /// Subscription do stream
   StreamSubscription<String>? _streamSubscription;
-  
+
   /// Flag para controlar se ainda está recebendo dados
   bool _isStreaming = false;
-  
+
   /// Último texto renderizado (para evitar updates desnecessários)
   String _lastRenderedText = '';
 
   @override
   void initState() {
     super.initState();
-    
+
     _textNotifier = ValueNotifier<String>('');
-    
+
     _cursorController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     _setupStream();
   }
 
   void _setupStream() {
     _isStreaming = true;
     _cursorController.repeat(reverse: true);
-    
+
     _streamSubscription = widget.textStream.listen(
       _onChunkReceived,
       onDone: _onStreamComplete,
@@ -101,7 +101,7 @@ class _OptimizedStreamingMessageState extends State<OptimizedStreamingMessage>
   /// Processa chunks recebidos com throttling
   void _onChunkReceived(String chunk) {
     _textBuffer.write(chunk);
-    
+
     // Throttling: só atualiza UI no máximo a cada X ms
     _throttleTimer?.cancel();
     _throttleTimer = Timer(widget.throttleDuration, _updateUI);
@@ -110,11 +110,11 @@ class _OptimizedStreamingMessageState extends State<OptimizedStreamingMessage>
   /// Atualiza a UI apenas se houve mudança real
   void _updateUI() {
     final newText = _textBuffer.toString();
-    
+
     // Só atualiza se o texto realmente mudou
     if (newText != _lastRenderedText) {
       _lastRenderedText = newText;
-      
+
       // Use SchedulerBinding para garantir que update aconteça no próximo frame
       SchedulerBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -127,13 +127,13 @@ class _OptimizedStreamingMessageState extends State<OptimizedStreamingMessage>
   void _onStreamComplete() {
     _isStreaming = false;
     _throttleTimer?.cancel();
-    
+
     // Update final garantindo que todo o texto seja exibido
     _updateUI();
-    
+
     _cursorController.stop();
     _cursorController.value = 0.0; // Hide cursor
-    
+
     widget.onStreamComplete?.call();
   }
 
@@ -141,7 +141,7 @@ class _OptimizedStreamingMessageState extends State<OptimizedStreamingMessage>
     _isStreaming = false;
     _throttleTimer?.cancel();
     _cursorController.stop();
-    
+
     debugPrint('Streaming error: $error');
   }
 
@@ -200,7 +200,8 @@ class _OptimizedStreamingMessageState extends State<OptimizedStreamingMessage>
               TextSpan(
                 text: '|',
                 style: widget.style?.copyWith(
-                  color: widget.style?.color?.withValues(alpha: _cursorController.value),
+                  color: widget.style?.color
+                      ?.withValues(alpha: _cursorController.value),
                 ),
               ),
             ],

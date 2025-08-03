@@ -1,5 +1,5 @@
 /// Controlador principal da aplicação de chat com LLM.
-/// 
+///
 /// Este arquivo contém o controlador responsável por gerenciar toda a lógica
 /// de interação com modelos de linguagem locais, incluindo pesquisa web,
 /// streaming de respostas e cache de conteúdo.
@@ -17,7 +17,7 @@ import '../../domain/usecases/search_web.dart';
 import '../../domain/entities/chat_message.dart';
 
 /// Controlador principal que gerencia a interação com modelos LLM.
-/// 
+///
 /// Responsabilidades principais:
 /// - Gerenciar seleção e carregamento de modelos disponíveis
 /// - Processar mensagens do usuário e gerar respostas via LLM
@@ -28,13 +28,13 @@ import '../../domain/entities/chat_message.dart';
 class LlmController extends ChangeNotifier {
   /// Caso de uso para obter modelos disponíveis.
   final GetAvailableModels _getAvailableModels;
-  
+
   /// Caso de uso para gerar resposta única (não streaming).
   final GenerateResponse _generateResponse;
-  
+
   /// Caso de uso para gerar resposta em streaming.
   final GenerateResponseStream _generateResponseStream;
-  
+
   /// Caso de uso para realizar pesquisas na web.
   final SearchWeb _searchWeb;
 
@@ -44,12 +44,12 @@ class LlmController extends ChangeNotifier {
 
   /// Timer para throttling de notificações durante streaming.
   Timer? _notificationTimer;
-  
+
   /// Controla se há uma notificação pendente.
   bool _hasPendingNotification = false;
 
   /// Construtor do controlador com injeção de dependências.
-  /// 
+  ///
   /// Todos os casos de uso são obrigatórios para o funcionamento completo.
   LlmController({
     required GetAvailableModels getAvailableModels,
@@ -63,52 +63,63 @@ class LlmController extends ChangeNotifier {
 
   // Estado dos modelos disponíveis
   List<LlmModel> _models = [];
+
   /// Lista de modelos LLM disponíveis para uso.
   List<LlmModel> get models => _models;
 
   LlmModel? _selectedModel;
+
   /// Modelo atualmente selecionado pelo usuário.
   LlmModel? get selectedModel => _selectedModel;
 
   // Estado das mensagens do chat
   final List<ChatMessage> _messages = [];
+
   /// Lista imutável de mensagens do chat atual.
   List<ChatMessage> get messages => List.unmodifiable(_messages);
 
   // Estado dos resultados de pesquisa
   final List<SearchResult> _searchResults = [];
+
   /// Lista imutável de resultados da última pesquisa web realizada.
   List<SearchResult> get searchResults => List.unmodifiable(_searchResults);
 
   // Estados de carregamento e processamento
   bool _isLoading = false;
+
   /// Indica se uma resposta do LLM está sendo gerada.
   bool get isLoading => _isLoading;
 
   bool _isSearching = false;
+
   /// Indica se uma pesquisa web está em andamento.
   bool get isSearching => _isSearching;
 
   // Configurações funcionais
   bool _webSearchEnabled = false;
+
   /// Indica se a pesquisa web está habilitada para enriquecer o contexto.
   bool get webSearchEnabled => _webSearchEnabled;
 
   bool _streamEnabled = true;
+
   /// Indica se o modo streaming está ativo para respostas em tempo real.
   bool get streamEnabled => _streamEnabled;
 
   // Estado do processamento de "pensamento" (modelos R1)
   String? _currentThinking;
+
   /// Texto atual do processo de "pensamento" dos modelos R1.
   String? get currentThinking => _currentThinking;
 
   bool _isThinking = false;
+
   /// Indica se o modelo está no processo de "pensamento".
   bool get isThinking => _isThinking;
 
   // Estado de erro
   String? _errorMessage;
+
   /// Mensagem de erro atual, se houver.
   String? get errorMessage => _errorMessage;
 
@@ -138,28 +149,32 @@ class LlmController extends ChangeNotifier {
   }
 
   /// Atualiza o estado de processamento de pensamento e notifica os ouvintes.
-  /// 
+  ///
   /// [thinking] - Se o modelo está pensando
   /// [thinkingText] - Texto opcional do pensamento atual
   void _setThinking(bool thinking, [String? thinkingText]) {
     bool shouldNotify = false;
-    
+
     if (_isThinking != thinking) {
       _isThinking = thinking;
       shouldNotify = true;
     }
-    
+
     // Para texto de pensamento, usar throttling mais responsivo
-    if (thinkingText != null && (_currentThinking != thinkingText || shouldNotify)) {
+    if (thinkingText != null &&
+        (_currentThinking != thinkingText || shouldNotify)) {
       final currentLength = _currentThinking?.length ?? 0;
       final newLength = thinkingText.length;
-      
+
       // Throttling mais responsivo para streaming
-      if (!_isThinking || shouldNotify || 
+      if (!_isThinking ||
+          shouldNotify ||
           currentLength == 0 ||
           (newLength - currentLength) > 10 || // Reduzido de 30 para 10
-          (newLength < 50 && (newLength - currentLength) > 5) || // Mais frequente no início
-          (newLength > 0 && currentLength == 0)) { // Primeira atualização sempre
+          (newLength < 50 &&
+              (newLength - currentLength) > 5) || // Mais frequente no início
+          (newLength > 0 && currentLength == 0)) {
+        // Primeira atualização sempre
         _currentThinking = thinkingText;
         shouldNotify = true;
       }
@@ -167,7 +182,7 @@ class LlmController extends ChangeNotifier {
       _currentThinking = null;
       shouldNotify = true;
     }
-    
+
     if (shouldNotify) {
       // Force immediate notification when stopping thinking to ensure tests see the state change
       if (!thinking) {
@@ -181,7 +196,7 @@ class LlmController extends ChangeNotifier {
   }
 
   /// Seleciona um modelo LLM para uso e limpa erros anteriores.
-  /// 
+  ///
   /// [model] - O modelo a ser selecionado
   void selectModel(LlmModel model) {
     _selectedModel = model;
@@ -190,7 +205,7 @@ class LlmController extends ChangeNotifier {
   }
 
   /// Alterna o estado da pesquisa web.
-  /// 
+  ///
   /// [enabled] - Se a pesquisa web deve estar habilitada
   void toggleWebSearch(bool enabled) {
     _webSearchEnabled = enabled;
@@ -198,7 +213,7 @@ class LlmController extends ChangeNotifier {
   }
 
   /// Alterna o modo de streaming de respostas.
-  /// 
+  ///
   /// [enabled] - Se o streaming deve estar habilitado
   void toggleStreamMode(bool enabled) {
     _streamEnabled = enabled;
@@ -206,10 +221,10 @@ class LlmController extends ChangeNotifier {
   }
 
   /// Carrega a lista de modelos LLM disponíveis.
-  /// 
+  ///
   /// Obtém todos os modelos disponíveis no servidor Ollama e seleciona
   /// automaticamente o primeiro se nenhum estiver selecionado.
-  /// 
+  ///
   /// Throws: Define uma mensagem de erro se a operação falhar.
   Future<void> loadAvailableModels() async {
     debugPrint('loadAvailableModels: Starting, setting loading to true');
@@ -227,7 +242,8 @@ class LlmController extends ChangeNotifier {
       debugPrint('loadAvailableModels: Exception caught: $e');
       _setError('Erro ao carregar modelos: $e');
     } finally {
-      debugPrint('loadAvailableModels: In finally block, setting loading to false');
+      debugPrint(
+          'loadAvailableModels: In finally block, setting loading to false');
       _setLoading(false);
       _setThinking(false);
       debugPrint('loadAvailableModels: Finally block completed');
@@ -235,16 +251,16 @@ class LlmController extends ChangeNotifier {
   }
 
   /// Processa e envia uma mensagem do usuário para o modelo LLM.
-  /// 
+  ///
   /// Este é o método principal que orquestra todo o fluxo de processamento:
   /// 1. Valida entrada e estado atual
   /// 2. Realiza pesquisa web se habilitada
   /// 3. Enriquece o prompt com contexto web
   /// 4. Gera resposta via streaming ou modo único
   /// 5. Processa respostas de modelos com "pensamento"
-  /// 
+  ///
   /// [content] - O texto da mensagem do usuário
-  /// 
+  ///
   /// Throws: Define mensagens de erro para validações e falhas de processamento.
   Future<void> sendMessage(String content) async {
     if (_selectedModel == null) {
@@ -285,11 +301,13 @@ class LlmController extends ChangeNotifier {
 
           // Adicionar contexto da pesquisa ao prompt
           final searchContext = _buildSearchContext();
-          finalPrompt = '$content\n\nInformações relevantes da web:\n$searchContext';
+          finalPrompt =
+              '$content\n\nInformações relevantes da web:\n$searchContext';
 
           // Adicionar mensagem informativa sobre a pesquisa
           final searchInfo = ChatMessage(
-            text: 'Encontrei ${_searchResults.length} resultados relevantes na web e resumi o conteúdo principal para o contexto.',
+            text:
+                'Encontrei ${_searchResults.length} resultados relevantes na web e resumi o conteúdo principal para o contexto.',
             isUser: false,
             timestamp: DateTime.now(),
           );
@@ -338,7 +356,8 @@ class LlmController extends ChangeNotifier {
     }
   }
 
-  Future<void> _handleSingleResponse(String prompt, bool isThinkingModel) async {
+  Future<void> _handleSingleResponse(
+      String prompt, bool isThinkingModel) async {
     try {
       final response = await _generateResponse(
         prompt: prompt,
@@ -376,7 +395,8 @@ class LlmController extends ChangeNotifier {
     }
   }
 
-  Future<void> _handleStreamingResponse(String prompt, bool isThinkingModel) async {
+  Future<void> _handleStreamingResponse(
+      String prompt, bool isThinkingModel) async {
     final contentBuffer = StringBuffer();
     bool isInThinkingMode = false;
     final thinkingBuffer = StringBuffer();
@@ -431,7 +451,8 @@ class LlmController extends ChangeNotifier {
           } else {
             thinkingBuffer.write(chunk);
             // Atualiza o pensamento em tempo real com throttling mais responsivo
-            if (thinkingBuffer.length % 15 == 0 || thinkingBuffer.length < 100) {
+            if (thinkingBuffer.length % 15 == 0 ||
+                thinkingBuffer.length < 100) {
               _setThinking(true, thinkingBuffer.toString());
             }
           }
@@ -450,19 +471,22 @@ class LlmController extends ChangeNotifier {
         }
 
         // Atualiza a mensagem apenas se ela foi criada
-         if (streamingMessage != null && messageIndex != null) {
-           _messages[messageIndex] = ChatMessage(
-             text: contentBuffer.toString(),
-             isUser: false,
-             timestamp: streamingMessage.timestamp,
-             thinkingText: thinkingBuffer.isNotEmpty ? thinkingBuffer.toString() : null,
-           );
-           _notifyListenersThrottled();
-         }
+        if (streamingMessage != null && messageIndex != null) {
+          _messages[messageIndex] = ChatMessage(
+            text: contentBuffer.toString(),
+            isUser: false,
+            timestamp: streamingMessage.timestamp,
+            thinkingText:
+                thinkingBuffer.isNotEmpty ? thinkingBuffer.toString() : null,
+          );
+          _notifyListenersThrottled();
+        }
       }
-      
+
       // Garantir que a mensagem final tenha o pensamento completo
-      if (thinkingBuffer.isNotEmpty && messageIndex != null && streamingMessage != null) {
+      if (thinkingBuffer.isNotEmpty &&
+          messageIndex != null &&
+          streamingMessage != null) {
         _messages[messageIndex] = ChatMessage(
           text: contentBuffer.toString(),
           isUser: false,
@@ -589,7 +613,7 @@ class LlmController extends ChangeNotifier {
   }
 
   /// Limpa todo o histórico do chat e dados relacionados.
-  /// 
+  ///
   /// Remove todas as mensagens, resultados de pesquisa, cache de páginas web
   /// e limpa qualquer mensagem de erro ativa.
   void clearChat() {
@@ -601,7 +625,7 @@ class LlmController extends ChangeNotifier {
   }
 
   /// Remove uma mensagem específica do chat pelo índice.
-  /// 
+  ///
   /// [index] - Índice da mensagem a ser removida
   void removeMessage(int index) {
     if (index >= 0 && index < _messages.length) {
@@ -611,7 +635,7 @@ class LlmController extends ChangeNotifier {
   }
 
   /// Limpa apenas os resultados de pesquisa e cache de páginas web.
-  /// 
+  ///
   /// Mantém o histórico de mensagens intacto.
   void clearSearchResults() {
     _searchResults.clear();
@@ -620,12 +644,12 @@ class LlmController extends ChangeNotifier {
   }
 
   /// Busca o conteúdo de uma página web usando o datasource configurado.
-  /// 
+  ///
   /// Utiliza reflexão para acessar o método fetchPageContent do datasource
   /// se disponível. Retorna string vazia se o método não existir.
-  /// 
+  ///
   /// [url] - URL da página a ser processada
-  /// 
+  ///
   /// Returns: Conteúdo da página ou string vazia se indisponível
   Future<String> _fetchWebContent(String url) async {
     // Verifica se o dataSource tem o método fetchPageContent
@@ -637,7 +661,7 @@ class LlmController extends ChangeNotifier {
   }
 
   /// Implementa throttling para notificações, reduzindo rebuilds excessivos.
-  /// 
+  ///
   /// Durante operações de streaming, agrupa notificações em intervalos otimizados
   /// para melhorar a performance da UI mantendo responsividade.
   void _notifyListenersThrottled() {

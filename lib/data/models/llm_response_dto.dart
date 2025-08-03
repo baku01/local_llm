@@ -1,7 +1,7 @@
 import '../../domain/entities/llm_response.dart';
 
 /// DTO para resposta do modelo LLM.
-/// 
+///
 /// Responsável pela serialização/deserialização de dados de resposta LLM
 /// provenientes da API externa e conversão para entidades de domínio.
 class LlmResponseDto {

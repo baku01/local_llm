@@ -1,5 +1,5 @@
 /// DTO (Data Transfer Object) para modelo LLM.
-/// 
+///
 /// Responsável pela serialização/deserialização de dados de modelos LLM
 /// provenientes da API externa e conversão para entidades de domínio.
 library;
@@ -7,26 +7,26 @@ library;
 import '../../domain/entities/llm_model.dart';
 
 /// DTO que representa um modelo LLM conforme retornado pela API.
-/// 
+///
 /// Esta classe gerencia a transformação entre o formato JSON da API
 /// externa e as entidades de domínio da aplicação, isolando as
 /// preocupações de serialização da lógica de negócio.
 class LlmModelDto {
   /// Nome do modelo conforme fornecido pela API.
   final String name;
-  
+
   /// Descrição opcional do modelo.
   final String? description;
-  
+
   /// Data de modificação em formato string ISO.
   final String? modifiedAt;
-  
+
   /// Tamanho do modelo em bytes.
   final int? size;
-  
+
   /// Hash digest do modelo para verificação de integridade.
   final String? digest;
-  
+
   /// Detalhes adicionais do modelo (formato, parâmetros, etc.).
   final Map<String, dynamic>? details;
 
@@ -41,9 +41,9 @@ class LlmModelDto {
   });
 
   /// Factory constructor para criar DTO a partir de JSON.
-  /// 
+  ///
   /// [json] - Mapa com os dados JSON da API
-  /// 
+  ///
   /// Returns: Instância do DTO com os dados parseados
   factory LlmModelDto.fromJson(Map<String, dynamic> json) {
     return LlmModelDto(
@@ -57,7 +57,7 @@ class LlmModelDto {
   }
 
   /// Converte o DTO para formato JSON.
-  /// 
+  ///
   /// Returns: Mapa com os dados no formato esperado pela API
   Map<String, dynamic> toJson() {
     return {
@@ -71,10 +71,10 @@ class LlmModelDto {
   }
 
   /// Converte o DTO para entidade de domínio.
-  /// 
+  ///
   /// Realiza as transformações necessárias como parsing de datas
   /// e adequação aos tipos esperados pela camada de domínio.
-  /// 
+  ///
   /// Returns: [LlmModel] com os dados convertidos
   LlmModel toEntity() {
     return LlmModel(
@@ -84,7 +84,7 @@ class LlmModelDto {
       size: size,
     );
   }
-  
+
   /// Cria uma cópia do DTO com propriedades opcionalmente modificadas.
   LlmModelDto copyWith({
     String? name,
@@ -103,7 +103,7 @@ class LlmModelDto {
       details: details ?? this.details,
     );
   }
-  
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -115,7 +115,7 @@ class LlmModelDto {
         other.digest == digest &&
         _mapEquals(other.details, details);
   }
-  
+
   @override
   int get hashCode {
     return Object.hash(
@@ -127,7 +127,7 @@ class LlmModelDto {
       details,
     );
   }
-  
+
   bool _mapEquals(Map<String, dynamic>? a, Map<String, dynamic>? b) {
     if (a == null && b == null) return true;
     if (a == null || b == null) return false;

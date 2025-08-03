@@ -52,9 +52,7 @@ class RobustHttpClient extends http.BaseClient {
 
     try {
       // Primeira tentativa com timeout de 15 segundos
-      final response = await _inner
-          .send(request)
-          .timeout(
+      final response = await _inner.send(request).timeout(
             const Duration(seconds: 15),
             onTimeout: () => throw TimeoutException(
               'Request timeout',

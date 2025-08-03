@@ -1,5 +1,5 @@
 /// Biblioteca que define o widget de logo animado da aplicação.
-/// 
+///
 /// Esta biblioteca contém o widget [AnimatedLogo] que exibe o logo
 /// da aplicação com animações suaves usando Rive, incluindo opções
 /// de tamanho, cor e animação de introdução.
@@ -12,14 +12,14 @@ import 'package:rive/rive.dart';
 import '../theme/unified_theme.dart';
 
 /// Widget de logo animado com suporte a Rive e customização visual.
-/// 
+///
 /// Este widget exibe o logo da aplicação com animações suaves e
 /// permite personalização de:
 /// - Tamanho do logo
 /// - Cor personalizada
 /// - Animação de introdução
 /// - Integração com animações Rive
-/// 
+///
 /// Exemplo de uso:
 /// ```dart
 /// AnimatedLogo(

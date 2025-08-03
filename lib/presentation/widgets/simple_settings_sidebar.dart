@@ -88,19 +88,19 @@ class SimpleSettingsSidebar extends StatelessWidget {
                           ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Model Selection
                     _buildSection(
                       context,
                       'Modelo',
                       _buildModelDropdown(context),
                     ),
-                    
+
                     const SizedBox(height: 12),
-                    
-                    // Web Search Toggle  
+
+                    // Web Search Toggle
                     _buildToggle(
                       context,
                       'Busca web',
@@ -108,9 +108,9 @@ class SimpleSettingsSidebar extends StatelessWidget {
                       onWebSearchToggle,
                       isSearching,
                     ),
-                    
+
                     const SizedBox(height: 12),
-                    
+
                     // Stream Toggle
                     _buildToggle(
                       context,
@@ -119,9 +119,9 @@ class SimpleSettingsSidebar extends StatelessWidget {
                       onStreamToggle,
                       false,
                     ),
-                    
+
                     const Spacer(),
-                    
+
                     // Error Message
                     if (errorMessage != null)
                       Container(
@@ -165,7 +165,7 @@ class SimpleSettingsSidebar extends StatelessWidget {
 
   Widget _buildSection(BuildContext context, String title, Widget child) {
     final theme = Theme.of(context);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -185,7 +185,7 @@ class SimpleSettingsSidebar extends StatelessWidget {
 
   Widget _buildModelDropdown(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -239,7 +239,7 @@ class SimpleSettingsSidebar extends StatelessWidget {
         .replaceAll(':4b', '')
         .replaceAll(':1.5b', '')
         .replaceAll(':0.6b', '');
-    
+
     if (cleaned.length > 20) {
       return '${cleaned.substring(0, 17)}...';
     }
@@ -254,7 +254,7 @@ class SimpleSettingsSidebar extends StatelessWidget {
     bool isLoading,
   ) {
     final theme = Theme.of(context);
-    
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),

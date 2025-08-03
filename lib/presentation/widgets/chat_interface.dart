@@ -1,5 +1,5 @@
 /// Interface principal de chat da aplicação.
-/// 
+///
 /// Widget responsável por exibir o histórico de mensagens,
 /// área de entrada de texto e indicadores de estado como
 /// carregamento e processamento de "pensamento".
@@ -14,7 +14,7 @@ import 'animated_logo.dart';
 import 'thinking_animation.dart';
 
 /// Widget principal da interface de chat.
-/// 
+///
 /// Gerencia a exibição de:
 /// - Lista de mensagens do histórico
 /// - Estado vazio com logo animado
@@ -24,22 +24,22 @@ import 'thinking_animation.dart';
 class ChatInterface extends StatelessWidget {
   /// Lista de mensagens do chat atual.
   final List<ChatMessage> messages;
-  
+
   /// Controlador do campo de entrada de texto.
   final TextEditingController textController;
-  
+
   /// Callback executado quando uma mensagem é enviada.
   final VoidCallback onSendMessage;
-  
+
   /// Indica se uma resposta está sendo gerada.
   final bool isLoading;
-  
+
   /// Indica se o modelo está no processo de "pensamento".
   final bool isThinking;
-  
+
   /// Texto atual do pensamento (para modelos R1).
   final String? currentThinking;
-  
+
   /// Nome do modelo selecionado para verificar se é R1.
   final String? selectedModelName;
 
@@ -83,12 +83,13 @@ class ChatInterface extends StatelessWidget {
       itemCount: messages.length,
       itemBuilder: (context, index) {
         final message = messages[index];
-        
+
         return ChatBubble(
           message: message,
           thinkingText: message.thinkingText,
           showThinking: !message.isUser && message.thinkingText != null,
-        ).animate()
+        )
+            .animate()
             .fadeIn(duration: 500.ms, delay: (index * 50).ms)
             .slideX(
               begin: message.isUser ? 0.3 : -0.3,
@@ -182,8 +183,9 @@ class ChatInterface extends StatelessWidget {
           end: Alignment.bottomCenter,
           colors: [
             theme.cardColor,
-            Color.lerp(theme.cardColor, 
-                theme.colorScheme.primary.withValues(alpha: 0.03), 0.5) ?? theme.cardColor,
+            Color.lerp(theme.cardColor,
+                    theme.colorScheme.primary.withValues(alpha: 0.03), 0.5) ??
+                theme.cardColor,
           ],
         ),
       ),
@@ -230,7 +232,8 @@ class ChatInterface extends StatelessWidget {
                       IconButton(
                         icon: Icon(
                           Icons.attach_file_rounded,
-                          color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                          color:
+                              theme.colorScheme.primary.withValues(alpha: 0.7),
                           size: 20,
                         ),
                         onPressed: () {
@@ -241,7 +244,8 @@ class ChatInterface extends StatelessWidget {
                       IconButton(
                         icon: Icon(
                           Icons.mic_rounded,
-                          color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                          color:
+                              theme.colorScheme.primary.withValues(alpha: 0.7),
                           size: 20,
                         ),
                         onPressed: () {
@@ -269,7 +273,7 @@ class ChatInterface extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                gradient: isLoading 
+                gradient: isLoading
                     ? null
                     : LinearGradient(
                         begin: Alignment.topLeft,
@@ -279,18 +283,21 @@ class ChatInterface extends StatelessWidget {
                           theme.colorScheme.secondary,
                         ],
                       ),
-                color: isLoading 
+                color: isLoading
                     ? theme.colorScheme.onSurface.withValues(alpha: 0.3)
                     : null,
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: isLoading ? null : [
-                  BoxShadow(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.4),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
-                    spreadRadius: -3,
-                  ),
-                ],
+                boxShadow: isLoading
+                    ? null
+                    : [
+                        BoxShadow(
+                          color:
+                              theme.colorScheme.primary.withValues(alpha: 0.4),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
+                          spreadRadius: -3,
+                        ),
+                      ],
               ),
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
@@ -312,8 +319,13 @@ class ChatInterface extends StatelessWidget {
                       ),
               ),
             ),
-          ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-            .shimmer(duration: 3.seconds, delay: 1.seconds, color: Colors.white.withValues(alpha: 0.3), size: 0.4),
+          )
+              .animate(onPlay: (controller) => controller.repeat(reverse: true))
+              .shimmer(
+                  duration: 3.seconds,
+                  delay: 1.seconds,
+                  color: Colors.white.withValues(alpha: 0.3),
+                  size: 0.4),
         ],
       ),
     );
@@ -336,31 +348,34 @@ class ChatInterface extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Spacer(flex: 1),
-                  AnimatedLogo(size: 100, color: theme.colorScheme.primary, showIntro: true),
+                  AnimatedLogo(
+                      size: 100,
+                      color: theme.colorScheme.primary,
+                      showIntro: true),
                   const SizedBox(height: 32),
                   Text(
-                        'Local LLM Chat',
-                        style: TextStyle(
-                          fontSize: 28,
-                          color: theme.colorScheme.onSurface,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: -0.5,
-                        ),
-                        textAlign: TextAlign.center,
-                      )
+                    'Local LLM Chat',
+                    style: TextStyle(
+                      fontSize: 28,
+                      color: theme.colorScheme.onSurface,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  )
                       .animate()
                       .fadeIn(duration: 800.ms, delay: 400.ms)
                       .slideY(begin: 0.2, end: 0, curve: Curves.easeOutCubic),
                   const SizedBox(height: 12),
                   Text(
-                        'Converse com modelos de IA localmente',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                          fontWeight: FontWeight.w400,
-                        ),
-                        textAlign: TextAlign.center,
-                      )
+                    'Converse com modelos de IA localmente',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                      fontWeight: FontWeight.w400,
+                    ),
+                    textAlign: TextAlign.center,
+                  )
                       .animate()
                       .fadeIn(duration: 800.ms, delay: 600.ms)
                       .slideY(begin: 0.2, end: 0, curve: Curves.easeOutCubic),
@@ -378,26 +393,33 @@ class ChatInterface extends StatelessWidget {
                         _SuggestionCard(
                           icon: Icons.code,
                           label: 'Ajuda com código',
-                          onTap: () => textController.text = 'Me ajude a escrever um código',
+                          onTap: () => textController.text =
+                              'Me ajude a escrever um código',
                         ),
                         _SuggestionCard(
                           icon: Icons.lightbulb_outline,
                           label: 'Ideias criativas',
-                          onTap: () => textController.text = 'Preciso de ideias criativas para',
+                          onTap: () => textController.text =
+                              'Preciso de ideias criativas para',
                         ),
                         _SuggestionCard(
                           icon: Icons.school,
                           label: 'Explicar conceitos',
-                          onTap: () => textController.text = 'Explique de forma simples o conceito de',
+                          onTap: () => textController.text =
+                              'Explique de forma simples o conceito de',
                         ),
                         _SuggestionCard(
                           icon: Icons.analytics,
                           label: 'Análise de dados',
-                          onTap: () => textController.text = 'Ajude-me a analisar estes dados',
+                          onTap: () => textController.text =
+                              'Ajude-me a analisar estes dados',
                         ),
                       ],
                     ),
-                  ).animate().fadeIn(duration: 800.ms, delay: 800.ms).slideY(begin: 0.2, end: 0, curve: Curves.easeOutCubic),
+                  )
+                      .animate()
+                      .fadeIn(duration: 800.ms, delay: 800.ms)
+                      .slideY(begin: 0.2, end: 0, curve: Curves.easeOutCubic),
                   const Spacer(flex: 1),
                 ],
               ),
@@ -407,8 +429,6 @@ class ChatInterface extends StatelessWidget {
       },
     );
   }
-
-
 }
 
 class _SuggestionCard extends StatefulWidget {
@@ -463,7 +483,8 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                   ]
                 : null,
           ),
-          transform: Matrix4.identity()..translate(0.0, _isHovered ? -2.0 : 0.0),
+          transform: Matrix4.identity()
+            ..translate(0.0, _isHovered ? -2.0 : 0.0),
           child: Row(
             children: [
               Container(
@@ -478,8 +499,8 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                 child: Icon(
                   widget.icon,
                   size: 18,
-                  color: _isHovered 
-                      ? theme.colorScheme.primary 
+                  color: _isHovered
+                      ? theme.colorScheme.primary
                       : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
@@ -503,4 +524,3 @@ class _SuggestionCardState extends State<_SuggestionCard> {
     );
   }
 }
-

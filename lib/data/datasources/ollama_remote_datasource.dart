@@ -1,5 +1,5 @@
 /// DataSource para comunicação com a API remota do Ollama.
-/// 
+///
 /// Implementa a comunicação HTTP com o servidor Ollama para
 /// obter modelos disponíveis e gerar respostas via LLM.
 library;
@@ -10,13 +10,13 @@ import '../models/llm_model_dto.dart';
 import '../models/llm_response_dto.dart';
 
 /// Interface abstrata para operações remotas com Ollama.
-/// 
+///
 /// Define os contratos que devem ser implementados para
 /// comunicação com a API do servidor Ollama.
 abstract class OllamaRemoteDataSource {
   /// Obtém lista de modelos disponíveis no servidor Ollama.
   Future<List<LlmModelDto>> getAvailableModels();
-  
+
   /// Gera resposta completa usando um modelo específico.
   Future<LlmResponseDto> generateResponse({
     required String prompt,
@@ -32,18 +32,18 @@ abstract class OllamaRemoteDataSource {
 }
 
 /// Implementação concreta do datasource para comunicação com Ollama.
-/// 
+///
 /// Utiliza Dio para realizar requisições HTTP para a API do Ollama,
 /// incluindo suporte a streaming de respostas para melhor experiência do usuário.
 class OllamaRemoteDataSourceImpl implements OllamaRemoteDataSource {
   /// Cliente HTTP para comunicação com a API.
   final Dio dio;
-  
+
   /// URL base do servidor Ollama.
   final String baseUrl;
 
   /// Construtor com configuração do cliente e URL base.
-  /// 
+  ///
   /// [dio] - Cliente HTTP configurado
   /// [baseUrl] - URL do servidor Ollama (padrão: localhost:11434)
   const OllamaRemoteDataSourceImpl({

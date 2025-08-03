@@ -1,5 +1,5 @@
 /// Widget avançado para renderização de Markdown.
-/// 
+///
 /// Fornece renderização rica de Markdown com suporte a:
 /// - Syntax highlighting para código
 /// - Temas adaptativos (claro/escuro)
@@ -16,7 +16,7 @@ import 'package:flutter_highlight/themes/github.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Widget para renderização avançada de conteúdo Markdown.
-/// 
+///
 /// Este widget oferece uma experiência rica de visualização de Markdown
 /// com recursos profissionais incluindo:
 /// - Syntax highlighting para múltiplas linguagens de programação
@@ -25,21 +25,21 @@ import 'package:url_launcher/url_launcher.dart';
 /// - Suporte a links externos
 /// - Tabelas responsivas
 /// - Blocos de código com botão de cópia
-/// 
+///
 /// Ideal para exibir respostas de LLM que frequentemente contêm
 /// código e formatação complexa.
 class AdvancedMarkdownWidget extends StatelessWidget {
   /// Conteúdo Markdown a ser renderizado.
   final String data;
-  
+
   /// Se o texto deve ser selecionável pelo usuário.
   final bool selectable;
-  
+
   /// Configuração customizada opcional para o Markdown.
   final MarkdownConfig? config;
 
   /// Construtor do widget de Markdown avançado.
-  /// 
+  ///
   /// [data] - Conteúdo Markdown a ser renderizado
   /// [selectable] - Se o texto deve ser selecionável (padrão: true)
   /// [config] - Configuração customizada opcional
@@ -51,7 +51,7 @@ class AdvancedMarkdownWidget extends StatelessWidget {
   });
 
   /// Constrói o widget de Markdown com configuração adaptativa.
-  /// 
+  ///
   /// Detecta automaticamente o tema atual e aplica configurações
   /// apropriadas para modo claro ou escuro.
   @override
@@ -67,7 +67,7 @@ class AdvancedMarkdownWidget extends StatelessWidget {
   }
 
   /// Constrói a configuração de Markdown adaptada ao tema atual.
-  /// 
+  ///
   /// Cria uma configuração completa que inclui estilos para:
   /// - Parágrafos e texto base
   /// - Títulos de diferentes níveis
@@ -75,14 +75,14 @@ class AdvancedMarkdownWidget extends StatelessWidget {
   /// - Links interativos
   /// - Tabelas e listas
   /// - Citações e elementos especiais
-  /// 
+  ///
   /// [context] - Contexto para acessar tema e outras configurações
   /// [isDark] - Se o tema escuro está ativo
-  /// 
+  ///
   /// Returns: Configuração completa de Markdown
   MarkdownConfig _buildMarkdownConfig(BuildContext context, bool isDark) {
     final theme = Theme.of(context);
-    
+
     return MarkdownConfig(
       configs: [
         // Configuração de parágrafos base
@@ -93,7 +93,7 @@ class AdvancedMarkdownWidget extends StatelessWidget {
             color: theme.colorScheme.onSurface,
           ),
         ),
-        
+
         // Configuração de cabeçalhos principais
         H1Config(
           style: TextStyle(
@@ -143,16 +143,15 @@ class AdvancedMarkdownWidget extends StatelessWidget {
             height: 1.4,
           ),
         ),
-        
+
         // Code block styling with syntax highlighting
         PreConfig(
           theme: githubTheme,
           wrapper: (child, code, language) {
             return Container(
               decoration: BoxDecoration(
-                color: isDark 
-                    ? const Color(0xFF1e1e1e)
-                    : const Color(0xFFF6F8FA),
+                color:
+                    isDark ? const Color(0xFF1e1e1e) : const Color(0xFFF6F8FA),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: theme.colorScheme.outline.withValues(alpha: 0.2),
@@ -172,24 +171,22 @@ class AdvancedMarkdownWidget extends StatelessWidget {
             );
           },
         ),
-        
+
         // Inline code styling
         CodeConfig(
           style: TextStyle(
             fontFamily: 'JetBrains Mono',
             fontSize: 14,
-            color: isDark 
-                ? const Color(0xFFE06C75) 
-                : const Color(0xFFD73A49),
+            color: isDark ? const Color(0xFFE06C75) : const Color(0xFFD73A49),
             backgroundColor: isDark
                 ? const Color(0xFF2D2D32).withValues(alpha: 0.8)
                 : const Color(0xFFF1F3F4).withValues(alpha: 0.8),
           ),
         ),
-        
+
         // Blockquote styling
         BlockquoteConfig(),
-        
+
         // Link styling
         LinkConfig(
           style: TextStyle(
@@ -201,18 +198,18 @@ class AdvancedMarkdownWidget extends StatelessWidget {
             _launchUrl(url);
           },
         ),
-        
+
         // List styling - use default for compatibility
-        
+
         // Table styling - simplified
         TableConfig(),
-        
+
         // Horizontal rule styling
         HrConfig(
           height: 1,
           color: theme.colorScheme.outline.withValues(alpha: 0.3),
         ),
-        
+
         // Image styling
         ImgConfig(
           builder: (url, attributes) {
@@ -282,7 +279,8 @@ class AdvancedMarkdownWidget extends StatelessWidget {
           child: Icon(
             Icons.copy,
             size: 16,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
           ),
         ),
       ),

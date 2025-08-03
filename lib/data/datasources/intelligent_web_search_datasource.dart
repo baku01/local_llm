@@ -1,5 +1,5 @@
 /// DataSource inteligente para pesquisas web com análise de relevância avançada.
-/// 
+///
 /// Implementa um sistema robusto de web scraping que integra múltiplos provedores
 /// de busca com análise automática de relevância, filtragem de qualidade e
 /// otimizações para obter resultados mais precisos e úteis.
@@ -21,19 +21,19 @@ import 'web_search_datasource.dart';
 class IntelligentSearchConfig {
   /// Número máximo de resultados por provedor.
   final int maxResultsPerProvider;
-  
+
   /// Threshold mínimo de relevância para incluir resultado.
   final double minRelevanceThreshold;
-  
+
   /// Se deve buscar conteúdo completo das páginas.
   final bool fetchFullContent;
-  
+
   /// Timeout para requisições HTTP em segundos.
   final int requestTimeoutSeconds;
-  
+
   /// Se deve usar cache para resultados.
   final bool enableCaching;
-  
+
   /// Tempo de vida do cache em minutos.
   final int cacheLifetimeMinutes;
 
@@ -48,7 +48,7 @@ class IntelligentSearchConfig {
 }
 
 /// DataSource inteligente que combina múltiplos provedores com análise de relevância.
-/// 
+///
 /// Características principais:
 /// - Múltiplos provedores de busca com análise de relevância
 /// - Extração e análise de conteúdo completo das páginas
@@ -78,10 +78,10 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
   IntelligentWebSearchDataSource({
     required http.Client client,
     IntelligentSearchConfig? config,
-  }) : _client = client,
-       _config = config ?? const IntelligentSearchConfig(),
-       _relevanceAnalyzer = RelevanceAnalyzer(),
-       _textProcessor = TextProcessor();
+  })  : _client = client,
+        _config = config ?? const IntelligentSearchConfig(),
+        _relevanceAnalyzer = RelevanceAnalyzer(),
+        _textProcessor = TextProcessor();
 
   /// Retorna um User-Agent aleatório para evitar detecção.
   String get _randomUserAgent =>
@@ -90,13 +90,15 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
   @override
   Future<List<SearchResult>> search(SearchQuery query) async {
     try {
-      AppLogger.info('Iniciando pesquisa inteligente para: "${query.query}"', 'IntelligentWebSearch');
-      
+      AppLogger.info('Iniciando pesquisa inteligente para: "${query.query}"',
+          'IntelligentWebSearch');
+
       // Verificar cache primeiro
       if (_config.enableCaching) {
         final cached = _getCachedResult(query.query);
         if (cached != null) {
-          AppLogger.info('Resultado encontrado no cache', 'IntelligentWebSearch');
+          AppLogger.info(
+              'Resultado encontrado no cache', 'IntelligentWebSearch');
           return cached;
         }
       }
@@ -109,12 +111,13 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
       ];
 
       final allResults = await Future.wait(futures, eagerError: false);
-      
+
       // Combinar resultados e remover duplicados
       final combinedResults = _combineAndDeduplicateResults(allResults);
-      
+
       if (combinedResults.isEmpty) {
-        AppLogger.warning('Nenhum resultado encontrado para: "${query.query}"', 'IntelligentWebSearch');
+        AppLogger.warning('Nenhum resultado encontrado para: "${query.query}"',
+            'IntelligentWebSearch');
         return [];
       }
 
@@ -125,15 +128,18 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
       }
 
       // Analisar relevância de todos os resultados
-      final analyzedResults = await _analyzeRelevance(enrichedResults, query.query);
+      final analyzedResults =
+          await _analyzeRelevance(enrichedResults, query.query);
 
       // Filtrar por relevância mínima
       final filteredResults = analyzedResults
-          .where((result) => result.overallRelevance >= _config.minRelevanceThreshold)
+          .where((result) =>
+              result.overallRelevance >= _config.minRelevanceThreshold)
           .toList();
 
       // Ordenar por relevância
-      filteredResults.sort((a, b) => b.overallRelevance.compareTo(a.overallRelevance));
+      filteredResults
+          .sort((a, b) => b.overallRelevance.compareTo(a.overallRelevance));
 
       // Limitar número de resultados
       final finalResults = filteredResults.take(query.maxResults).toList();
@@ -143,11 +149,13 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
         _cacheResult(query.query, finalResults);
       }
 
-      AppLogger.info('Pesquisa concluída: ${finalResults.length} resultados relevantes', 'IntelligentWebSearch');
+      AppLogger.info(
+          'Pesquisa concluída: ${finalResults.length} resultados relevantes',
+          'IntelligentWebSearch');
       return finalResults;
-
     } catch (e, stackTrace) {
-      AppLogger.error('Erro na pesquisa inteligente', 'IntelligentWebSearch', e, stackTrace);
+      AppLogger.error('Erro na pesquisa inteligente', 'IntelligentWebSearch', e,
+          stackTrace);
       return [];
     }
   }
@@ -156,15 +164,19 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
   Future<List<SearchResult>> _searchGoogle(SearchQuery query) async {
     try {
       final encodedQuery = Uri.encodeComponent(query.formattedQuery);
-      final url = 'https://www.google.com/search?q=$encodedQuery&num=${_config.maxResultsPerProvider}&hl=pt-BR';
+      final url =
+          'https://www.google.com/search?q=$encodedQuery&num=${_config.maxResultsPerProvider}&hl=pt-BR';
 
-      final response = await _client.get(
-        Uri.parse(url),
-        headers: _buildHeaders(),
-      ).timeout(Duration(seconds: _config.requestTimeoutSeconds));
+      final response = await _client
+          .get(
+            Uri.parse(url),
+            headers: _buildHeaders(),
+          )
+          .timeout(Duration(seconds: _config.requestTimeoutSeconds));
 
       if (response.statusCode != 200) {
-        AppLogger.warning('Google search failed: ${response.statusCode}', 'IntelligentWebSearch');
+        AppLogger.warning('Google search failed: ${response.statusCode}',
+            'IntelligentWebSearch');
         return [];
       }
 
@@ -179,15 +191,19 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
   Future<List<SearchResult>> _searchBing(SearchQuery query) async {
     try {
       final encodedQuery = Uri.encodeComponent(query.formattedQuery);
-      final url = 'https://www.bing.com/search?q=$encodedQuery&count=${_config.maxResultsPerProvider}';
+      final url =
+          'https://www.bing.com/search?q=$encodedQuery&count=${_config.maxResultsPerProvider}';
 
-      final response = await _client.get(
-        Uri.parse(url),
-        headers: _buildHeaders(),
-      ).timeout(Duration(seconds: _config.requestTimeoutSeconds));
+      final response = await _client
+          .get(
+            Uri.parse(url),
+            headers: _buildHeaders(),
+          )
+          .timeout(Duration(seconds: _config.requestTimeoutSeconds));
 
       if (response.statusCode != 200) {
-        AppLogger.warning('Bing search failed: ${response.statusCode}', 'IntelligentWebSearch');
+        AppLogger.warning('Bing search failed: ${response.statusCode}',
+            'IntelligentWebSearch');
         return [];
       }
 
@@ -204,19 +220,23 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
       final encodedQuery = Uri.encodeComponent(query.formattedQuery);
       final url = 'https://html.duckduckgo.com/html/?q=$encodedQuery';
 
-      final response = await _client.get(
-        Uri.parse(url),
-        headers: _buildHeaders(),
-      ).timeout(Duration(seconds: _config.requestTimeoutSeconds));
+      final response = await _client
+          .get(
+            Uri.parse(url),
+            headers: _buildHeaders(),
+          )
+          .timeout(Duration(seconds: _config.requestTimeoutSeconds));
 
       if (response.statusCode != 200) {
-        AppLogger.warning('DuckDuckGo search failed: ${response.statusCode}', 'IntelligentWebSearch');
+        AppLogger.warning('DuckDuckGo search failed: ${response.statusCode}',
+            'IntelligentWebSearch');
         return [];
       }
 
       return _parseDuckDuckGoResults(response.body);
     } catch (e) {
-      AppLogger.warning('Erro no DuckDuckGo search: $e', 'IntelligentWebSearch');
+      AppLogger.warning(
+          'Erro no DuckDuckGo search: $e', 'IntelligentWebSearch');
       return [];
     }
   }
@@ -225,7 +245,8 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
   Map<String, String> _buildHeaders() {
     return {
       'User-Agent': _randomUserAgent,
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+      'Accept':
+          'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
       'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8,en-US;q=0.7',
       'Accept-Encoding': 'gzip, deflate, br',
       'Connection': 'keep-alive',
@@ -243,16 +264,19 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
     final results = <SearchResult>[];
 
     // Seletores otimizados para resultados do Google
-    final searchResults = document.querySelectorAll('div.g, div[data-ved], .rc');
+    final searchResults =
+        document.querySelectorAll('div.g, div[data-ved], .rc');
 
     for (final element in searchResults) {
       try {
         final titleElement = element.querySelector('h3, .LC20lb, .DKV0Md') ??
-                            element.querySelector('a h3');
-        final linkElement = element.querySelector('a[href^="http"], a[href^="/url"]') ??
-                           element.querySelector('a');
-        final snippetElement = element.querySelector('.VwiC3b, .s3v9rd, .hgKElc, .IsZvec') ??
-                              element.querySelector('.st');
+            element.querySelector('a h3');
+        final linkElement =
+            element.querySelector('a[href^="http"], a[href^="/url"]') ??
+                element.querySelector('a');
+        final snippetElement =
+            element.querySelector('.VwiC3b, .s3v9rd, .hgKElc, .IsZvec') ??
+                element.querySelector('.st');
 
         if (titleElement != null && linkElement != null) {
           String url = linkElement.attributes['href'] ?? '';
@@ -260,9 +284,12 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
           // Limpar URLs do Google
           url = _cleanGoogleUrl(url);
 
-          if (url.startsWith('http') && !url.contains('google.com') && !_isAdUrl(url)) {
+          if (url.startsWith('http') &&
+              !url.contains('google.com') &&
+              !_isAdUrl(url)) {
             final title = _textProcessor.processText(titleElement.text);
-            final snippet = _textProcessor.processText(snippetElement?.text ?? '');
+            final snippet =
+                _textProcessor.processText(snippetElement?.text ?? '');
 
             if (title.isNotEmpty && title.length > 5) {
               results.add(SearchResult(
@@ -276,7 +303,8 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
           }
         }
       } catch (e) {
-        AppLogger.debug('Erro ao processar resultado do Google: $e', 'IntelligentWebSearch');
+        AppLogger.debug('Erro ao processar resultado do Google: $e',
+            'IntelligentWebSearch');
         continue;
       }
     }
@@ -294,14 +322,18 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
     for (final element in searchResults) {
       try {
         final titleElement = element.querySelector('h2 a, .b_title a');
-        final snippetElement = element.querySelector('.b_caption p, .b_snippet');
+        final snippetElement =
+            element.querySelector('.b_caption p, .b_snippet');
 
         if (titleElement != null) {
           final url = titleElement.attributes['href'] ?? '';
 
-          if (url.startsWith('http') && !url.contains('bing.com') && !_isAdUrl(url)) {
+          if (url.startsWith('http') &&
+              !url.contains('bing.com') &&
+              !_isAdUrl(url)) {
             final title = _textProcessor.processText(titleElement.text);
-            final snippet = _textProcessor.processText(snippetElement?.text ?? '');
+            final snippet =
+                _textProcessor.processText(snippetElement?.text ?? '');
 
             if (title.isNotEmpty && title.length > 5) {
               results.add(SearchResult(
@@ -315,7 +347,8 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
           }
         }
       } catch (e) {
-        AppLogger.debug('Erro ao processar resultado do Bing: $e', 'IntelligentWebSearch');
+        AppLogger.debug(
+            'Erro ao processar resultado do Bing: $e', 'IntelligentWebSearch');
         continue;
       }
     }
@@ -332,15 +365,18 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
 
     for (final element in searchResults) {
       try {
-        final titleElement = element.querySelector('.result__title a, .result__a');
-        final snippetElement = element.querySelector('.result__snippet, .result__body');
+        final titleElement =
+            element.querySelector('.result__title a, .result__a');
+        final snippetElement =
+            element.querySelector('.result__snippet, .result__body');
 
         if (titleElement != null) {
           final url = titleElement.attributes['href'] ?? '';
 
           if (url.startsWith('http') && !_isAdUrl(url)) {
             final title = _textProcessor.processText(titleElement.text);
-            final snippet = _textProcessor.processText(snippetElement?.text ?? '');
+            final snippet =
+                _textProcessor.processText(snippetElement?.text ?? '');
 
             if (title.isNotEmpty && title.length > 5) {
               results.add(SearchResult(
@@ -354,7 +390,8 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
           }
         }
       } catch (e) {
-        AppLogger.debug('Erro ao processar resultado do DuckDuckGo: $e', 'IntelligentWebSearch');
+        AppLogger.debug('Erro ao processar resultado do DuckDuckGo: $e',
+            'IntelligentWebSearch');
         continue;
       }
     }
@@ -363,7 +400,8 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
   }
 
   /// Combina e deduplica resultados de múltiplas fontes.
-  List<SearchResult> _combineAndDeduplicateResults(List<List<SearchResult>> allResults) {
+  List<SearchResult> _combineAndDeduplicateResults(
+      List<List<SearchResult>> allResults) {
     final seen = <String>{};
     final combined = <SearchResult>[];
 
@@ -381,7 +419,8 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
   }
 
   /// Enriquece resultados com conteúdo completo das páginas.
-  Future<List<SearchResult>> _enrichWithFullContent(List<SearchResult> results) async {
+  Future<List<SearchResult>> _enrichWithFullContent(
+      List<SearchResult> results) async {
     final enrichedResults = <SearchResult>[];
 
     for (final result in results) {
@@ -389,7 +428,8 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
         final content = await fetchPageContent(result.url);
         enrichedResults.add(result.copyWith(content: content));
       } catch (e) {
-        AppLogger.debug('Erro ao buscar conteúdo de ${result.url}: $e', 'IntelligentWebSearch');
+        AppLogger.debug('Erro ao buscar conteúdo de ${result.url}: $e',
+            'IntelligentWebSearch');
         enrichedResults.add(result); // Manter resultado original
       }
     }
@@ -398,7 +438,8 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
   }
 
   /// Analisa relevância de todos os resultados.
-  Future<List<SearchResult>> _analyzeRelevance(List<SearchResult> results, String query) async {
+  Future<List<SearchResult>> _analyzeRelevance(
+      List<SearchResult> results, String query) async {
     final analyzedResults = <SearchResult>[];
 
     for (final result in results) {
@@ -419,10 +460,12 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
   @override
   Future<String> fetchPageContent(String url) async {
     try {
-      final response = await _client.get(
-        Uri.parse(url),
-        headers: _buildHeaders(),
-      ).timeout(Duration(seconds: _config.requestTimeoutSeconds));
+      final response = await _client
+          .get(
+            Uri.parse(url),
+            headers: _buildHeaders(),
+          )
+          .timeout(Duration(seconds: _config.requestTimeoutSeconds));
 
       if (response.statusCode != 200) {
         throw Exception('HTTP ${response.statusCode}');
@@ -431,36 +474,39 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
       final document = html_parser.parse(response.body);
 
       // Remover elementos desnecessários
-      document.querySelectorAll(
-        'script, style, nav, header, footer, aside, .ads, .advertisement, '
-        '.sidebar, .menu, .navigation, .comments, .social, .share'
-      ).forEach((element) => element.remove());
+      document
+          .querySelectorAll(
+              'script, style, nav, header, footer, aside, .ads, .advertisement, '
+              '.sidebar, .menu, .navigation, .comments, .social, .share')
+          .forEach((element) => element.remove());
 
       // Extrair conteúdo principal
       dom.Element? mainContent = document.querySelector(
-        'main, article, .content, .post, .entry, .article-body, '
-        '[role="main"], .main-content'
-      );
-      
+          'main, article, .content, .post, .entry, .article-body, '
+          '[role="main"], .main-content');
+
       mainContent ??= document.querySelector('body');
 
       if (mainContent == null) return '';
 
       final textContent = mainContent.text;
-      
+
       // Processar e limitar conteúdo
-      final processedContent = _textProcessor.processText(textContent, preserveStructure: true);
-      
+      final processedContent =
+          _textProcessor.processText(textContent, preserveStructure: true);
+
       const maxLength = 5000;
       if (processedContent.length > maxLength) {
         // Extrair sentenças principais
-        final keySentences = _textProcessor.extractKeySentences(processedContent, maxSentences: 10);
+        final keySentences = _textProcessor
+            .extractKeySentences(processedContent, maxSentences: 10);
         return keySentences.join(' ');
       }
 
       return processedContent;
     } catch (e) {
-      AppLogger.debug('Erro ao buscar conteúdo de $url: $e', 'IntelligentWebSearch');
+      AppLogger.debug(
+          'Erro ao buscar conteúdo de $url: $e', 'IntelligentWebSearch');
       return '';
     }
   }
@@ -486,9 +532,17 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
 
   /// Detecta URLs de anúncios.
   bool _isAdUrl(String url) {
-    final adIndicators = ['googleadservices', 'doubleclick', 'googlesyndication', 
-                         'ads.', '/ads/', 'advertisement', 'sponsored'];
-    return adIndicators.any((indicator) => url.toLowerCase().contains(indicator));
+    final adIndicators = [
+      'googleadservices',
+      'doubleclick',
+      'googlesyndication',
+      'ads.',
+      '/ads/',
+      'advertisement',
+      'sponsored'
+    ];
+    return adIndicators
+        .any((indicator) => url.toLowerCase().contains(indicator));
   }
 
   /// Obtém resultado do cache se válido.
@@ -509,7 +563,6 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
       lifetimeMinutes: _config.cacheLifetimeMinutes,
     );
   }
-
 }
 
 /// Resultado de pesquisa em cache.

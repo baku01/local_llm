@@ -1,9 +1,9 @@
 /// DataSource local para pesquisas web com múltiplos provedores.
-/// 
+///
 /// Implementa pesquisas web através de scraping direto de múltiplos
 /// mecanismos de busca (Google, Bing, DuckDuckGo) como alternativa
 /// robusta quando APIs específicas não estão disponíveis.
-/// 
+///
 /// Utiliza rotação de User-Agents e agregação de resultados para
 /// maximizar a qualidade e quantidade de resultados obtidos.
 library;
@@ -16,7 +16,7 @@ import '../../domain/entities/search_result.dart';
 import 'web_search_datasource.dart';
 
 /// DataSource que realiza pesquisas web através de scraping direto.
-/// 
+///
 /// Características principais:
 /// - Múltiplos provedores de busca simultâneos
 /// - Rotação automática de User-Agents para evitar bloqueios
@@ -26,7 +26,7 @@ import 'web_search_datasource.dart';
 class LocalWebSearchDataSource implements WebSearchDataSource {
   /// Cliente HTTP para realizar requisições.
   final http.Client client;
-  
+
   /// Lista de User-Agents realísticos para rotação.
   final List<String> _userAgents = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -43,15 +43,15 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
       _userAgents[Random().nextInt(_userAgents.length)];
 
   /// Realiza pesquisa web agregando resultados de múltiplos provedores.
-  /// 
+  ///
   /// Executa pesquisas simultâneas em Google, Bing e DuckDuckGo,
   /// depois combina e deduplica os resultados para maximizar
   /// relevância e cobertura.
-  /// 
+  ///
   /// [query] - Objeto de consulta com termos e parâmetros
-  /// 
+  ///
   /// Returns: Lista deduplicated de [SearchResult] ordenados por relevância
-  /// 
+  ///
   /// Throws: Exception se todas as tentativas de pesquisa falharem
   @override
   Future<List<SearchResult>> search(SearchQuery query) async {
@@ -179,8 +179,7 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
       try {
         final titleElement =
             element.querySelector('h3') ?? element.querySelector('a h3');
-        final linkElement =
-            element.querySelector('a[href^="http"]') ??
+        final linkElement = element.querySelector('a[href^="http"]') ??
             element.querySelector('a[href^="/url"]');
         final snippetElement = element.querySelector(
           'div[data-sncf], .VwiC3b, .s3v9rd, .hgKElc',
@@ -315,11 +314,11 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
       // Remover elementos desnecessários
       document
           .querySelectorAll(
-            'script, style, nav, header, footer, .ads, .advertisement, .sidebar',
-          )
+        'script, style, nav, header, footer, .ads, .advertisement, .sidebar',
+      )
           .forEach((element) {
-            element.remove();
-          });
+        element.remove();
+      });
 
       // Tentar extrair conteúdo principal
       dom.Element? mainContent = document.querySelector(

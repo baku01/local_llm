@@ -1,5 +1,5 @@
 /// Estratégia de busca para Bing com parsing otimizado.
-/// 
+///
 /// Implementa busca no Bing com técnicas de scraping resilientes
 /// e parsing específico para a estrutura HTML do Bing.
 library;
@@ -17,7 +17,7 @@ class BingSearchStrategy implements SearchStrategy {
   final http.Client _client;
   final List<String> _userAgents;
   SearchStrategyMetrics _metrics = SearchStrategyMetrics.empty();
-  
+
   /// User-Agents otimizados para Bing.
   static const List<String> _defaultUserAgents = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0',
@@ -29,8 +29,8 @@ class BingSearchStrategy implements SearchStrategy {
   BingSearchStrategy({
     required http.Client client,
     List<String>? userAgents,
-  }) : _client = client,
-       _userAgents = userAgents ?? _defaultUserAgents;
+  })  : _client = client,
+        _userAgents = userAgents ?? _defaultUserAgents;
 
   @override
   String get name => 'Bing';
@@ -50,42 +50,45 @@ class BingSearchStrategy implements SearchStrategy {
   @override
   bool canHandle(SearchQuery query) {
     // Bing funciona bem com consultas gerais e de notícias
-    return query.query.trim().isNotEmpty && 
-           (query.type == SearchType.general || query.type == SearchType.news);
+    return query.query.trim().isNotEmpty &&
+        (query.type == SearchType.general || query.type == SearchType.news);
   }
 
   @override
   Future<List<SearchResult>> search(SearchQuery query) async {
     final stopwatch = Stopwatch()..start();
-    
+
     try {
       final encodedQuery = Uri.encodeComponent(query.formattedQuery);
-      final url = 'https://www.bing.com/search?q=$encodedQuery&count=${query.maxResults}';
+      final url =
+          'https://www.bing.com/search?q=$encodedQuery&count=${query.maxResults}';
 
-      final response = await _client.get(
-        Uri.parse(url),
-        headers: _buildHeaders(),
-      ).timeout(Duration(seconds: timeoutSeconds));
+      final response = await _client
+          .get(
+            Uri.parse(url),
+            headers: _buildHeaders(),
+          )
+          .timeout(Duration(seconds: timeoutSeconds));
 
       if (response.statusCode != 200) {
         throw Exception('Bing search failed: ${response.statusCode}');
       }
 
       final results = _parseBingResults(response.body, query.maxResults);
-      
+
       stopwatch.stop();
       _updateMetrics(true, stopwatch.elapsedMilliseconds);
-      
+
       AppLogger.info(
         'Bing search completed: ${results.length} results in ${stopwatch.elapsedMilliseconds}ms',
         'BingSearchStrategy',
       );
-      
+
       return results;
     } catch (e) {
       stopwatch.stop();
       _updateMetrics(false, stopwatch.elapsedMilliseconds);
-      
+
       AppLogger.warning('Bing search failed: $e', 'BingSearchStrategy');
       rethrow;
     }
@@ -95,10 +98,11 @@ class BingSearchStrategy implements SearchStrategy {
   Map<String, String> _buildHeaders() {
     final random = math.Random();
     final userAgent = _userAgents[random.nextInt(_userAgents.length)];
-    
+
     return {
       'User-Agent': userAgent,
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept':
+          'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
       'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
       'Accept-Encoding': 'gzip, deflate',
       'Connection': 'keep-alive',
@@ -115,10 +119,10 @@ class BingSearchStrategy implements SearchStrategy {
 
     // Seletores principais para resultados do Bing
     final resultElements = document.querySelectorAll('li.b_algo, .b_algo');
-    
+
     for (final element in resultElements) {
       if (results.length >= maxResults) break;
-      
+
       try {
         final result = _extractBingResult(element);
         if (result != null) {
@@ -132,11 +136,12 @@ class BingSearchStrategy implements SearchStrategy {
 
     // Fallback para seletores alternativos
     if (results.length < 3) {
-      final fallbackElements = document.querySelectorAll('.b_title, .b_topTitle');
-      
+      final fallbackElements =
+          document.querySelectorAll('.b_title, .b_topTitle');
+
       for (final element in fallbackElements) {
         if (results.length >= maxResults) break;
-        
+
         try {
           final result = _extractBingResultFallback(element);
           if (result != null && !_isDuplicate(result, results)) {
@@ -156,7 +161,7 @@ class BingSearchStrategy implements SearchStrategy {
     // Buscar título e link
     final titleElement = element.querySelector('h2 a, .b_title a, a[href]');
     if (titleElement == null) return null;
-    
+
     final url = titleElement.attributes['href'];
     if (url == null || !url.startsWith('http')) return null;
 
@@ -164,7 +169,8 @@ class BingSearchStrategy implements SearchStrategy {
     if (title == null || title.isEmpty) return null;
 
     // Buscar snippet
-    final snippetElement = element.querySelector('.b_caption p, .b_snippet, .b_descript');
+    final snippetElement =
+        element.querySelector('.b_caption p, .b_snippet, .b_descript');
     final snippet = snippetElement?.text?.trim() ?? '';
 
     return SearchResult(
@@ -179,7 +185,7 @@ class BingSearchStrategy implements SearchStrategy {
   SearchResult? _extractBingResultFallback(dynamic element) {
     final linkElement = element.querySelector('a');
     if (linkElement == null) return null;
-    
+
     final url = linkElement.attributes['href'];
     if (url == null || !url.startsWith('http')) return null;
 
@@ -189,7 +195,7 @@ class BingSearchStrategy implements SearchStrategy {
     // Buscar snippet no elemento pai ou irmão
     final parent = element.parent;
     final snippetElement = parent?.querySelector('.b_caption, .b_snippet') ??
-                          element.nextElementSibling?.querySelector('.b_caption');
+        element.nextElementSibling?.querySelector('.b_caption');
     final snippet = snippetElement?.text?.trim() ?? '';
 
     return SearchResult(
@@ -211,18 +217,20 @@ class BingSearchStrategy implements SearchStrategy {
 
   /// Verifica se o resultado é duplicado.
   bool _isDuplicate(SearchResult result, List<SearchResult> existingResults) {
-    return existingResults.any((existing) => 
-        existing.url == result.url || 
-        existing.title == result.title);
+    return existingResults.any((existing) =>
+        existing.url == result.url || existing.title == result.title);
   }
 
   /// Atualiza métricas da estratégia.
   void _updateMetrics(bool success, int responseTimeMs) {
     final current = _metrics;
     final newTotal = current.totalSearches + 1;
-    final newSuccessful = success ? current.successfulSearches + 1 : current.successfulSearches;
-    final newAvgTime = ((current.averageResponseTime * current.totalSearches) + responseTimeMs) / newTotal;
-    
+    final newSuccessful =
+        success ? current.successfulSearches + 1 : current.successfulSearches;
+    final newAvgTime = ((current.averageResponseTime * current.totalSearches) +
+            responseTimeMs) /
+        newTotal;
+
     _metrics = SearchStrategyMetrics(
       totalSearches: newTotal,
       successfulSearches: newSuccessful,

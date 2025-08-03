@@ -1,5 +1,5 @@
 /// DataSource para pesquisas web usando diferentes provedores.
-/// 
+///
 /// Implementa pesquisas web através de APIs públicas como DuckDuckGo,
 /// com funcionalidades de scraping de conteúdo para enriquecer
 /// as respostas dos modelos LLM com contexto web relevante.
@@ -11,39 +11,39 @@ import 'package:html/parser.dart' as html_parser;
 import '../../domain/entities/search_result.dart';
 
 /// Interface abstrata para datasources de pesquisa web.
-/// 
+///
 /// Define os contratos que devem ser implementados por qualquer
 /// datasource que forneça funcionalidades de pesquisa web.
 abstract class WebSearchDataSource {
   /// Realiza uma pesquisa web baseada na query fornecida.
   Future<List<SearchResult>> search(SearchQuery query);
-  
+
   /// Busca e extrai o conteúdo de uma página web específica.
   Future<String> fetchPageContent(String url);
 }
 
 /// Implementação do datasource usando a API do DuckDuckGo.
-/// 
+///
 /// Utiliza a API pública do DuckDuckGo para realizar pesquisas web
 /// e extrai conteúdo de páginas usando web scraping avançado.
 /// Inclui fallback para métodos mais simples quando necessário.
 class DuckDuckGoSearchDataSource implements WebSearchDataSource {
   /// Cliente HTTP para realizar requisições.
   final http.Client client;
-  
+
   /// Construtor que inicializa o cliente HTTP.
   DuckDuckGoSearchDataSource({required this.client});
 
   /// Realiza pesquisa web usando a API do DuckDuckGo.
-  /// 
+  ///
   /// Utiliza a API Instant Answer do DuckDuckGo para obter resultados
   /// de pesquisa sem necessidade de API key. Processa tanto tópicos
   /// relacionados quanto definições diretas.
-  /// 
+  ///
   /// [query] - Objeto de consulta com termo e parâmetros de busca
-  /// 
+  ///
   /// Returns: Lista de [SearchResult] com os resultados encontrados
-  /// 
+  ///
   /// Throws: Exception para falhas de rede ou parsing
   @override
   Future<List<SearchResult>> search(SearchQuery query) async {
@@ -99,15 +99,15 @@ class DuckDuckGoSearchDataSource implements WebSearchDataSource {
   }
 
   /// Extrai o conteúdo de uma página web para enriquecer o contexto.
-  /// 
+  ///
   /// Utiliza um scraper avançado como método principal, com fallback
   /// para parsing HTML simples em caso de falha. O conteúdo é formatado
   /// em markdown para melhor integração com os modelos LLM.
-  /// 
+  ///
   /// [url] - URL da página a ser processada
-  /// 
+  ///
   /// Returns: Conteúdo da página formatado em texto/markdown
-  /// 
+  ///
   /// Throws: Exception para erros de rede ou parsing
   @override
   Future<String> fetchPageContent(String url) async {
@@ -121,7 +121,9 @@ class DuckDuckGoSearchDataSource implements WebSearchDataSource {
       final document = html_parser.parse(response.body);
 
       // Remover elementos não relacionados ao conteúdo principal
-      document.querySelectorAll('script, style, nav, header, footer').forEach((element) {
+      document
+          .querySelectorAll('script, style, nav, header, footer')
+          .forEach((element) {
         element.remove();
       });
 
@@ -140,12 +142,12 @@ class DuckDuckGoSearchDataSource implements WebSearchDataSource {
   }
 
   /// Extrai um título apropriado de um texto longo.
-  /// 
+  ///
   /// Utiliza as primeiras palavras significativas do texto para
   /// criar um título conciso e representativo.
-  /// 
+  ///
   /// [text] - Texto completo do qual extrair o título
-  /// 
+  ///
   /// Returns: Título extraído, limitado a 8 palavras
   String _extractTitle(String text) {
     final words = text.split(' ');

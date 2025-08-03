@@ -86,9 +86,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Seção IA
           _buildSectionHeader('Inteligência Artificial', PhosphorIcons.robot()),
           const SizedBox(height: 8),
@@ -97,14 +97,17 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               children: [
                 Consumer(
                   builder: (context, ref, child) {
-                    final webSearchEnabled = ref.watch(webSearchEnabledProvider);
+                    final webSearchEnabled =
+                        ref.watch(webSearchEnabledProvider);
                     return SwitchListTile(
                       secondary: PhosphorIcon(PhosphorIcons.magnifyingGlass()),
                       title: const Text('Pesquisa Web'),
-                      subtitle: const Text('Buscar informações na internet para respostas mais precisas'),
+                      subtitle: const Text(
+                          'Buscar informações na internet para respostas mais precisas'),
                       value: webSearchEnabled,
                       onChanged: (value) {
-                        ref.read(webSearchEnabledProvider.notifier).state = value;
+                        ref.read(webSearchEnabledProvider.notifier).state =
+                            value;
                       },
                     );
                   },
@@ -112,14 +115,17 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 const Divider(height: 1),
                 Consumer(
                   builder: (context, ref, child) {
-                    final streamModeEnabled = ref.watch(streamModeEnabledProvider);
+                    final streamModeEnabled =
+                        ref.watch(streamModeEnabledProvider);
                     return SwitchListTile(
                       secondary: PhosphorIcon(PhosphorIcons.lightning()),
                       title: const Text('Modo Streaming'),
-                      subtitle: const Text('Receber respostas em tempo real conforme são geradas'),
+                      subtitle: const Text(
+                          'Receber respostas em tempo real conforme são geradas'),
                       value: streamModeEnabled,
                       onChanged: (value) {
-                        ref.read(streamModeEnabledProvider.notifier).state = value;
+                        ref.read(streamModeEnabledProvider.notifier).state =
+                            value;
                       },
                     );
                   },
@@ -127,9 +133,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Seção Aparência
           _buildSectionHeader('Aparência', PhosphorIcons.palette()),
           const SizedBox(height: 8),
@@ -154,9 +160,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Seção Sobre
           _buildSectionHeader('Sobre', PhosphorIcons.info()),
           const SizedBox(height: 8),
@@ -198,9 +204,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         Text(
           title,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.primary,
-          ),
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
         ),
       ],
     );
@@ -225,7 +231,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         content: Consumer(
           builder: (context, ref, child) {
             final currentTheme = ref.watch(themeModeProvider);
-            
+
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [

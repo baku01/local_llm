@@ -1,20 +1,20 @@
 /// Entidade que representa uma mensagem no chat.
-/// 
+///
 /// Encapsula as informações de uma mensagem trocada entre o usuário
 /// e o assistente de IA, incluindo metadados como timestamp e estado.
 class ChatMessage {
   /// Conteúdo textual da mensagem.
   final String text;
-  
+
   /// Indica se a mensagem foi enviada pelo usuário (true) ou pelo assistente (false).
   final bool isUser;
-  
+
   /// Timestamp de quando a mensagem foi criada.
   final DateTime timestamp;
-  
+
   /// Identificador único da mensagem (opcional).
   final String? id;
-  
+
   /// Texto de "pensamento" do assistente durante o processamento (opcional).
   final String? thinkingText;
 
@@ -55,7 +55,8 @@ class ChatMessage {
   }
 
   /// Factory constructor para criar mensagem do assistente.
-  factory ChatMessage.assistant(String text, {String? id, String? thinkingText}) {
+  factory ChatMessage.assistant(String text,
+      {String? id, String? thinkingText}) {
     return ChatMessage(
       text: text,
       isUser: false,
@@ -70,8 +71,10 @@ class ChatMessage {
   String toString() {
     final userType = isUser ? 'User' : 'AI';
     final thinking = thinkingText != null ? ' (thinking: $thinkingText)' : '';
-    final truncatedText = text.length > 100 ? '${text.substring(0, 100)}...' : text;
-    final dateStr = '${timestamp.year}-${timestamp.month.toString().padLeft(2, '0')}-${timestamp.day.toString().padLeft(2, '0')}';
+    final truncatedText =
+        text.length > 100 ? '${text.substring(0, 100)}...' : text;
+    final dateStr =
+        '${timestamp.year}-${timestamp.month.toString().padLeft(2, '0')}-${timestamp.day.toString().padLeft(2, '0')}';
     return 'ChatMessage($userType: $truncatedText, $dateStr$thinking)';
   }
 

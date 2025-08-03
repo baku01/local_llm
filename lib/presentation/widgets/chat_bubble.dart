@@ -37,7 +37,8 @@ class _ChatBubbleState extends State<ChatBubble> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         child: Row(
-          mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+          mainAxisAlignment:
+              isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!isUser) ...[
@@ -56,12 +57,17 @@ class _ChatBubbleState extends State<ChatBubble> {
                   ..translate(0.0, _isHovered ? -2.0 : 0.0),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24).copyWith(
-                    bottomLeft: isUser ? const Radius.circular(24) : const Radius.circular(8),
-                    bottomRight: isUser ? const Radius.circular(8) : const Radius.circular(24),
+                    bottomLeft: isUser
+                        ? const Radius.circular(24)
+                        : const Radius.circular(8),
+                    bottomRight: isUser
+                        ? const Radius.circular(8)
+                        : const Radius.circular(24),
                   ),
-                  child: isUser 
+                  child: isUser
                       ? Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 16),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               begin: Alignment.topLeft,
@@ -73,28 +79,30 @@ class _ChatBubbleState extends State<ChatBubble> {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                                color: theme.colorScheme.primary
+                                    .withValues(alpha: 0.3),
                                 blurRadius: _isHovered ? 20 : 12,
                                 offset: Offset(0, _isHovered ? 8 : 4),
                                 spreadRadius: _isHovered ? 2 : 0,
                               ),
                             ],
                           ),
-                          child: widget.isTyping 
-                              ? _buildTypingIndicator(theme) 
+                          child: widget.isTyping
+                              ? _buildTypingIndicator(theme)
                               : _buildMessageContent(context),
                         )
                       : BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 16),
                             decoration: AppTheme.glassEffect(
                               isDark: theme.brightness == Brightness.dark,
                               opacity: 0.15,
                               blur: _isHovered ? 15 : 10,
                             ),
-                            child: widget.isTyping 
-                                ? _buildTypingIndicator(theme) 
+                            child: widget.isTyping
+                                ? _buildTypingIndicator(theme)
                                 : _buildMessageContent(context),
                           ),
                         ),
@@ -108,22 +116,22 @@ class _ChatBubbleState extends State<ChatBubble> {
           ],
         ),
       ).animate().fadeIn(duration: 400.ms).slideY(
-        begin: 0.3,
-        end: 0,
-        duration: 400.ms,
-        curve: Curves.easeOutCubic,
-      ),
+            begin: 0.3,
+            end: 0,
+            duration: 400.ms,
+            curve: Curves.easeOutCubic,
+          ),
     );
   }
 
   Widget _buildModernAvatar(BuildContext context, bool isUser) {
     final theme = Theme.of(context);
-    
+
     return Container(
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        gradient: isUser 
+        gradient: isUser
             ? LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -143,7 +151,9 @@ class _ChatBubbleState extends State<ChatBubble> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: (isUser ? theme.colorScheme.primary : theme.colorScheme.tertiary)
+            color: (isUser
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.tertiary)
                 .withValues(alpha: 0.4),
             blurRadius: 12,
             offset: const Offset(0, 4),
@@ -161,17 +171,20 @@ class _ChatBubbleState extends State<ChatBubble> {
   Widget _buildMessageContent(BuildContext context) {
     final theme = Theme.of(context);
     final isUser = widget.message.isUser;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Exibir pensamento se disponível e for modelo R1
-        if (widget.showThinking && widget.thinkingText != null && widget.thinkingText!.isNotEmpty) ...[
+        if (widget.showThinking &&
+            widget.thinkingText != null &&
+            widget.thinkingText!.isNotEmpty) ...[
           Container(
             padding: const EdgeInsets.all(12),
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+              color: theme.colorScheme.surfaceContainerHighest
+                  .withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: theme.colorScheme.outline.withValues(alpha: 0.2),
@@ -259,7 +272,8 @@ class _ChatBubbleState extends State<ChatBubble> {
         color: theme.colorScheme.primary,
         shape: BoxShape.circle,
       ),
-    ).animate(onPlay: (controller) => controller.repeat())
+    )
+        .animate(onPlay: (controller) => controller.repeat())
         .scale(
           begin: const Offset(0.8, 0.8),
           end: const Offset(1.2, 1.2),
@@ -277,7 +291,7 @@ class _ChatBubbleState extends State<ChatBubble> {
   String _formatTime(DateTime timestamp) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
-    
+
     if (difference.inMinutes < 1) {
       return 'Agora';
     } else if (difference.inHours < 1) {

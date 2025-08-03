@@ -1,6 +1,6 @@
 /// Widget que renderiza texto de forma incremental, adicionando tokens
 /// sem rebuild completo para eliminar completamente o flickering.
-/// 
+///
 /// Implementa:
 /// - Lista de tokens que preserva o texto anterior
 /// - Apenas o último token é adicionado/atualizado
@@ -18,39 +18,39 @@ class IncrementalTextController extends ChangeNotifier {
   String _lastPartialToken = '';
   bool _isStreaming = false;
   bool _isComplete = false;
-  
+
   /// Timer para throttling de notificações.
   Timer? _notificationTimer;
-  
+
   /// Controla se há uma notificação pendente.
   bool _hasPendingNotification = false;
 
   /// Lista imutável de tokens completos
   List<String> get tokens => List.unmodifiable(_tokens);
-  
+
   /// Token parcial atual (em formação)
   String get lastPartialToken => _lastPartialToken;
-  
+
   /// Se está recebendo stream de tokens
   bool get isStreaming => _isStreaming;
-  
+
   /// Se o streaming foi finalizado
   bool get isComplete => _isComplete;
-  
+
   /// Texto completo atual
   String get fullText => _tokens.join() + _lastPartialToken;
 
   /// Adiciona um chunk de texto de forma incremental
   void addChunk(String chunk) {
     if (chunk.isEmpty) return;
-    
+
     _isStreaming = true;
     _isComplete = false;
-    
+
     // Detectar tokens completos (palavras separadas por espaço)
     final newContent = _lastPartialToken + chunk;
     final parts = newContent.split(' ');
-    
+
     if (parts.length > 1) {
       // Adicionar tokens completos
       for (int i = 0; i < parts.length - 1; i++) {
@@ -61,14 +61,14 @@ class IncrementalTextController extends ChangeNotifier {
           _tokens.add('${parts[i]} ');
         }
       }
-      
+
       // O último parte vira o novo token parcial
       _lastPartialToken = parts.last;
     } else {
       // Continuar construindo o token parcial
       _lastPartialToken = newContent;
     }
-    
+
     _notifyListenersThrottled();
   }
 
@@ -78,7 +78,7 @@ class IncrementalTextController extends ChangeNotifier {
       _tokens.add(_lastPartialToken);
       _lastPartialToken = '';
     }
-    
+
     _isStreaming = false;
     _isComplete = true;
     _notificationTimer?.cancel();
@@ -96,7 +96,7 @@ class IncrementalTextController extends ChangeNotifier {
     _hasPendingNotification = false;
     notifyListeners();
   }
-  
+
   /// Implementa throttling para notificações, reduzindo rebuilds excessivos.
   void _notifyListenersThrottled() {
     if (_isStreaming) {
@@ -116,11 +116,11 @@ class IncrementalTextController extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
-/// Define o texto completo (útil para inicialização)
+
+  /// Define o texto completo (útil para inicialização)
   void setText(String text) {
     clear();
-    
+
     if (text.isNotEmpty) {
       // Dividir em tokens e adicionar
       final words = text.split(' ');
@@ -132,7 +132,7 @@ class IncrementalTextController extends ChangeNotifier {
         }
       }
     }
-    
+
     _isComplete = true;
     notifyListeners();
   }
@@ -149,16 +149,16 @@ class IncrementalTextController extends ChangeNotifier {
 class IncrementalTextWidget extends StatefulWidget {
   /// Controlador do texto incremental
   final IncrementalTextController controller;
-  
+
   /// Estilo do texto
   final TextStyle? style;
-  
+
   /// Se deve mostrar cursor de digitação
   final bool showCursor;
-  
+
   /// Cor do cursor
   final Color? cursorColor;
-  
+
   /// Se deve animar novos tokens
   final bool animateNewTokens;
 
@@ -177,27 +177,26 @@ class IncrementalTextWidget extends StatefulWidget {
 
 class _IncrementalTextWidgetState extends State<IncrementalTextWidget>
     with TickerProviderStateMixin {
-  
   late AnimationController _cursorController;
   late AnimationController _newTokenController;
-  
+
   int _lastTokenCount = 0;
   String _lastPartialToken = '';
 
   @override
   void initState() {
     super.initState();
-    
+
     _cursorController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     _newTokenController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-    
+
     widget.controller.addListener(_onControllerChanged);
     _updateCursorAnimation();
   }
@@ -212,17 +211,17 @@ class _IncrementalTextWidgetState extends State<IncrementalTextWidget>
 
   void _onControllerChanged() {
     _updateCursorAnimation();
-    
+
     // Animar apenas novos tokens
     if (widget.animateNewTokens) {
       final currentTokenCount = widget.controller.tokens.length;
       final currentPartialToken = widget.controller.lastPartialToken;
-      
-      if (currentTokenCount > _lastTokenCount || 
+
+      if (currentTokenCount > _lastTokenCount ||
           currentPartialToken != _lastPartialToken) {
         _newTokenController.forward(from: 0);
       }
-      
+
       _lastTokenCount = currentTokenCount;
       _lastPartialToken = currentPartialToken;
     }
@@ -250,19 +249,19 @@ class _IncrementalTextWidgetState extends State<IncrementalTextWidget>
 
   Widget _buildIncrementalText() {
     final theme = Theme.of(context);
-    final effectiveCursorColor = widget.cursorColor ?? 
-        theme.colorScheme.primary;
+    final effectiveCursorColor =
+        widget.cursorColor ?? theme.colorScheme.primary;
 
     return RichText(
       text: TextSpan(
         children: [
           // Tokens completos (nunca mudam, zero flickering)
           ..._buildCompletedTokens(),
-          
+
           // Token parcial atual (apenas este é atualizado)
           if (widget.controller.lastPartialToken.isNotEmpty)
             _buildPartialToken(effectiveCursorColor),
-          
+
           // Cursor de digitação
           if (widget.showCursor && widget.controller.isStreaming)
             _buildCursor(effectiveCursorColor),
@@ -274,7 +273,7 @@ class _IncrementalTextWidgetState extends State<IncrementalTextWidget>
   List<TextSpan> _buildCompletedTokens() {
     final tokens = widget.controller.tokens;
     final spans = <TextSpan>[];
-    
+
     for (int i = 0; i < tokens.length; i++) {
       spans.add(
         TextSpan(
@@ -283,7 +282,7 @@ class _IncrementalTextWidgetState extends State<IncrementalTextWidget>
         ),
       );
     }
-    
+
     return spans;
   }
 
@@ -343,16 +342,16 @@ class _IncrementalTextWidgetState extends State<IncrementalTextWidget>
 class IncrementalThinkingWidget extends StatefulWidget {
   /// Stream de chunks de texto
   final Stream<String>? textStream;
-  
+
   /// Texto inicial (se não for streaming)
   final String? initialText;
-  
+
   /// Se o widget deve estar visível
   final bool isVisible;
-  
+
   /// Estilo do texto
   final TextStyle? textStyle;
-  
+
   /// Callback quando o streaming termina
   final VoidCallback? onStreamComplete;
 
@@ -366,12 +365,12 @@ class IncrementalThinkingWidget extends StatefulWidget {
   });
 
   @override
-  State<IncrementalThinkingWidget> createState() => _IncrementalThinkingWidgetState();
+  State<IncrementalThinkingWidget> createState() =>
+      _IncrementalThinkingWidgetState();
 }
 
 class _IncrementalThinkingWidgetState extends State<IncrementalThinkingWidget>
     with TickerProviderStateMixin {
-  
   late IncrementalTextController _textController;
   late AnimationController _visibilityController;
   StreamSubscription<String>? _streamSubscription;
@@ -379,14 +378,14 @@ class _IncrementalThinkingWidgetState extends State<IncrementalThinkingWidget>
   @override
   void initState() {
     super.initState();
-    
+
     _textController = IncrementalTextController();
-    
+
     _visibilityController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _setupInitialState();
     _updateVisibility();
   }
@@ -394,16 +393,17 @@ class _IncrementalThinkingWidgetState extends State<IncrementalThinkingWidget>
   @override
   void didUpdateWidget(IncrementalThinkingWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (oldWidget.isVisible != widget.isVisible) {
       _updateVisibility();
     }
-    
+
     if (oldWidget.textStream != widget.textStream) {
       _setupStream();
     }
-    
-    if (oldWidget.initialText != widget.initialText && widget.initialText != null) {
+
+    if (oldWidget.initialText != widget.initialText &&
+        widget.initialText != null) {
       _textController.setText(widget.initialText!);
     }
   }
@@ -426,10 +426,10 @@ class _IncrementalThinkingWidgetState extends State<IncrementalThinkingWidget>
 
   void _setupStream() {
     _streamSubscription?.cancel();
-    
+
     if (widget.textStream != null) {
       _textController.clear();
-      
+
       _streamSubscription = widget.textStream!.listen(
         (chunk) {
           _textController.addChunk(chunk);
@@ -457,14 +457,14 @@ class _IncrementalThinkingWidgetState extends State<IncrementalThinkingWidget>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return AnimatedBuilder(
       animation: _visibilityController,
       builder: (context, child) {
         if (_visibilityController.value == 0.0) {
           return const SizedBox.shrink();
         }
-        
+
         return Opacity(
           opacity: _visibilityController.value,
           child: Transform.translate(
@@ -551,12 +551,13 @@ class _IncrementalThinkingWidgetState extends State<IncrementalThinkingWidget>
       ),
       child: IncrementalTextWidget(
         controller: _textController,
-        style: widget.textStyle ?? TextStyle(
-          fontSize: 13,
-          color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-          height: 1.4,
-          fontFamily: 'monospace',
-        ),
+        style: widget.textStyle ??
+            TextStyle(
+              fontSize: 13,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+              height: 1.4,
+              fontFamily: 'monospace',
+            ),
         showCursor: true,
         animateNewTokens: true,
       ),

@@ -1,5 +1,5 @@
 /// Biblioteca que define o widget de animação de "pensamento" da IA.
-/// 
+///
 /// Esta biblioteca contém o widget [ThinkingAnimation] que exibe
 /// uma animação visual indicando que a IA está processando uma resposta,
 /// com efeitos shimmer, rotação e texto dinâmico.
@@ -12,14 +12,14 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shimmer/shimmer.dart';
 
 /// Widget que exibe uma animação de "pensamento" da IA.
-/// 
+///
 /// Este widget mostra uma animação visual elegante quando a IA está
 /// processando uma resposta, incluindo:
 /// - Texto de status dinâmico
 /// - Efeitos shimmer e rotação
 /// - Transições suaves de entrada/saída
 /// - Opção de dismissão pelo usuário
-/// 
+///
 /// Exemplo de uso:
 /// ```dart
 /// ThinkingAnimation(
@@ -132,7 +132,8 @@ class _ThinkingAnimationState extends State<ThinkingAnimation>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Shimmer.fromColors(
-                      baseColor: theme.colorScheme.primary.withValues(alpha: 0.6),
+                      baseColor:
+                          theme.colorScheme.primary.withValues(alpha: 0.6),
                       highlightColor: theme.colorScheme.primary,
                       child: Text(
                         'Processando pensamento...',
@@ -148,13 +149,15 @@ class _ThinkingAnimationState extends State<ThinkingAnimation>
                       child: AnimatedBuilder(
                         animation: _textController,
                         builder: (context, child) {
-                          final dotCount = (_textController.value * 4).floor() % 4;
+                          final dotCount =
+                              (_textController.value * 4).floor() % 4;
                           final dots = '.' * dotCount;
                           return Text(
                             'Analisando contexto$dots',
                             style: TextStyle(
                               fontSize: 12,
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
                               fontWeight: FontWeight.w500,
                             ),
                           );
@@ -166,7 +169,7 @@ class _ThinkingAnimationState extends State<ThinkingAnimation>
               ),
             ],
           ),
-          
+
           // Enhanced thinking text display with typewriter effect
           if (widget.thinkingText.isNotEmpty) ...[
             const SizedBox(height: 16),
@@ -195,10 +198,10 @@ class _ThinkingAnimationState extends State<ThinkingAnimation>
         ],
       ),
     ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.2, end: 0).scale(
-      begin: const Offset(0.95, 0.95),
-      end: const Offset(1.0, 1.0),
-      curve: Curves.easeOutBack,
-    );
+          begin: const Offset(0.95, 0.95),
+          end: const Offset(1.0, 1.0),
+          curve: Curves.easeOutBack,
+        );
   }
 
   String _cleanThinkingText(String text) {
@@ -234,12 +237,12 @@ class _TypewriterTextState extends State<_TypewriterText>
       duration: Duration(milliseconds: widget.text.length * 15 + 300),
       vsync: this,
     );
-    
+
     _cursorController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _updateText();
   }
 
@@ -256,7 +259,7 @@ class _TypewriterTextState extends State<_TypewriterText>
       _previousText = widget.text;
       _typewriterController.reset();
       _cursorController.stop();
-      
+
       // Usar ValueNotifier para evitar setState excessivos
       final animation = Tween<double>(
         begin: _displayedText.length.toDouble(),
@@ -270,9 +273,10 @@ class _TypewriterTextState extends State<_TypewriterText>
       DateTime lastUpdate = DateTime.now();
       animation.addListener(() {
         final now = DateTime.now();
-        if (now.difference(lastUpdate).inMilliseconds < 50) return; // Throttle de 50ms
+        if (now.difference(lastUpdate).inMilliseconds < 50)
+          return; // Throttle de 50ms
         lastUpdate = now;
-        
+
         final charCount = animation.value.floor().clamp(0, widget.text.length);
         if (mounted) {
           setState(() {
@@ -307,11 +311,11 @@ class _TypewriterTextState extends State<_TypewriterText>
       child: AnimatedBuilder(
         animation: Listenable.merge([_typewriterController, _cursorController]),
         builder: (context, child) {
-          final shouldShowCursor = _typewriterController.isAnimating || _cursorController.isAnimating;
-          final cursorOpacity = _typewriterController.isAnimating 
-              ? 0.9 
-              : _cursorController.value;
-          
+          final shouldShowCursor = _typewriterController.isAnimating ||
+              _cursorController.isAnimating;
+          final cursorOpacity =
+              _typewriterController.isAnimating ? 0.9 : _cursorController.value;
+
           return RichText(
             text: TextSpan(
               children: [
@@ -323,7 +327,8 @@ class _TypewriterTextState extends State<_TypewriterText>
                   TextSpan(
                     text: '|',
                     style: widget.style?.copyWith(
-                      color: widget.style?.color?.withValues(alpha: cursorOpacity),
+                      color:
+                          widget.style?.color?.withValues(alpha: cursorOpacity),
                     ),
                   ),
               ],
@@ -382,7 +387,7 @@ class _ThinkingIndicatorState extends State<ThinkingIndicator>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return SizedBox(
       width: 24,
       height: 24,

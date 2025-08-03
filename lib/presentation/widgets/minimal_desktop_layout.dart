@@ -140,8 +140,8 @@ class _MinimalDesktopLayoutState extends State<MinimalDesktopLayout>
           Expanded(
             child: Container(
               margin: const EdgeInsets.all(16),
-                         child: ClipRRect(
-                           borderRadius: BorderRadius.circular(20),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
                   child: Container(
@@ -152,7 +152,8 @@ class _MinimalDesktopLayoutState extends State<MinimalDesktopLayout>
                     ).copyWith(
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: theme.colorScheme.outline.withValues(alpha: 0.15),
+                        color:
+                            theme.colorScheme.outline.withValues(alpha: 0.15),
                         width: 1,
                       ),
                       boxShadow: [
@@ -161,16 +162,16 @@ class _MinimalDesktopLayoutState extends State<MinimalDesktopLayout>
                           blurRadius: 32,
                           offset: const Offset(0, 12),
                           spreadRadius: 0,
-                  ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: widget.content,
-                      ),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: widget.content,
                     ),
                   ),
                 ),
+              ),
             ),
           ),
 
@@ -184,7 +185,8 @@ class _MinimalDesktopLayoutState extends State<MinimalDesktopLayout>
                   child: Container(
                     width: 320,
                     height: double.infinity,
-                    margin: const EdgeInsets.only(top: 16, right: 16, bottom: 16),
+                    margin:
+                        const EdgeInsets.only(top: 16, right: 16, bottom: 16),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
                       child: BackdropFilter(
@@ -197,7 +199,8 @@ class _MinimalDesktopLayoutState extends State<MinimalDesktopLayout>
                           ).copyWith(
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: theme.colorScheme.outline.withValues(alpha: 0.2),
+                              color: theme.colorScheme.outline
+                                  .withValues(alpha: 0.2),
                               width: 1,
                             ),
                             boxShadow: [
