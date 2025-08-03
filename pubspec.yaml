@@ -16,6 +16,7 @@ platforms:
 dependencies:
   flutter:
     sdk: flutter
+  json_annotation: ^4.8.1
   
   # Networking
   dio: ^5.8.0+1
@@ -33,9 +34,27 @@ dependencies:
   # Theme & UI
   adaptive_theme: ^3.6.0
   
-  # Web Scraping
+  # Web Scraping & Content Processing
   html: ^0.15.4
   url_launcher: ^6.3.1
+  
+  # Content Extraction & Parsing
+  intl: ^0.19.0                # Internationalization
+  csslib: ^1.0.0               # CSS parsing and manipulation
+  
+  # Advanced HTML parsing
+  xml: ^6.5.0                  # XML/HTML parsing
+  collection: ^1.18.0          # Advanced collections
+  
+  # String utilities
+  string_similarity: ^2.0.0    # String similarity algorithms
+  quiver: ^3.2.1               # Utility functions
+  
+  # Mathematical operations for scoring
+  vector_math: ^2.1.4          # Vector operations for similarity calculations
+  
+  # Cryptography for cache keys
+  crypto: ^3.0.3               # Cryptographic hashing
   
   # Markdown Support  
   markdown_widget: ^2.3.2+6
@@ -61,6 +80,10 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   test: ^1.25.7
+  fake_async: ^1.3.1           # Async testing
+  http_mock_adapter: ^0.6.1    # HTTP mocking
+  mocktail: ^1.0.4             # Advanced mocking
+  golden_toolkit: ^0.15.0      # Widget testing
 
 flutter:
   uses-material-design: true

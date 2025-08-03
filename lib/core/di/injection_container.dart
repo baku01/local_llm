@@ -13,7 +13,7 @@ import 'package:http/http.dart' as http;
 import '../http/robust_http_client.dart';
 import '../../data/datasources/ollama_remote_datasource.dart';
 import '../../data/datasources/web_search_datasource.dart';
-import '../../data/datasources/local_web_search_datasource.dart';
+import '../../data/datasources/strategy_web_search_datasource.dart';
 import '../../data/repositories/llm_repository_impl.dart';
 import '../../data/repositories/search_repository_impl.dart';
 import '../../domain/repositories/llm_repository.dart';
@@ -106,14 +106,17 @@ class InjectionContainer {
   /// Configura os datasources para acesso a APIs externas.
   ///
   /// - OllamaRemoteDataSource: Comunicação com servidor Ollama local
-  /// - LocalWebSearchDataSource: Pesquisas web com fallback local
+  /// - StrategyWebSearchDataSource: Pesquisas web com estratégias modulares
   void _setupDataSources() {
     _remoteDataSource = OllamaRemoteDataSourceImpl(
       dio: _dio,
       baseUrl: 'http://localhost:11434',
     );
 
-    _searchDataSource = LocalWebSearchDataSource(client: _httpClient);
+    // Usar o novo datasource baseado em estratégias
+    _searchDataSource = StrategyWebSearchDataSource(
+      httpClient: _httpClient,
+    );
   }
 
   /// Configura os repositórios que implementam as interfaces de domínio.

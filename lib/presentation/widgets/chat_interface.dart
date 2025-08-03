@@ -8,8 +8,8 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../models/chat_message.dart';
-import '../../components/chat_bubble.dart';
+import '../../domain/entities/chat_message.dart';
+import 'chat_bubble.dart';
 import 'animated_logo.dart';
 import 'thinking_animation.dart';
 

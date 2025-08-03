@@ -70,6 +70,14 @@ class GenerateResponseStream {
   /// }
   /// ```
   Stream<String> call({required String prompt, required String modelName}) {
+    if (prompt.trim().isEmpty) {
+      throw ArgumentError('O prompt não pode estar vazio');
+    }
+
+    if (modelName.trim().isEmpty) {
+      throw ArgumentError('O nome do modelo não pode estar vazio');
+    }
+
     return repository.generateResponseStream(
       prompt: prompt,
       modelName: modelName,

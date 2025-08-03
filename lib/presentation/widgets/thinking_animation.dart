@@ -6,7 +6,6 @@
 /// Otimizado para reduzir flickering e rebuilds excessivos.
 library;
 
-import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

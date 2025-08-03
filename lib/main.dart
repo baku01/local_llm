@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'theme/theme.dart';
-import 'providers/app_providers.dart';
-import 'pages/chat_page.dart';
+import 'presentation/theme/unified_theme.dart';
+import 'presentation/providers/app_providers.dart';
+import 'presentation/pages/chat_page.dart';
 
 void main() {
   runApp(

@@ -14,7 +14,7 @@ import '../../domain/usecases/get_available_models.dart';
 import '../../domain/usecases/generate_response.dart';
 import '../../domain/usecases/generate_response_stream.dart';
 import '../../domain/usecases/search_web.dart';
-import '../../models/chat_message.dart';
+import '../../domain/entities/chat_message.dart';
 
 /// Controlador principal que gerencia a interação com modelos LLM.
 /// 
@@ -115,7 +115,14 @@ class LlmController extends ChangeNotifier {
   /// Atualiza o estado de carregamento e notifica os ouvintes.
   void _setLoading(bool loading) {
     _isLoading = loading;
-    _notifyListenersThrottled();
+    // Force immediate notification when stopping loading to ensure tests see the state change
+    if (!loading) {
+      _notificationTimer?.cancel();
+      _hasPendingNotification = false;
+      notifyListeners();
+    } else {
+      _notifyListenersThrottled();
+    }
   }
 
   /// Define uma mensagem de erro e notifica os ouvintes.
@@ -142,12 +149,17 @@ class LlmController extends ChangeNotifier {
       shouldNotify = true;
     }
     
-    // Para texto de pensamento, só atualiza se mudou significativamente
+    // Para texto de pensamento, usar throttling mais responsivo
     if (thinkingText != null && (_currentThinking != thinkingText || shouldNotify)) {
-      // Durante streaming, só atualiza se a diferença for significativa
+      final currentLength = _currentThinking?.length ?? 0;
+      final newLength = thinkingText.length;
+      
+      // Throttling mais responsivo para streaming
       if (!_isThinking || shouldNotify || 
-          (_currentThinking?.length ?? 0) == 0 ||
-          (thinkingText.length - (_currentThinking?.length ?? 0)) > 15) {
+          currentLength == 0 ||
+          (newLength - currentLength) > 10 || // Reduzido de 30 para 10
+          (newLength < 50 && (newLength - currentLength) > 5) || // Mais frequente no início
+          (newLength > 0 && currentLength == 0)) { // Primeira atualização sempre
         _currentThinking = thinkingText;
         shouldNotify = true;
       }
@@ -157,7 +169,14 @@ class LlmController extends ChangeNotifier {
     }
     
     if (shouldNotify) {
-      _notifyListenersThrottled();
+      // Force immediate notification when stopping thinking to ensure tests see the state change
+      if (!thinking) {
+        _notificationTimer?.cancel();
+        _hasPendingNotification = false;
+        notifyListeners();
+      } else {
+        _notifyListenersThrottled();
+      }
     }
   }
 
@@ -193,18 +212,25 @@ class LlmController extends ChangeNotifier {
   /// 
   /// Throws: Define uma mensagem de erro se a operação falhar.
   Future<void> loadAvailableModels() async {
+    debugPrint('loadAvailableModels: Starting, setting loading to true');
     _setLoading(true);
     _setError(null);
 
     try {
+      debugPrint('loadAvailableModels: Calling _getAvailableModels');
       _models = await _getAvailableModels();
+      debugPrint('loadAvailableModels: Got ${_models.length} models');
       if (_models.isNotEmpty && _selectedModel == null) {
         _selectedModel = _models.first;
       }
     } catch (e) {
+      debugPrint('loadAvailableModels: Exception caught: $e');
       _setError('Erro ao carregar modelos: $e');
     } finally {
+      debugPrint('loadAvailableModels: In finally block, setting loading to false');
       _setLoading(false);
+      _setThinking(false);
+      debugPrint('loadAvailableModels: Finally block completed');
     }
   }
 
@@ -287,12 +313,28 @@ class LlmController extends ChangeNotifier {
       _setThinking(true, 'Analisando a pergunta e estruturando a resposta...');
     }
 
-    if (_streamEnabled) {
-      // Usa streaming
-      await _handleStreamingResponse(finalPrompt, isThinkingModel);
-    } else {
-      // Usa resposta única (modo original)
-      await _handleSingleResponse(finalPrompt, isThinkingModel);
+    try {
+      if (_streamEnabled) {
+        // Usa streaming
+        await _handleStreamingResponse(finalPrompt, isThinkingModel);
+      } else {
+        // Usa resposta única (modo original)
+        await _handleSingleResponse(finalPrompt, isThinkingModel);
+      }
+    } catch (e) {
+      // Adiciona mensagem de erro
+      final errorMessage = ChatMessage(
+        text: 'Erro ao processar mensagem: $e',
+        isUser: false,
+        timestamp: DateTime.now(),
+      );
+      _messages.add(errorMessage);
+      _setError('Erro ao processar mensagem: $e');
+    } finally {
+      // Garantir que os estados sejam sempre resetados
+      _setLoading(false);
+      _setThinking(false);
+      _setSearching(false);
     }
   }
 
@@ -330,6 +372,7 @@ class LlmController extends ChangeNotifier {
     } finally {
       _setLoading(false);
       _setThinking(false);
+      _setSearching(false);
     }
   }
 
@@ -387,8 +430,10 @@ class LlmController extends ChangeNotifier {
             }
           } else {
             thinkingBuffer.write(chunk);
-            // Atualiza o pensamento em tempo real
-            _setThinking(true, thinkingBuffer.toString());
+            // Atualiza o pensamento em tempo real com throttling mais responsivo
+            if (thinkingBuffer.length % 15 == 0 || thinkingBuffer.length < 100) {
+              _setThinking(true, thinkingBuffer.toString());
+            }
           }
         } else {
           contentBuffer.write(chunk);
@@ -438,6 +483,7 @@ class LlmController extends ChangeNotifier {
     } finally {
       _setLoading(false);
       _setThinking(false);
+      _setSearching(false);
     }
   }
 
@@ -592,14 +638,15 @@ class LlmController extends ChangeNotifier {
 
   /// Implementa throttling para notificações, reduzindo rebuilds excessivos.
   /// 
-  /// Durante operações de streaming, agrupa notificações em intervalos de 100ms
-  /// para melhorar a performance da UI.
+  /// Durante operações de streaming, agrupa notificações em intervalos otimizados
+  /// para melhorar a performance da UI mantendo responsividade.
   void _notifyListenersThrottled() {
     if (_isLoading && _streamEnabled) {
-      // Durante streaming, usar throttling
+      // Durante streaming, usar throttling mais responsivo para thinking
+      final throttleDelay = _isThinking ? 50 : 80; // Mais rápido para thinking
       _hasPendingNotification = true;
       _notificationTimer?.cancel();
-      _notificationTimer = Timer(const Duration(milliseconds: 100), () {
+      _notificationTimer = Timer(Duration(milliseconds: throttleDelay), () {
         if (_hasPendingNotification) {
           _hasPendingNotification = false;
           notifyListeners();

@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:ui';
 import 'animated_logo.dart';
-import '../../theme/theme.dart';
+import '../theme/unified_theme.dart';
 
 /// Widget de layout desktop minimalista com sidebar retrátil.
 ///
