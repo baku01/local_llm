@@ -8,50 +8,7 @@ library;
 import 'dart:math' as math;
 import 'package:string_similarity/string_similarity.dart';
 import 'text_processor.dart';
-
-/// Resultado de análise de relevância com pontuação detalhada.
-class RelevanceScore {
-  /// Pontuação geral de relevância (0.0 a 1.0).
-  final double overallScore;
-
-  /// Pontuação de similaridade semântica.
-  final double semanticScore;
-
-  /// Pontuação baseada em palavras-chave.
-  final double keywordScore;
-
-  /// Pontuação de qualidade do conteúdo.
-  final double qualityScore;
-
-  /// Pontuação de autoridade da fonte.
-  final double authorityScore;
-
-  /// Fatores que contribuíram para a pontuação.
-  final Map<String, double> scoringFactors;
-
-  /// Indica se o resultado é considerado relevante.
-  bool get isRelevant => overallScore >= 0.6;
-
-  /// Indica se o resultado tem alta relevância.
-  bool get isHighlyRelevant => overallScore >= 0.8;
-
-  const RelevanceScore({
-    required this.overallScore,
-    required this.semanticScore,
-    required this.keywordScore,
-    required this.qualityScore,
-    required this.authorityScore,
-    required this.scoringFactors,
-  });
-
-  @override
-  String toString() =>
-      'RelevanceScore(overall: ${overallScore.toStringAsFixed(3)}, '
-      'semantic: ${semanticScore.toStringAsFixed(3)}, '
-      'keyword: ${keywordScore.toStringAsFixed(3)}, '
-      'quality: ${qualityScore.toStringAsFixed(3)}, '
-      'authority: ${authorityScore.toStringAsFixed(3)})';
-}
+import '../../domain/entities/relevance_score.dart';
 
 /// Analisador avançado de relevância de conteúdo web.
 ///

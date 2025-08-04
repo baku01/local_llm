@@ -13,13 +13,13 @@ import '../utils/logger.dart';
 class RateLimiterConfig {
   /// Número máximo de requisições por janela de tempo.
   final int maxRequests;
-  
+
   /// Janela de tempo em milissegundos.
   final int windowMs;
-  
+
   /// Número de tokens inicial no bucket.
   final int initialTokens;
-  
+
   /// Taxa de reposição de tokens por segundo.
   final double refillRate;
 
@@ -36,13 +36,14 @@ class RateLimiter {
   final String _name;
   final RateLimiterConfig _config;
   final Queue<DateTime> _requestTimestamps = Queue<DateTime>();
-  
+
   double _tokens;
   DateTime _lastRefill;
 
   RateLimiter(this._name, [RateLimiterConfig? config])
       : _config = config ?? const RateLimiterConfig(),
-        _tokens = (config ?? const RateLimiterConfig()).initialTokens.toDouble(),
+        _tokens =
+            (config ?? const RateLimiterConfig()).initialTokens.toDouble(),
         _lastRefill = DateTime.now();
 
   /// Nome do rate limiter.
@@ -77,7 +78,7 @@ class RateLimiter {
 
     AppLogger.debug(
       'Rate limiter $_name: Request approved (tokens: ${_tokens.toStringAsFixed(1)}, '
-      'requests in window: ${_requestTimestamps.length})',
+          'requests in window: ${_requestTimestamps.length})',
       'RateLimiter',
     );
 
@@ -91,12 +92,12 @@ class RateLimiter {
       final timeToNextToken = (1000 / _config.refillRate).round();
       final timeToWindowReset = _getTimeToWindowReset();
       final waitTime = math.min(timeToNextToken, timeToWindowReset);
-      
+
       AppLogger.debug(
         'Rate limiter $_name: Waiting ${waitTime}ms for next request',
         'RateLimiter',
       );
-      
+
       await Future.delayed(Duration(milliseconds: waitTime));
     }
   }
@@ -106,17 +107,18 @@ class RateLimiter {
     final now = DateTime.now();
     final timeDelta = now.difference(_lastRefill).inMilliseconds / 1000.0;
     final tokensToAdd = timeDelta * _config.refillRate;
-    
+
     _tokens = math.min(_config.initialTokens.toDouble(), _tokens + tokensToAdd);
     _lastRefill = now;
   }
 
   /// Remove requisições antigas da janela deslizante.
   void _cleanOldRequests() {
-    final cutoff = DateTime.now().subtract(Duration(milliseconds: _config.windowMs));
-    
-    while (_requestTimestamps.isNotEmpty && 
-           _requestTimestamps.first.isBefore(cutoff)) {
+    final cutoff =
+        DateTime.now().subtract(Duration(milliseconds: _config.windowMs));
+
+    while (_requestTimestamps.isNotEmpty &&
+        _requestTimestamps.first.isBefore(cutoff)) {
       _requestTimestamps.removeFirst();
     }
   }
@@ -124,11 +126,12 @@ class RateLimiter {
   /// Calcula tempo até o reset da janela deslizante.
   int _getTimeToWindowReset() {
     if (_requestTimestamps.isEmpty) return 0;
-    
+
     final oldestRequest = _requestTimestamps.first;
-    final windowEnd = oldestRequest.add(Duration(milliseconds: _config.windowMs));
+    final windowEnd =
+        oldestRequest.add(Duration(milliseconds: _config.windowMs));
     final timeToReset = windowEnd.difference(DateTime.now()).inMilliseconds;
-    
+
     return math.max(0, timeToReset);
   }
 
@@ -136,7 +139,7 @@ class RateLimiter {
   Map<String, dynamic> getStatistics() {
     _refillTokens();
     _cleanOldRequests();
-    
+
     return {
       'name': _name,
       'available_tokens': _tokens.toStringAsFixed(2),
@@ -153,7 +156,7 @@ class RateLimiter {
     _tokens = _config.initialTokens.toDouble();
     _requestTimestamps.clear();
     _lastRefill = DateTime.now();
-    
+
     AppLogger.info('Rate limiter $_name reset', 'RateLimiter');
   }
 }

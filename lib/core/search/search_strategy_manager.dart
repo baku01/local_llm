@@ -203,7 +203,7 @@ class SearchStrategyManager {
 
     try {
       late List<SearchResult> results;
-      
+
       if (circuitBreaker != null) {
         // Usar circuit breaker para proteger a execução
         results = await circuitBreaker.execute(() => strategy
@@ -341,24 +341,26 @@ class SearchStrategyManager {
 
   /// Realiza health check das estratégias registradas.
   void _performHealthCheck() {
-    AppLogger.debug('Performing health check on strategies', 'SearchStrategyManager');
-    
+    AppLogger.debug(
+        'Performing health check on strategies', 'SearchStrategyManager');
+
     for (final strategy in _strategies) {
       final metrics = _strategyMetrics[strategy.name];
       final circuitBreaker = _circuitBreakers[strategy.name];
-      
+
       if (metrics != null && circuitBreaker != null) {
         // Log estado atual
         AppLogger.debug(
           'Strategy ${strategy.name}: Success rate ${(metrics.successRate * 100).toStringAsFixed(1)}%, '
-          'Circuit breaker: ${circuitBreaker.state.name}, '
-          'Available: ${strategy.isAvailable}',
+              'Circuit breaker: ${circuitBreaker.state.name}, '
+              'Available: ${strategy.isAvailable}',
           'SearchStrategyManager',
         );
-        
+
         // Reset circuit breaker se estratégia não foi usada recentemente
-        if (circuitBreaker.state == CircuitBreakerState.open && 
-            metrics.lastUpdated.isBefore(DateTime.now().subtract(const Duration(minutes: 10)))) {
+        if (circuitBreaker.state == CircuitBreakerState.open &&
+            metrics.lastUpdated.isBefore(
+                DateTime.now().subtract(const Duration(minutes: 10)))) {
           AppLogger.info(
             'Resetting circuit breaker for inactive strategy: ${strategy.name}',
             'SearchStrategyManager',
@@ -395,7 +397,8 @@ class SearchStrategyManager {
       'circuit_breakers': circuitBreakerStats,
       'health_check_enabled': _healthCheckTimer != null,
       'available_strategies': _strategies.where((s) => s.isAvailable).length,
-      'healthy_strategies': _strategies.where((s) => _isStrategyHealthy(s.name)).length,
+      'healthy_strategies':
+          _strategies.where((s) => _isStrategyHealthy(s.name)).length,
     };
   }
 
@@ -411,9 +414,10 @@ class SearchStrategyManager {
   List<Map<String, dynamic>> getStrategiesRanking() {
     return _strategies.map((strategy) {
       final score = _calculateStrategyScore(strategy);
-      final metrics = _strategyMetrics[strategy.name] ?? SearchStrategyMetrics.empty();
+      final metrics =
+          _strategyMetrics[strategy.name] ?? SearchStrategyMetrics.empty();
       final circuitBreaker = _circuitBreakers[strategy.name];
-      
+
       return {
         'name': strategy.name,
         'priority': strategy.priority,
@@ -425,7 +429,8 @@ class SearchStrategyManager {
         'is_healthy': _isStrategyHealthy(strategy.name),
         'circuit_breaker_state': circuitBreaker?.state.name ?? 'none',
       };
-    }).toList()..sort((a, b) => (b['score'] as double).compareTo(a['score'] as double));
+    }).toList()
+      ..sort((a, b) => (b['score'] as double).compareTo(a['score'] as double));
   }
 
   /// Libera recursos do gerenciador.

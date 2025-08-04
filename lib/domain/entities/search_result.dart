@@ -1,4 +1,4 @@
-import '../../core/utils/relevance_analyzer.dart';
+import 'relevance_score.dart';
 
 /// Entidade que representa um resultado individual de pesquisa web.
 ///

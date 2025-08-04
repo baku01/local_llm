@@ -11,8 +11,10 @@ import '../utils/logger.dart';
 enum CircuitBreakerState {
   /// Fechado - operações normais
   closed,
+
   /// Aberto - falhas detectadas, operações bloqueadas
   open,
+
   /// Meio-aberto - testando se o serviço se recuperou
   halfOpen,
 }
@@ -21,13 +23,13 @@ enum CircuitBreakerState {
 class CircuitBreakerConfig {
   /// Número de falhas consecutivas antes de abrir o circuito.
   final int failureThreshold;
-  
+
   /// Tempo em milissegundos antes de tentar meio-aberto.
   final int timeoutMs;
-  
+
   /// Número de tentativas de sucesso no estado meio-aberto antes de fechar.
   final int successThreshold;
-  
+
   /// Janela de tempo para resetar contadores (em milissegundos).
   final int resetTimeoutMs;
 
@@ -43,7 +45,7 @@ class CircuitBreakerConfig {
 class CircuitBreaker {
   final String _name;
   final CircuitBreakerConfig _config;
-  
+
   CircuitBreakerState _state = CircuitBreakerState.closed;
   int _failureCount = 0;
   int _successCount = 0;
@@ -81,21 +83,22 @@ class CircuitBreaker {
   /// Verifica se a operação pode ser executada.
   bool _canExecute() {
     final now = DateTime.now();
-    
+
     switch (_state) {
       case CircuitBreakerState.closed:
         return true;
-        
+
       case CircuitBreakerState.open:
         if (_lastFailureTime != null) {
-          final timeSinceFailure = now.difference(_lastFailureTime!).inMilliseconds;
+          final timeSinceFailure =
+              now.difference(_lastFailureTime!).inMilliseconds;
           if (timeSinceFailure >= _config.timeoutMs) {
             _transitionToHalfOpen();
             return true;
           }
         }
         return false;
-        
+
       case CircuitBreakerState.halfOpen:
         return true;
     }
@@ -107,19 +110,19 @@ class CircuitBreaker {
       case CircuitBreakerState.closed:
         _resetCounters();
         break;
-        
+
       case CircuitBreakerState.halfOpen:
         _successCount++;
         if (_successCount >= _config.successThreshold) {
           _transitionToClosed();
         }
         break;
-        
+
       case CircuitBreakerState.open:
         // Nunca deveria chegar aqui
         break;
     }
-    
+
     AppLogger.debug(
       'Circuit breaker $_name: Success (state: $_state, failures: $_failureCount)',
       'CircuitBreaker',
@@ -130,23 +133,23 @@ class CircuitBreaker {
   void _onFailure() {
     _lastFailureTime = DateTime.now();
     _failureCount++;
-    
+
     switch (_state) {
       case CircuitBreakerState.closed:
         if (_failureCount >= _config.failureThreshold) {
           _transitionToOpen();
         }
         break;
-        
+
       case CircuitBreakerState.halfOpen:
         _transitionToOpen();
         break;
-        
+
       case CircuitBreakerState.open:
         // Já está aberto
         break;
     }
-    
+
     AppLogger.warning(
       'Circuit breaker $_name: Failure (state: $_state, failures: $_failureCount)',
       'CircuitBreaker',
@@ -157,21 +160,24 @@ class CircuitBreaker {
   void _transitionToClosed() {
     _state = CircuitBreakerState.closed;
     _resetCounters();
-    AppLogger.info('Circuit breaker $_name: Transitioned to CLOSED', 'CircuitBreaker');
+    AppLogger.info(
+        'Circuit breaker $_name: Transitioned to CLOSED', 'CircuitBreaker');
   }
 
   /// Transição para estado aberto.
   void _transitionToOpen() {
     _state = CircuitBreakerState.open;
     _successCount = 0;
-    AppLogger.warning('Circuit breaker $_name: Transitioned to OPEN', 'CircuitBreaker');
+    AppLogger.warning(
+        'Circuit breaker $_name: Transitioned to OPEN', 'CircuitBreaker');
   }
 
   /// Transição para estado meio-aberto.
   void _transitionToHalfOpen() {
     _state = CircuitBreakerState.halfOpen;
     _successCount = 0;
-    AppLogger.info('Circuit breaker $_name: Transitioned to HALF-OPEN', 'CircuitBreaker');
+    AppLogger.info(
+        'Circuit breaker $_name: Transitioned to HALF-OPEN', 'CircuitBreaker');
   }
 
   /// Reseta contadores.
@@ -209,9 +215,9 @@ class CircuitBreaker {
 /// Exceção lançada quando o circuit breaker está aberto.
 class CircuitBreakerOpenException implements Exception {
   final String circuitBreakerName;
-  
+
   const CircuitBreakerOpenException(this.circuitBreakerName);
-  
+
   @override
   String toString() => 'Circuit breaker $circuitBreakerName is OPEN';
 }
