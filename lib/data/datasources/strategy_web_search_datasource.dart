@@ -1,5 +1,5 @@
 /// Data source de busca web baseado em estratégias.
-///
+/// 
 /// Implementa busca web usando o sistema de estratégias modular,
 /// com seleção automática, fallback e otimização de performance.
 library;
@@ -19,14 +19,14 @@ import 'web_search_datasource.dart';
 class StrategyWebSearchDataSource implements WebSearchDataSource {
   final SearchStrategyManager _strategyManager;
   final http.Client _httpClient;
-
+  
   StrategyWebSearchDataSource({
     required http.Client httpClient,
     SearchStrategyConfig? config,
-  })  : _httpClient = httpClient,
-        _strategyManager = SearchStrategyManager(
-          config: config ?? const SearchStrategyConfig(),
-        ) {
+  }) : _httpClient = httpClient,
+       _strategyManager = SearchStrategyManager(
+         config: config ?? const SearchStrategyConfig(),
+       ) {
     _initializeStrategies();
   }
 
@@ -37,19 +37,19 @@ class StrategyWebSearchDataSource implements WebSearchDataSource {
       _strategyManager.registerStrategy(
         GoogleSearchStrategy(client: _httpClient),
       );
-
+      
       _strategyManager.registerStrategy(
         BingSearchStrategy(client: _httpClient),
       );
-
+      
       _strategyManager.registerStrategy(
         DuckDuckGoSearchStrategy(client: _httpClient),
       );
-
+      
       _strategyManager.registerStrategy(
         LocalSearchStrategy(client: _httpClient),
       );
-
+      
       AppLogger.info(
         'Initialized ${_strategyManager.getStatistics()['registered_strategies']} search strategies',
         'StrategyWebSearchDataSource',
@@ -70,14 +70,14 @@ class StrategyWebSearchDataSource implements WebSearchDataSource {
         'Starting web search: "${query.query}" (type: ${query.type}, max: ${query.maxResults})',
         'StrategyWebSearchDataSource',
       );
-
+      
       final strategyResult = await _strategyManager.search(query);
-
+      
       AppLogger.info(
         'Web search completed: ${strategyResult.results.length} results found using ${strategyResult.strategyName}',
         'StrategyWebSearchDataSource',
       );
-
+      
       return strategyResult.results;
     } catch (e) {
       AppLogger.error(
@@ -91,16 +91,13 @@ class StrategyWebSearchDataSource implements WebSearchDataSource {
   @override
   Future<String> fetchPageContent(String url) async {
     try {
-      AppLogger.debug(
-          'Fetching page content: $url', 'StrategyWebSearchDataSource');
-
+      AppLogger.debug('Fetching page content: $url', 'StrategyWebSearchDataSource');
+      
       final response = await _httpClient.get(
         Uri.parse(url),
         headers: {
-          'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept':
-              'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
           'Accept-Encoding': 'gzip, deflate',
           'Connection': 'keep-alive',
@@ -113,18 +110,18 @@ class StrategyWebSearchDataSource implements WebSearchDataSource {
       }
 
       final content = response.body;
-
+      
       // Limitar tamanho do conteúdo para evitar problemas de memória
       const maxContentLength = 1000000; // 1MB
-      final limitedContent = content.length > maxContentLength
+      final limitedContent = content.length > maxContentLength 
           ? content.substring(0, maxContentLength)
           : content;
-
+      
       AppLogger.debug(
         'Page content fetched: ${limitedContent.length} characters',
         'StrategyWebSearchDataSource',
       );
-
+      
       return limitedContent;
     } catch (e) {
       AppLogger.warning(
@@ -152,19 +149,16 @@ class StrategyWebSearchDataSource implements WebSearchDataSource {
   /// Limpa cache e métricas.
   void clearCache() {
     // O cache é gerenciado internamente pelo SearchStrategyManager
-    AppLogger.info('Strategy cache management handled internally',
-        'StrategyWebSearchDataSource');
+    AppLogger.info('Strategy cache management handled internally', 'StrategyWebSearchDataSource');
   }
 
   /// Libera recursos.
   void dispose() {
     try {
       _httpClient.close();
-      AppLogger.info('StrategyWebSearchDataSource disposed',
-          'StrategyWebSearchDataSource');
+      AppLogger.info('StrategyWebSearchDataSource disposed', 'StrategyWebSearchDataSource');
     } catch (e) {
-      AppLogger.warning('Error disposing StrategyWebSearchDataSource: $e',
-          'StrategyWebSearchDataSource');
+      AppLogger.warning('Error disposing StrategyWebSearchDataSource: $e', 'StrategyWebSearchDataSource');
     }
   }
 }
