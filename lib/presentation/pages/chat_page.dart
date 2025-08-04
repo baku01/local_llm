@@ -333,7 +333,7 @@ class ChatPage extends ConsumerWidget {
                   end: Alignment.bottomRight,
                   colors: [
                     theme.colorScheme.primary.withValues(alpha: 0.2),
-                theme.colorScheme.secondary.withValues(alpha: 0.2),
+                    theme.colorScheme.secondary.withValues(alpha: 0.2),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),

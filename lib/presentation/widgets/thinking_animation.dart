@@ -86,7 +86,7 @@ class _ThinkingAnimationState extends State<ThinkingAnimation>
           end: Alignment.bottomRight,
           colors: [
             theme.colorScheme.primary.withValues(alpha: 0.08),
-        theme.colorScheme.secondary.withValues(alpha: 0.05),
+            theme.colorScheme.secondary.withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(16),

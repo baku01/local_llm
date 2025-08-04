@@ -470,7 +470,7 @@ class _SuggestionCardState extends State<_SuggestionCard> {
             border: Border.all(
               color: _isHovered
                   ? theme.colorScheme.primary.withValues(alpha: 0.3)
-                : theme.colorScheme.outline.withValues(alpha: 0.3),
+                  : theme.colorScheme.outline.withValues(alpha: 0.3),
               width: 1,
             ),
             boxShadow: _isHovered
@@ -493,7 +493,7 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                 decoration: BoxDecoration(
                   color: _isHovered
                       ? theme.colorScheme.primary.withValues(alpha: 0.2)
-                : theme.colorScheme.primary.withValues(alpha: 0.1),
+                      : theme.colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(

@@ -278,7 +278,7 @@ class _MinimalDesktopLayoutState extends State<MinimalDesktopLayout>
                   BoxShadow(
                     color: _isSidebarExpanded
                         ? theme.colorScheme.primary.withValues(alpha: 0.3)
-                : Colors.black.withValues(alpha: 0.05),
+                        : Colors.black.withValues(alpha: 0.05),
                     blurRadius: _isSidebarExpanded ? 16 : 8,
                     offset: const Offset(0, 4),
                     spreadRadius: 0,

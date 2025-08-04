@@ -163,8 +163,8 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
             blur: 20,
           ).copyWith(
             border: Border(
-              top: BorderSide(color:
-                  theme.colorScheme.outline.withValues(alpha: 0.1),
+              top: BorderSide(
+                color: theme.colorScheme.outline.withValues(alpha: 0.1),
                 width: 1,
               ),
             ),
