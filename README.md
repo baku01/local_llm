@@ -84,6 +84,8 @@
 - 💾 **Cache Inteligente** - Otimização com limpeza automática
 - 🎯 **Análise de Relevância** - Filtragem baseada em algoritmos customizados
 - 📄 **Extração de Conteúdo** - Obtenção automática do conteúdo das páginas
+- 🛡️ **Circuit Breaker** - Proteção contra falhas em cascata
+- ⚡ **Rate Limiting** - Controle inteligente de requisições
 
 ### 🏗️ Arquitetura
 
@@ -265,6 +267,9 @@ graph TB
 - **Cache Inteligente** - Otimização de performance
 - **HTML Parser** - Extração de conteúdo web
 - **Análise de Relevância** - Algoritmos customizados
+- **Circuit Breaker Pattern** - Fault tolerance avançada
+- **Rate Limiting** - Token bucket + sliding window
+- **Health Monitoring** - Monitoramento contínuo de estratégias
 
 </td>
 <td width="50%">
@@ -301,6 +306,7 @@ graph TB
 | 🔍 Complexidade Ciclomática | < 10 | ✅ Simples |
 | 📦 Dependências Atualizadas | 100% | ✅ Atualizado |
 | 🛡️ Vulnerabilidades | 0 | ✅ Seguro |
+| ⚡ Fault Tolerance | Circuit Breaker | ✅ Robusto |
 
 </div>
 
@@ -361,6 +367,8 @@ graph TB
 | 📡 Streaming de Respostas | ✅ Completo | v1.0 |
 | 🧪 Testes Automatizados | ✅ Completo | v1.1 |
 | 🚀 CI/CD Pipeline | ✅ Completo | v1.1 |
+| 🛡️ Circuit Breaker Pattern | ✅ Completo | v1.2 |
+| ⚡ Rate Limiting Avançado | ✅ Completo | v1.2 |
 
 </div>
 
