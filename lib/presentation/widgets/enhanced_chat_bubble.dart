@@ -138,7 +138,7 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
           style: TextStyle(
             color: widget.isUser
                 ? Colors.white.withValues(alpha: 0.7)
-                : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            : theme.colorScheme.onSurface.withValues(alpha: 0.6),
             fontSize: 12,
           ),
         ),
@@ -206,7 +206,7 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble> {
     } else {
       return _isHovered
           ? theme.colorScheme.primary.withValues(alpha: 0.3)
-          : theme.colorScheme.outline.withValues(alpha: 0.2);
+    : theme.colorScheme.outline.withValues(alpha: 0.2);
     }
   }
 

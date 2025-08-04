@@ -148,7 +148,7 @@ class _OptimizedThinkingWidgetState extends State<OptimizedThinkingWidget>
           end: Alignment.bottomRight,
           colors: [
             theme.colorScheme.primary.withValues(alpha: 0.05),
-            theme.colorScheme.secondary.withValues(alpha: 0.02),
+                theme.colorScheme.secondary.withValues(alpha: 0.02),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
