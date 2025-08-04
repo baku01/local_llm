@@ -1,13 +1,15 @@
 /// Gerenciador de estratégias de busca com fallback inteligente.
 ///
 /// Este módulo implementa um sistema robusto de gerenciamento de estratégias
-/// de busca, incluindo seleção automática, fallback e métricas de performance.
+/// de busca, incluindo seleção automática, fallback, métricas de performance
+/// e circuit breaker pattern para fault tolerance.
 library;
 
 import 'dart:async';
 import 'dart:math' as math;
 import '../../domain/entities/search_result.dart';
 import 'search_strategy.dart';
+import 'circuit_breaker.dart';
 import '../utils/logger.dart';
 
 /// Configuração do gerenciador de estratégias.
@@ -44,11 +46,15 @@ class SearchStrategyConfig {
 /// - Monitoramento de performance em tempo real
 /// - Cache inteligente de resultados
 /// - Balanceamento de carga entre estratégias
+/// - Circuit breaker pattern para fault tolerance
+/// - Health check das estratégias
 class SearchStrategyManager {
   final List<SearchStrategy> _strategies = [];
   final SearchStrategyConfig _config;
   final Map<String, List<StrategySearchResult>> _cache = {};
+  final Map<String, CircuitBreaker> _circuitBreakers = {};
   Timer? _cacheCleanupTimer;
+  Timer? _healthCheckTimer;
 
   /// Métricas globais do gerenciador.
   final Map<String, SearchStrategyMetrics> _strategyMetrics = {};
@@ -56,6 +62,7 @@ class SearchStrategyManager {
   SearchStrategyManager({SearchStrategyConfig? config})
       : _config = config ?? const SearchStrategyConfig() {
     _startCacheCleanup();
+    _startHealthCheck();
   }
 
   /// Registra uma nova estratégia de busca.
@@ -63,6 +70,14 @@ class SearchStrategyManager {
     if (!_strategies.any((s) => s.name == strategy.name)) {
       _strategies.add(strategy);
       _strategyMetrics[strategy.name] = SearchStrategyMetrics.empty();
+      _circuitBreakers[strategy.name] = CircuitBreaker(
+        strategy.name,
+        const CircuitBreakerConfig(
+          failureThreshold: 3,
+          timeoutMs: 30000,
+          successThreshold: 2,
+        ),
+      );
       AppLogger.info(
           'Estratégia registrada: ${strategy.name}', 'SearchStrategyManager');
     }
@@ -72,6 +87,7 @@ class SearchStrategyManager {
   void unregisterStrategy(String strategyName) {
     _strategies.removeWhere((s) => s.name == strategyName);
     _strategyMetrics.remove(strategyName);
+    _circuitBreakers.remove(strategyName);
     AppLogger.info(
         'Estratégia removida: $strategyName', 'SearchStrategyManager');
   }
@@ -133,8 +149,15 @@ class SearchStrategyManager {
         .where((strategy) =>
             strategy.isAvailable &&
             strategy.canHandle(query) &&
-            _getStrategySuccessRate(strategy.name) >= _config.minSuccessRate)
+            _getStrategySuccessRate(strategy.name) >= _config.minSuccessRate &&
+            _isStrategyHealthy(strategy.name))
         .toList();
+  }
+
+  /// Verifica se uma estratégia está saudável (circuit breaker fechado).
+  bool _isStrategyHealthy(String strategyName) {
+    final circuitBreaker = _circuitBreakers[strategyName];
+    return circuitBreaker?.state != CircuitBreakerState.open;
   }
 
   /// Seleciona a melhor estratégia baseada em métricas.
@@ -170,17 +193,28 @@ class SearchStrategyManager {
     return (successScore + speedScore) * (strategy.priority / 10.0);
   }
 
-  /// Executa uma estratégia específica com timeout.
+  /// Executa uma estratégia específica com timeout e circuit breaker.
   Future<StrategySearchResult> _executeStrategy(
     SearchStrategy strategy,
     SearchQuery query,
   ) async {
     final stopwatch = Stopwatch()..start();
+    final circuitBreaker = _circuitBreakers[strategy.name];
 
     try {
-      final results = await strategy
-          .search(query)
-          .timeout(Duration(seconds: strategy.timeoutSeconds));
+      late List<SearchResult> results;
+      
+      if (circuitBreaker != null) {
+        // Usar circuit breaker para proteger a execução
+        results = await circuitBreaker.execute(() => strategy
+            .search(query)
+            .timeout(Duration(seconds: strategy.timeoutSeconds)));
+      } else {
+        // Fallback sem circuit breaker
+        results = await strategy
+            .search(query)
+            .timeout(Duration(seconds: strategy.timeoutSeconds));
+      }
 
       stopwatch.stop();
       final executionTime = stopwatch.elapsedMilliseconds;
@@ -203,12 +237,27 @@ class SearchStrategyManager {
       stopwatch.stop();
       final executionTime = stopwatch.elapsedMilliseconds;
 
+      // Determinar tipo de erro
+      String errorType = 'Unknown';
+      if (e is CircuitBreakerOpenException) {
+        errorType = 'CircuitBreakerOpen';
+      } else if (e is TimeoutException) {
+        errorType = 'Timeout';
+      } else {
+        errorType = 'ExecutionFailure';
+      }
+
+      AppLogger.warning(
+        'Estratégia ${strategy.name} falhou: $errorType - $e',
+        'SearchStrategyManager',
+      );
+
       return StrategySearchResult(
         results: [],
         strategyName: strategy.name,
         executionTimeMs: executionTime,
         isSuccessful: false,
-        error: e.toString(),
+        error: '$errorType: $e',
       );
     }
   }
@@ -282,6 +331,44 @@ class SearchStrategyManager {
     );
   }
 
+  /// Inicia health check das estratégias.
+  void _startHealthCheck() {
+    _healthCheckTimer = Timer.periodic(
+      const Duration(minutes: 5),
+      (_) => _performHealthCheck(),
+    );
+  }
+
+  /// Realiza health check das estratégias registradas.
+  void _performHealthCheck() {
+    AppLogger.debug('Performing health check on strategies', 'SearchStrategyManager');
+    
+    for (final strategy in _strategies) {
+      final metrics = _strategyMetrics[strategy.name];
+      final circuitBreaker = _circuitBreakers[strategy.name];
+      
+      if (metrics != null && circuitBreaker != null) {
+        // Log estado atual
+        AppLogger.debug(
+          'Strategy ${strategy.name}: Success rate ${(metrics.successRate * 100).toStringAsFixed(1)}%, '
+          'Circuit breaker: ${circuitBreaker.state.name}, '
+          'Available: ${strategy.isAvailable}',
+          'SearchStrategyManager',
+        );
+        
+        // Reset circuit breaker se estratégia não foi usada recentemente
+        if (circuitBreaker.state == CircuitBreakerState.open && 
+            metrics.lastUpdated.isBefore(DateTime.now().subtract(const Duration(minutes: 10)))) {
+          AppLogger.info(
+            'Resetting circuit breaker for inactive strategy: ${strategy.name}',
+            'SearchStrategyManager',
+          );
+          circuitBreaker.reset();
+        }
+      }
+    }
+  }
+
   /// Limpa entradas antigas do cache.
   void _cleanupCache() {
     final cutoffMinutes = _config.cacheCleanupIntervalMinutes * 2;
@@ -297,18 +384,57 @@ class SearchStrategyManager {
 
   /// Obtém estatísticas do gerenciador.
   Map<String, dynamic> getStatistics() {
+    final circuitBreakerStats = _circuitBreakers.map(
+      (name, breaker) => MapEntry(name, breaker.getStatistics()),
+    );
+
     return {
       'registered_strategies': _strategies.length,
       'cache_entries': _cache.length,
       'strategy_metrics': _strategyMetrics,
+      'circuit_breakers': circuitBreakerStats,
+      'health_check_enabled': _healthCheckTimer != null,
+      'available_strategies': _strategies.where((s) => s.isAvailable).length,
+      'healthy_strategies': _strategies.where((s) => _isStrategyHealthy(s.name)).length,
     };
+  }
+
+  /// Força o reset de todos os circuit breakers.
+  void resetAllCircuitBreakers() {
+    for (final breaker in _circuitBreakers.values) {
+      breaker.reset();
+    }
+    AppLogger.info('All circuit breakers reset', 'SearchStrategyManager');
+  }
+
+  /// Obtém estratégias ordenadas por score.
+  List<Map<String, dynamic>> getStrategiesRanking() {
+    return _strategies.map((strategy) {
+      final score = _calculateStrategyScore(strategy);
+      final metrics = _strategyMetrics[strategy.name] ?? SearchStrategyMetrics.empty();
+      final circuitBreaker = _circuitBreakers[strategy.name];
+      
+      return {
+        'name': strategy.name,
+        'priority': strategy.priority,
+        'score': score,
+        'success_rate': metrics.successRate,
+        'avg_response_time': metrics.averageResponseTime,
+        'total_searches': metrics.totalSearches,
+        'is_available': strategy.isAvailable,
+        'is_healthy': _isStrategyHealthy(strategy.name),
+        'circuit_breaker_state': circuitBreaker?.state.name ?? 'none',
+      };
+    }).toList()..sort((a, b) => (b['score'] as double).compareTo(a['score'] as double));
   }
 
   /// Libera recursos do gerenciador.
   void dispose() {
     _cacheCleanupTimer?.cancel();
+    _healthCheckTimer?.cancel();
     _cache.clear();
     _strategies.clear();
     _strategyMetrics.clear();
+    _circuitBreakers.clear();
   }
 }
