@@ -73,8 +73,7 @@ void main() {
           () async => await repository.search(query),
           throwsA(
             predicate((e) =>
-                e is Exception &&
-                e.toString().contains('Falha na pesquisa')),
+                e is Exception && e.toString().contains('Falha na pesquisa')),
           ),
         );
 
@@ -159,8 +158,7 @@ void main() {
       test('should handle empty page content', () async {
         // Arrange
         const url = 'https://empty.com';
-        when(mockDataSource.fetchPageContent(url))
-            .thenAnswer((_) async => '');
+        when(mockDataSource.fetchPageContent(url)).thenAnswer((_) async => '');
 
         // Act
         final content = await repository.fetchPageContent(url);
@@ -249,8 +247,8 @@ void main() {
       test('should handle timeout exceptions', () async {
         // Arrange
         const url = 'https://slow-site.com';
-        when(mockDataSource.fetchPageContent(url))
-            .thenThrow(TimeoutException('Request timeout', const Duration(seconds: 30)));
+        when(mockDataSource.fetchPageContent(url)).thenThrow(
+            TimeoutException('Request timeout', const Duration(seconds: 30)));
 
         // Act & Assert
         expect(

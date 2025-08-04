@@ -63,7 +63,8 @@ void main() {
           maxTimeoutSeconds: 30,
           maxFallbackAttempts: 3,
           enableStrategyCache: true,
-          minSuccessRate: 0.0, // Allow strategies with 0 success rate for testing
+          minSuccessRate:
+              0.0, // Allow strategies with 0 success rate for testing
         ),
       );
 

@@ -5,7 +5,7 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -16,7 +16,7 @@ void main() {
     // Test that the LocalLLMApp widget can be created without throwing
     const app = LocalLLMApp();
     expect(app, isA<LocalLLMApp>());
-    
+
     // Test that it can be wrapped in ProviderScope
     const wrappedApp = ProviderScope(child: LocalLLMApp());
     expect(wrappedApp, isA<ProviderScope>());

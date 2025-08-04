@@ -201,7 +201,8 @@ void main() {
 
       await highRefillLimiter.tryAcquire(); // Consume initial
       await Future.delayed(const Duration(milliseconds: 50));
-      expect(await highRefillLimiter.tryAcquire(), true); // Should have refilled
+      expect(
+          await highRefillLimiter.tryAcquire(), true); // Should have refilled
     });
   });
 }

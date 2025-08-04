@@ -95,7 +95,8 @@ void main() {
       expect(circuitBreaker.state, CircuitBreakerState.halfOpen);
     });
 
-    test('should close circuit after successful operations in half-open', () async {
+    test('should close circuit after successful operations in half-open',
+        () async {
       final testCircuitBreaker = CircuitBreaker(
         'test-half-open',
         const CircuitBreakerConfig(

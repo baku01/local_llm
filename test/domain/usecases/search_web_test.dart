@@ -65,7 +65,8 @@ void main() {
         verifyNever(mockRepository.search(any));
       });
 
-      test('should handle whitespace-only query by throwing ArgumentError', () async {
+      test('should handle whitespace-only query by throwing ArgumentError',
+          () async {
         // Arrange
         const whitespaceQuery = SearchQuery(query: '   \t  \n  ');
 
@@ -197,18 +198,17 @@ void main() {
       test('should handle various query lengths', () async {
         // Test short query
         const shortQuery = SearchQuery(query: 'AI');
-        when(mockRepository.search(shortQuery))
-            .thenAnswer((_) async => []);
+        when(mockRepository.search(shortQuery)).thenAnswer((_) async => []);
 
         await useCase.call(shortQuery);
         verify(mockRepository.search(shortQuery)).called(1);
 
         // Test long query
         const longQuery = SearchQuery(
-          query: 'comprehensive guide to machine learning algorithms for beginners with practical examples and real-world applications',
+          query:
+              'comprehensive guide to machine learning algorithms for beginners with practical examples and real-world applications',
         );
-        when(mockRepository.search(longQuery))
-            .thenAnswer((_) async => []);
+        when(mockRepository.search(longQuery)).thenAnswer((_) async => []);
 
         await useCase.call(longQuery);
         verify(mockRepository.search(longQuery)).called(1);
@@ -279,7 +279,8 @@ void main() {
       test('should return page content from repository', () async {
         // Arrange
         const url = 'https://flutter.dev';
-        const expectedContent = '<!DOCTYPE html><html><head><title>Flutter</title>';
+        const expectedContent =
+            '<!DOCTYPE html><html><head><title>Flutter</title>';
 
         when(mockRepository.fetchPageContent(url))
             .thenAnswer((_) async => expectedContent);
@@ -301,15 +302,15 @@ void main() {
           () async => await useCase.call(emptyUrl),
           throwsA(
             predicate((e) =>
-                e is ArgumentError &&
-                e.message == 'URL não pode estar vazia'),
+                e is ArgumentError && e.message == 'URL não pode estar vazia'),
           ),
         );
 
         verifyNever(mockRepository.fetchPageContent(any));
       });
 
-      test('should handle whitespace-only URL by throwing ArgumentError', () async {
+      test('should handle whitespace-only URL by throwing ArgumentError',
+          () async {
         // Arrange
         const whitespaceUrl = '   \t  \n  ';
 
@@ -348,8 +349,7 @@ void main() {
       test('should handle empty content from repository', () async {
         // Arrange
         const url = 'https://empty-page.com';
-        when(mockRepository.fetchPageContent(url))
-            .thenAnswer((_) async => '');
+        when(mockRepository.fetchPageContent(url)).thenAnswer((_) async => '');
 
         // Act
         final content = await useCase.call(url);

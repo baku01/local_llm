@@ -14,7 +14,8 @@ class MockHttpClient extends http.BaseClient {
     _responses[url] = response;
   }
 
-  void addSearchResponse(String searchEngine, String query, List<SearchResult> results) {
+  void addSearchResponse(
+      String searchEngine, String query, List<SearchResult> results) {
     final mockHtml = _generateMockSearchHtml(searchEngine, results);
     final uri = _buildSearchUri(searchEngine, query);
     _responses[uri.toString()] = http.Response(mockHtml, 200);
@@ -23,7 +24,7 @@ class MockHttpClient extends http.BaseClient {
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
     _requests.add(request as http.Request);
-    
+
     final response = _responses[request.url.toString()];
     if (response != null) {
       return http.StreamedResponse(
@@ -129,11 +130,14 @@ class MockHttpClient extends http.BaseClient {
   Uri _buildSearchUri(String engine, String query) {
     switch (engine.toLowerCase()) {
       case 'google':
-        return Uri.parse('https://www.google.com/search?q=${Uri.encodeComponent(query)}&num=5&hl=pt-BR');
+        return Uri.parse(
+            'https://www.google.com/search?q=${Uri.encodeComponent(query)}&num=5&hl=pt-BR');
       case 'bing':
-        return Uri.parse('https://www.bing.com/search?q=${Uri.encodeComponent(query)}&count=5');
+        return Uri.parse(
+            'https://www.bing.com/search?q=${Uri.encodeComponent(query)}&count=5');
       case 'duckduckgo':
-        return Uri.parse('https://duckduckgo.com/html/?q=${Uri.encodeComponent(query)}');
+        return Uri.parse(
+            'https://duckduckgo.com/html/?q=${Uri.encodeComponent(query)}');
       default:
         throw ArgumentError('Unknown search engine: $engine');
     }
@@ -224,7 +228,7 @@ void main() {
       });
 
       test('should successfully search using Bing strategy', () async {
-        // Arrange  
+        // Arrange
         final expectedResults = [
           SearchResult(
             title: 'Dart Programming Language',
@@ -259,10 +263,11 @@ void main() {
     });
 
     group('Strategy Fallback Tests', () {
-      test('should fallback to secondary strategy when primary fails', () async {
+      test('should fallback to secondary strategy when primary fails',
+          () async {
         // Arrange
         const query = SearchQuery(query: 'fallback test');
-        
+
         // This test is simplified since we're testing at the data source level
         // The fallback logic is tested in the strategy manager tests
         final results = [
@@ -457,7 +462,8 @@ void main() {
       test('should handle malformed HTML gracefully', () async {
         // Arrange
         const query = SearchQuery(query: 'malformed html');
-        dataSource.setSearchResponse(query, []); // Empty results for malformed HTML
+        dataSource
+            .setSearchResponse(query, []); // Empty results for malformed HTML
 
         // Act
         final results = await searchWebUseCase.call(query);
