@@ -13,6 +13,7 @@ import 'package:http/http.dart' as http;
 import '../http/robust_http_client.dart';
 import '../../data/datasources/ollama_remote_datasource.dart';
 import '../../data/datasources/web_search_datasource.dart';
+import '../../data/datasources/intelligent_web_search_datasource.dart';
 import '../../data/datasources/strategy_web_search_datasource.dart';
 import '../../data/repositories/llm_repository_impl.dart';
 import '../../data/repositories/search_repository_impl.dart';

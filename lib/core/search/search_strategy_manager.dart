@@ -122,12 +122,21 @@ class SearchStrategyManager {
       try {
         final result = await _executeStrategy(strategy, query);
 
-        // Cache do resultado se bem-sucedido
-        if (_config.enableStrategyCache && result.isSuccessful) {
-          _cacheResult(query, result);
+        // Se o resultado é bem-sucedido, retornar
+        if (result.isSuccessful) {
+          // Cache do resultado se bem-sucedido
+          if (_config.enableStrategyCache) {
+            _cacheResult(query, result);
+          }
+          return result;
+        } else {
+          // Se não foi bem-sucedido, continuar para próxima estratégia
+          lastException = Exception(result.error ?? 'Estratégia falhou');
+          AppLogger.warning(
+            'Estratégia ${strategy.name} falhou (tentativa ${attempt + 1}): ${result.error}',
+            'SearchStrategyManager',
+          );
         }
-
-        return result;
       } catch (e) {
         lastException = e is Exception ? e : Exception(e.toString());
         AppLogger.warning(
