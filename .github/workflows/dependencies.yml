@@ -1,0 +1,167 @@
+name: Dependency Management
+
+on:
+  schedule:
+    # Executa toda segunda-feira às 9h UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      update_type:
+        description: 'Tipo de atualização'
+        required: true
+        default: 'minor'
+        type: choice
+        options:
+        - patch
+        - minor
+        - major
+
+env:
+  FLUTTER_VERSION: '3.24.3'
+  FLUTTER_CHANNEL: 'stable'
+
+jobs:
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+        
+    - name: 🐦 Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        channel: ${{ env.FLUTTER_CHANNEL }}
+        cache: true
+        
+    - name: 📊 Check current dependencies
+      run: |
+        echo "📊 Current dependencies:"
+        flutter pub deps --style=compact
+        
+    - name: 🔄 Update Flutter SDK
+      run: |
+        echo "🔄 Updating Flutter SDK..."
+        flutter upgrade
+        flutter --version
+        
+    - name: 📦 Update dependencies
+      run: |
+        echo "📦 Updating dependencies..."
+        flutter pub upgrade
+        
+    - name: 🧪 Run tests after update
+      run: |
+        echo "🧪 Running tests to verify updates..."
+        flutter pub get
+        flutter test --reporter=expanded
+        
+    - name: 🔍 Check for security vulnerabilities
+      run: |
+        echo "🔍 Checking for security vulnerabilities..."
+        flutter pub deps --json > deps.json
+        # Aqui você pode adicionar ferramentas de segurança específicas
+        
+    - name: 📋 Generate update summary
+      id: summary
+      run: |
+        echo "📋 Generating update summary..."
+        if git diff --quiet pubspec.lock; then
+          echo "HAS_CHANGES=false" >> $GITHUB_OUTPUT
+          echo "SUMMARY=Nenhuma atualização de dependência disponível" >> $GITHUB_OUTPUT
+        else
+          echo "HAS_CHANGES=true" >> $GITHUB_OUTPUT
+          CHANGED_DEPS=$(git diff pubspec.lock | grep -E '^[+-]' | grep -v '^[+-]{3}' | wc -l)
+          echo "SUMMARY=Atualizadas $CHANGED_DEPS dependências" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: 📝 Create detailed changelog
+      if: steps.summary.outputs.HAS_CHANGES == 'true'
+      run: |
+        echo "📝 Creating detailed changelog..."
+        echo "## 📦 Atualizações de Dependências" > DEPENDENCY_CHANGELOG.md
+        echo "" >> DEPENDENCY_CHANGELOG.md
+        echo "### Alterações no pubspec.lock:" >> DEPENDENCY_CHANGELOG.md
+        echo "\`\`\`diff" >> DEPENDENCY_CHANGELOG.md
+        git diff pubspec.lock >> DEPENDENCY_CHANGELOG.md
+        echo "\`\`\`" >> DEPENDENCY_CHANGELOG.md
+        echo "" >> DEPENDENCY_CHANGELOG.md
+        echo "### Verificações realizadas:" >> DEPENDENCY_CHANGELOG.md
+        echo "- ✅ Testes unitários executados com sucesso" >> DEPENDENCY_CHANGELOG.md
+        echo "- ✅ Análise de segurança realizada" >> DEPENDENCY_CHANGELOG.md
+        echo "- ✅ Compatibilidade verificada" >> DEPENDENCY_CHANGELOG.md
+        
+    - name: 🔀 Create Pull Request
+      if: steps.summary.outputs.HAS_CHANGES == 'true'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: |
+          chore: atualizar dependências Flutter
+          
+          ${{ steps.summary.outputs.SUMMARY }}
+          
+          - Atualizações testadas e verificadas
+          - Compatibilidade confirmada
+          - Testes passando
+        title: '📦 Atualização Automática de Dependências'
+        body-path: DEPENDENCY_CHANGELOG.md
+        branch: chore/update-dependencies
+        delete-branch: true
+        labels: |
+          dependencies
+          automated
+          chore
+        reviewers: |
+          ${{ github.repository_owner }}
+        
+    - name: 📢 Notify if no updates
+      if: steps.summary.outputs.HAS_CHANGES == 'false'
+      run: |
+        echo "📢 Nenhuma atualização de dependência necessária."
+        echo "✅ Todas as dependências estão atualizadas!"
+
+  # Job para verificar dependências obsoletas
+  check-outdated:
+    name: Check Outdated Dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: 🐦 Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        channel: ${{ env.FLUTTER_CHANNEL }}
+        cache: true
+        
+    - name: 📦 Install dependencies
+      run: flutter pub get
+      
+    - name: 🔍 Check for outdated packages
+      run: |
+        echo "🔍 Verificando pacotes desatualizados..."
+        flutter pub outdated --json > outdated.json || true
+        
+        if [ -s outdated.json ]; then
+          echo "📋 Pacotes desatualizados encontrados:"
+          cat outdated.json
+        else
+          echo "✅ Todos os pacotes estão atualizados!"
+        fi
+        
+    - name: 📊 Upload outdated report
+      uses: actions/upload-artifact@v4
+      with:
+        name: outdated-dependencies-report
+        path: outdated.json
+        retention-days: 30

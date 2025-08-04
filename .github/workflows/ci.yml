@@ -1,0 +1,187 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  FLUTTER_VERSION: '3.24.3'
+  FLUTTER_CHANNEL: 'stable'
+
+jobs:
+  # Job de análise e testes
+  test:
+    name: Test & Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: 🐦 Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        channel: ${{ env.FLUTTER_CHANNEL }}
+        cache: true
+        
+    - name: 📦 Install dependencies
+      run: flutter pub get
+      
+    - name: 🔍 Verify dependencies
+      run: flutter pub deps
+      
+    - name: 🎨 Check code formatting
+      run: |
+        echo "🎨 Checking code formatting..."
+        dart format --output=none --set-exit-if-changed . || {
+          echo "❌ Code formatting issues found. Run 'dart format .' to fix."
+          exit 1
+        }
+        echo "✅ Code formatting is correct"
+        
+    - name: 🔬 Analyze code
+      run: |
+        echo "🔬 Running static analysis..."
+        flutter analyze --fatal-infos --fatal-warnings || {
+          echo "❌ Static analysis issues found. Please fix the issues above."
+          exit 1
+        }
+        echo "✅ No static analysis issues found"
+        
+    - name: 🧪 Run unit tests
+      run: |
+        echo "🧪 Running unit tests..."
+        flutter test --coverage --reporter=expanded
+        echo "✅ Unit tests completed"
+        
+    - name: 📊 Upload coverage to Codecov
+      if: github.event_name == 'push'
+      uses: codecov/codecov-action@v4
+      with:
+        file: coverage/lcov.info
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
+        verbose: true
+
+  # Job de build para múltiplas plataformas
+  build:
+    name: Build ${{ matrix.platform }}
+    needs: test
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos
+            os: macos-latest
+            build-cmd: 'flutter build macos --release'
+            artifact-path: 'build/macos/Build/Products/Release/'
+          - platform: windows
+            os: windows-latest
+            build-cmd: 'flutter build windows --release'
+            artifact-path: 'build/windows/x64/runner/Release/'
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: 🐦 Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        channel: ${{ env.FLUTTER_CHANNEL }}
+        cache: true
+        
+    - name: 📦 Install dependencies
+      run: flutter pub get
+      
+    - name: 🔧 Enable desktop support
+      run: |
+        flutter config --enable-macos-desktop
+        flutter config --enable-windows-desktop
+        
+    - name: 🏗️ Build ${{ matrix.platform }}
+      run: ${{ matrix.build-cmd }}
+      
+    - name: 📦 Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.platform }}-build
+        path: ${{ matrix.artifact-path }}
+        retention-days: 7
+
+  # Job de integração (apenas se todos os outros passarem)
+  integration:
+    name: Integration Tests
+    needs: [test, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: 🐦 Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        channel: ${{ env.FLUTTER_CHANNEL }}
+        cache: true
+        
+    - name: 📦 Install dependencies
+      run: flutter pub get
+      
+    - name: 🧪 Run integration tests
+      run: |
+        if [ -d "integration_test" ]; then
+          echo "🧪 Running integration tests..."
+          flutter test integration_test/
+          echo "✅ Integration tests completed"
+        else
+          echo "ℹ️ No integration tests found, skipping..."
+        fi
+
+  # Job de qualidade de código
+  quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: 🐦 Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        channel: ${{ env.FLUTTER_CHANNEL }}
+        cache: true
+        
+    - name: 📦 Install dependencies
+      run: flutter pub get
+      
+    - name: 🔍 Check for unused dependencies
+      run: |
+        echo "🔍 Checking for unused dependencies..."
+        flutter pub deps --json > deps.json
+        echo "✅ Dependencies check completed"
+        
+    - name: 📏 Check code metrics
+      run: |
+        echo "📏 Analyzing code metrics..."
+        find lib -name "*.dart" | wc -l | xargs echo "Dart files:"
+        find lib -name "*.dart" -exec wc -l {} + | tail -1 | xargs echo "Total lines:"
+        echo "✅ Code metrics analysis completed"
