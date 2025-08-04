@@ -9,53 +9,8 @@ env:
   FLUTTER_VERSION: '3.24.3'
 
 jobs:
-  create-release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-      
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Get version from tag
-      id: get_version
-      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-      
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ steps.get_version.outputs.VERSION }}
-        draft: false
-        prerelease: false
-        body: |
-          ## 🚀 Nova Versão: ${{ steps.get_version.outputs.VERSION }}
-          
-          ### 📋 Principais Mudanças
-          - Melhorias na interface do usuário
-          - Otimizações de performance
-          - Correções de bugs
-          - Novas funcionalidades de busca estratégica
-          
-          ### 📦 Downloads
-          Escolha o arquivo apropriado para seu sistema operacional:
-          - **Linux**: `local-llm-linux.tar.gz`
-          - **macOS**: `local-llm-macos.zip`
-          - **Windows**: `local-llm-windows.zip`
-          
-          ### 🔧 Requisitos do Sistema
-          - Sistema operacional: Linux, macOS ou Windows
-          - Ollama instalado e configurado
-          - Conexão com internet para funcionalidades de busca
-
-  build-and-upload:
-    name: Build and Upload
-    needs: create-release
+  build-and-release:
+    name: Build and Release
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -106,7 +61,7 @@ jobs:
         tar -czf ../../../../../${{ matrix.artifact_name }} .
         
     - name: Create archive (macOS)
-      if: matrix.platform == 'macos'
+      if: matrix.platform == 'macos' 
       run: |
         cd ${{ matrix.build_path }}
         zip -r ../../../../../${{ matrix.artifact_name }} .
@@ -117,28 +72,49 @@ jobs:
         cd ${{ matrix.build_path }}
         powershell Compress-Archive -Path * -DestinationPath ../../../../../${{ matrix.artifact_name }}
         
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./${{ matrix.artifact_name }}
-        asset_name: ${{ matrix.artifact_name }}
-        asset_content_type: application/octet-stream
-
-  notify-release:
-    name: Notify Release
-    needs: [create-release, build-and-upload]
-    runs-on: ubuntu-latest
-    
-    steps:
     - name: Get version from tag
       id: get_version
+      shell: bash
       run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-      
-    - name: Release notification
-      run: |
-        echo "✅ Release ${{ steps.get_version.outputs.VERSION }} criado com sucesso!"
-        echo "📦 Artefatos disponíveis para download"
-        echo "🔗 URL: https://github.com/${{ github.repository }}/releases/tag/${{ steps.get_version.outputs.VERSION }}"
+        
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: Release ${{ steps.get_version.outputs.VERSION }}
+        body: |
+          ## 🚀 Nova Versão: ${{ steps.get_version.outputs.VERSION }}
+          
+          ### 📋 Principais Mudanças
+          - Melhorias na interface do usuário
+          - Otimizações de performance
+          - Correções de bugs
+          - Novas funcionalidades de busca estratégica
+          - Circuit Breaker Pattern implementado
+          - Rate Limiting avançado
+          
+          ### 📦 Downloads
+          Escolha o arquivo apropriado para seu sistema operacional:
+          - **Linux**: `local-llm-linux.tar.gz`
+          - **macOS**: `local-llm-macos.zip`
+          - **Windows**: `local-llm-windows.zip`
+          
+          ### 🔧 Requisitos do Sistema
+          - Sistema operacional: Linux, macOS ou Windows
+          - Ollama instalado e configurado
+          - Conexão com internet para funcionalidades de busca
+          
+          ### 🔄 Novidades desta versão
+          - **Busca Web Inteligente**: Sistema multi-estratégia com fallback
+          - **Circuit Breaker**: Proteção contra falhas em cascata
+          - **Rate Limiting**: Controle inteligente de requisições
+          - **Monitoramento**: Health checks automáticos das estratégias
+          
+          ---
+          
+          🤖 Generated with [Claude Code](https://claude.ai/code)
+        files: ${{ matrix.artifact_name }}
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

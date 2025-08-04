@@ -6,6 +6,7 @@ library;
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math' as math;
 import '../utils/logger.dart';
 
 /// Configuração do rate limiter.
@@ -156,6 +157,3 @@ class RateLimiter {
     AppLogger.info('Rate limiter $_name reset', 'RateLimiter');
   }
 }
-
-/// Import necessário para math.min
-import 'dart:math' as math;
