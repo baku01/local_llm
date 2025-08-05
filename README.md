@@ -4,11 +4,11 @@
 
 *Uma interface elegante e privada para interação com Grandes Modelos de Linguagem*
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.24.3-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
-[![Dart](https://img.shields.io/badge/Dart-3.8.1-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.27.0-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.5.0-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-[![CI/CD](https://img.shields.io/github/actions/workflow/status/l0gic_b0mb/local_llm/dart.yml?style=for-the-badge&label=CI%2FCD&logo=github)](https://github.com/l0gic_b0mb/local_llm/actions)
-[![Coverage](https://img.shields.io/badge/Coverage-85%25-brightgreen?style=for-the-badge&logo=codecov)](https://codecov.io)
+[![CI/CD](https://img.shields.io/github/actions/workflow/status/l0gic_b0mb/local_llm/ci.yml?style=for-the-badge&label=CI%2FCD&logo=github)](https://github.com/l0gic_b0mb/local_llm/actions)
+[![Release](https://img.shields.io/github/v/release/l0gic_b0mb/local_llm?style=for-the-badge&logo=github)](https://github.com/l0gic_b0mb/local_llm/releases)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey?style=for-the-badge)](https://github.com/l0gic_b0mb/local_llm/releases)
 
 [📥 Download](https://github.com/l0gic_b0mb/local_llm/releases) • [📖 Documentação](https://github.com/l0gic_b0mb/local_llm/wiki) • [🐛 Reportar Bug](https://github.com/l0gic_b0mb/local_llm/issues) • [💡 Solicitar Feature](https://github.com/l0gic_b0mb/local_llm/issues/new?template=feature_request.md)
@@ -108,7 +108,7 @@
 
 **🔧 Flutter SDK**
 
-Versão `3.24.3+`
+Versão `3.27.0+`
 
 [📥 Instalar Flutter](https://flutter.dev/docs/get-started/install)
 
@@ -145,9 +145,9 @@ VS Code ou Android Studio
    ```
 
 2. **Extraia e execute:**
-   - **Windows:** `local-llm-windows.zip`
-   - **macOS:** `local-llm-macos.zip`
-   - **Linux:** `local-llm-linux.tar.gz`
+   - **Windows:** `LocalLLM-Windows-vX.X.X.zip`
+   - **macOS:** `LocalLLM-macOS-vX.X.X.dmg`
+   - **Linux:** `LocalLLM-Linux-vX.X.X.tar.gz`
 
 #### Opção 2: Compilação Manual
 
@@ -254,7 +254,7 @@ graph TB
 <td width="50%">
 
 #### 🎨 Frontend & UI
-- **Flutter** `3.24.3` - Framework multiplataforma
+- **Flutter** `3.27.0` - Framework multiplataforma
 - **Provider** - Gerenciamento de estado reativo
 - **Responsive Framework** - Layouts adaptativos
 - **Adaptive Theme** - Sistema de temas dinâmicos
