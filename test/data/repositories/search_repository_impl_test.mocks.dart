@@ -6,9 +6,10 @@
 import 'dart:async' as _i3;
 
 import 'package:local_llm/data/datasources/web_search_datasource.dart' as _i2;
+import 'package:local_llm/domain/entities/search_query.dart' as _i5;
 import 'package:local_llm/domain/entities/search_result.dart' as _i4;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i5;
+import 'package:mockito/src/dummies.dart' as _i6;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -34,7 +35,7 @@ class MockWebSearchDataSource extends _i1.Mock
   }
 
   @override
-  _i3.Future<List<_i4.SearchResult>> search(_i4.SearchQuery? query) =>
+  _i3.Future<List<_i4.SearchResult>> search(_i5.SearchQuery? query) =>
       (super.noSuchMethod(
         Invocation.method(
           #search,
@@ -50,7 +51,7 @@ class MockWebSearchDataSource extends _i1.Mock
           #fetchPageContent,
           [url],
         ),
-        returnValue: _i3.Future<String>.value(_i5.dummyValue<String>(
+        returnValue: _i3.Future<String>.value(_i6.dummyValue<String>(
           this,
           Invocation.method(
             #fetchPageContent,

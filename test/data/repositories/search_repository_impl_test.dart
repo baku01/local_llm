@@ -5,6 +5,7 @@ import 'package:mockito/annotations.dart';
 import 'package:local_llm/data/repositories/search_repository_impl.dart';
 import 'package:local_llm/data/datasources/web_search_datasource.dart';
 import 'package:local_llm/domain/entities/search_result.dart';
+import 'package:local_llm/domain/entities/search_query.dart';
 
 @GenerateMocks([WebSearchDataSource])
 import 'search_repository_impl_test.mocks.dart';
@@ -110,9 +111,9 @@ void main() {
 
       test('should handle query with site filter', () async {
         // Arrange
-        const siteQuery = SearchQuery(
+        final siteQuery = SearchQuery(
           query: 'dart programming',
-          site: 'dart.dev',
+          domains: ['dart.dev'],
           maxResults: 5,
         );
 

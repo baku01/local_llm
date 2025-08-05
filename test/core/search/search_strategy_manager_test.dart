@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:local_llm/core/search/search_strategy_manager.dart';
 import 'package:local_llm/core/search/search_strategy.dart';
 import 'package:local_llm/domain/entities/search_result.dart';
+import 'package:local_llm/domain/entities/search_query.dart';
 
 // Mock classes
 class MockSearchStrategy implements SearchStrategy {
@@ -103,7 +104,7 @@ void main() {
     });
 
     test('should execute search with available strategy', () async {
-      const query = SearchQuery(query: 'test query');
+      final query = SearchQuery(query: 'test query');
       mockStrategy1.setResponse(query, [
         SearchResult(
           title: 'Test Result',
@@ -123,7 +124,7 @@ void main() {
     });
 
     test('should handle strategy failure with fallback', () async {
-      const query = SearchQuery(query: 'test query');
+      final query = SearchQuery(query: 'test query');
       mockStrategy1.setException(query, Exception('Strategy 1 failed'));
       mockStrategy2.setResponse(query, [
         SearchResult(
@@ -145,7 +146,7 @@ void main() {
     });
 
     test('should fail when no strategies available', () async {
-      const query = SearchQuery(query: 'test query');
+      final query = SearchQuery(query: 'test query');
 
       expect(
         () async => await manager.search(query),
@@ -154,7 +155,7 @@ void main() {
     });
 
     test('should fail when all strategies fail', () async {
-      const query = SearchQuery(query: 'test query');
+      final query = SearchQuery(query: 'test query');
       mockStrategy1.setException(query, Exception('Strategy 1 failed'));
       mockStrategy2.setException(query, Exception('Strategy 2 failed'));
 
@@ -168,7 +169,7 @@ void main() {
     });
 
     test('should cache successful results', () async {
-      const query = SearchQuery(query: 'test query');
+      final query = SearchQuery(query: 'test query');
       mockStrategy1.setResponse(query, [
         SearchResult(
           title: 'Cached Result',
@@ -207,7 +208,7 @@ void main() {
 
     test('should rank strategies by performance', () async {
       // Setup strategies with different success rates
-      const query = SearchQuery(query: 'test');
+      final query = SearchQuery(query: 'test');
       mockStrategy1.setResponse(query, [
         SearchResult(
           title: 'Result 1',
@@ -250,7 +251,7 @@ void main() {
 
     test('should handle circuit breaker open state', () async {
       // Force circuit breaker to open by causing multiple failures
-      const query = SearchQuery(query: 'test');
+      final query = SearchQuery(query: 'test');
       mockStrategy1.setException(query, Exception('Persistent failure'));
 
       manager.registerStrategy(mockStrategy1);
@@ -271,7 +272,7 @@ void main() {
 
     test('should filter strategies by availability and health', () async {
       final unavailableStrategy = MockSearchStrategy('Unavailable', 5, false);
-      const query = SearchQuery(query: 'test');
+      final query = SearchQuery(query: 'test');
       unavailableStrategy.setException(query, Exception('Not available'));
 
       manager.registerStrategy(mockStrategy1);
@@ -293,7 +294,7 @@ void main() {
     });
 
     test('should handle concurrent searches', () async {
-      const query = SearchQuery(query: 'concurrent test');
+      final query = SearchQuery(query: 'concurrent test');
       mockStrategy1.setResponse(query, [
         SearchResult(
           title: 'Concurrent Result',

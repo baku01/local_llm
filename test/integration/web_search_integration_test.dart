@@ -4,6 +4,7 @@ import 'package:local_llm/data/datasources/web_search_datasource.dart';
 import 'package:local_llm/data/repositories/search_repository_impl.dart';
 import 'package:local_llm/domain/usecases/search_web.dart';
 import 'package:local_llm/domain/entities/search_result.dart';
+import 'package:local_llm/domain/entities/search_query.dart';
 
 /// Mock HTTP client for testing
 class MockHttpClient extends http.BaseClient {
@@ -214,7 +215,7 @@ void main() {
           ),
         ];
 
-        const query = SearchQuery(query: 'flutter development');
+        final query = SearchQuery(query: 'flutter development');
         dataSource.setSearchResponse(query, expectedResults);
 
         // Act
@@ -238,7 +239,7 @@ void main() {
           ),
         ];
 
-        const query = SearchQuery(query: 'dart programming');
+        final query = SearchQuery(query: 'dart programming');
         dataSource.setSearchResponse(query, expectedResults);
 
         // Act
@@ -251,7 +252,7 @@ void main() {
 
       test('should handle empty search results gracefully', () async {
         // Arrange
-        const query = SearchQuery(query: 'nonexistent query');
+        final query = SearchQuery(query: 'nonexistent query');
         dataSource.setSearchResponse(query, []);
 
         // Act
@@ -266,7 +267,7 @@ void main() {
       test('should fallback to secondary strategy when primary fails',
           () async {
         // Arrange
-        const query = SearchQuery(query: 'fallback test');
+        final query = SearchQuery(query: 'fallback test');
 
         // This test is simplified since we're testing at the data source level
         // The fallback logic is tested in the strategy manager tests
@@ -290,7 +291,7 @@ void main() {
 
       test('should try multiple strategies until one succeeds', () async {
         // Arrange
-        const query = SearchQuery(query: 'multiple fallback test');
+        final query = SearchQuery(query: 'multiple fallback test');
 
         final results = [
           SearchResult(
@@ -314,7 +315,7 @@ void main() {
     group('Circuit Breaker Integration', () {
       test('should handle circuit breaker failures', () async {
         // Arrange
-        const query = SearchQuery(query: 'circuit breaker test');
+        final query = SearchQuery(query: 'circuit breaker test');
         dataSource.setSearchException(query, Exception('Circuit breaker open'));
 
         // Act & Assert
@@ -337,7 +338,7 @@ void main() {
           ),
         ];
 
-        const query = SearchQuery(query: 'cache test');
+        final query = SearchQuery(query: 'cache test');
         dataSource.setSearchResponse(query, expectedResults);
 
         // Act - Multiple searches
@@ -363,7 +364,7 @@ void main() {
           ),
         ];
 
-        const query = SearchQuery(
+        final query = SearchQuery(
           query: 'tech news',
           type: SearchType.news,
           maxResults: 10,
@@ -389,9 +390,9 @@ void main() {
           ),
         ];
 
-        const query = SearchQuery(
+        final query = SearchQuery(
           query: 'flutter tutorial',
-          site: 'flutter.dev',
+          domains: ['flutter.dev'],
         );
         dataSource.setSearchResponse(query, siteResults);
 
@@ -426,8 +427,8 @@ void main() {
           ),
         ];
 
-        const query1 = SearchQuery(query: 'concurrent query 1');
-        const query2 = SearchQuery(query: 'concurrent query 2');
+        final query1 = SearchQuery(query: 'concurrent query 1');
+        final query2 = SearchQuery(query: 'concurrent query 2');
         dataSource.setSearchResponse(query1, results1);
         dataSource.setSearchResponse(query2, results2);
 
@@ -447,7 +448,7 @@ void main() {
 
       test('should respect timeout limits', () async {
         // Arrange
-        const query = SearchQuery(query: 'timeout test');
+        final query = SearchQuery(query: 'timeout test');
         dataSource.setSearchException(query, Exception('Request timeout'));
 
         // Act & Assert
@@ -461,7 +462,7 @@ void main() {
     group('Error Handling and Recovery', () {
       test('should handle malformed HTML gracefully', () async {
         // Arrange
-        const query = SearchQuery(query: 'malformed html');
+        final query = SearchQuery(query: 'malformed html');
         dataSource
             .setSearchResponse(query, []); // Empty results for malformed HTML
 
@@ -475,7 +476,7 @@ void main() {
 
       test('should recover from temporary network issues', () async {
         // Arrange
-        const query = SearchQuery(query: 'network recovery test');
+        final query = SearchQuery(query: 'network recovery test');
         final successResults = [
           SearchResult(
             title: 'Recovery Success',

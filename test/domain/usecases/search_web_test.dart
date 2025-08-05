@@ -4,6 +4,7 @@ import 'package:mockito/annotations.dart';
 import 'package:local_llm/domain/usecases/search_web.dart';
 import 'package:local_llm/domain/repositories/search_repository.dart';
 import 'package:local_llm/domain/entities/search_result.dart';
+import 'package:local_llm/domain/entities/search_query.dart';
 
 @GenerateMocks([SearchRepository])
 import 'search_web_test.mocks.dart';
@@ -137,9 +138,9 @@ void main() {
 
       test('should handle site-specific queries', () async {
         // Arrange
-        const siteQuery = SearchQuery(
+        final siteQuery = SearchQuery(
           query: 'dart programming',
-          site: 'dart.dev',
+          domains: ['dart.dev'],
         );
 
         final siteResults = [
