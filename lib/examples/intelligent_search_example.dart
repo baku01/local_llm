@@ -149,8 +149,10 @@ class IntelligentSearchExample {
     // Análise de qualidade
     final qa = result.qualityAssessment;
     debugPrint('📊 ANÁLISE DE QUALIDADE:');
-    debugPrint('  • Cobertura: ${(qa.coverageScore * 100).toStringAsFixed(1)}%');
-    debugPrint('  • Autoridade: ${(qa.authorityScore * 100).toStringAsFixed(1)}%');
+    debugPrint(
+        '  • Cobertura: ${(qa.coverageScore * 100).toStringAsFixed(1)}%');
+    debugPrint(
+        '  • Autoridade: ${(qa.authorityScore * 100).toStringAsFixed(1)}%');
     debugPrint(
         '  • Profundidade: ${(qa.contentDepthScore * 100).toStringAsFixed(1)}%');
     debugPrint('  • Diversidade de fontes: ${qa.sourceDiversityCount}');
@@ -280,7 +282,8 @@ class IntelligentSearchExample {
         '  • Taxa de rejeição: ${(metrics.rejectionRate * 100).toStringAsFixed(1)}%');
     debugPrint(
         '  • Confiança média: ${(metrics.averageConfidence * 100).toStringAsFixed(1)}%');
-    debugPrint('  • Tempo médio: ${metrics.averageSearchTime.inMilliseconds}ms');
+    debugPrint(
+        '  • Tempo médio: ${metrics.averageSearchTime.inMilliseconds}ms');
     debugPrint('');
 
     if (metrics.queryTypeDistribution.isNotEmpty) {
