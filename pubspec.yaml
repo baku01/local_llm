@@ -68,6 +68,10 @@ dependencies:
   
   # Backend
   langchain_ollama: ^0.3.2+2
+  
+  # Functional Programming
+  dartz: ^0.10.1
+  equatable: ^2.0.5
 
 dev_dependencies:
   flutter_test:
@@ -87,3 +91,13 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  
+  # Assets
+  assets:
+    - assets/icons/
+  
+  # Fonts (optional)
+  # fonts:
+  #   - family: CustomFont
+  #     fonts:
+  #       - asset: assets/fonts/CustomFont-Regular.ttf

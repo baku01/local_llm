@@ -6,6 +6,7 @@
 library;
 
 import '../entities/search_result.dart';
+import '../entities/search_query.dart';
 import '../repositories/search_repository.dart';
 
 /// Caso de uso para realização de buscas na web.

@@ -13,6 +13,7 @@ import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart' as dom;
 import '../../domain/entities/search_result.dart';
+import '../../domain/entities/search_query.dart';
 import 'web_search_datasource.dart';
 
 /// DataSource que realiza pesquisas web através de scraping direto.

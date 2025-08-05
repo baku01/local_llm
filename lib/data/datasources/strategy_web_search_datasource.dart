@@ -13,6 +13,7 @@ import '../../core/search/strategies/bing_search_strategy.dart';
 import '../../core/search/strategies/duckduckgo_search_strategy.dart';
 import '../../core/search/strategies/local_search_strategy.dart';
 import '../../domain/entities/search_result.dart';
+import '../../domain/entities/search_query.dart';
 import '../../core/utils/logger.dart';
 import 'web_search_datasource.dart';
 

@@ -6,6 +6,7 @@
 library;
 
 import '../../domain/entities/search_result.dart';
+import '../../domain/entities/search_query.dart';
 import '../../domain/repositories/search_repository.dart';
 import '../datasources/web_search_datasource.dart';
 

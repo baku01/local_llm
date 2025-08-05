@@ -23,6 +23,7 @@ import '../../domain/usecases/get_available_models.dart';
 import '../../domain/usecases/generate_response.dart';
 import '../../domain/usecases/generate_response_stream.dart';
 import '../../domain/usecases/search_web.dart';
+import '../../domain/usecases/process_thinking_response.dart';
 import '../../presentation/controllers/llm_controller.dart';
 
 /// Container singleton responsável pela injeção de dependências.
@@ -62,6 +63,7 @@ class InjectionContainer {
   late final GenerateResponseStream _generateResponseStream;
   late final SearchWeb _searchWeb;
   late final FetchWebContent _fetchWebContent;
+  late final ProcessThinkingResponse _processThinkingResponse;
 
   // Controladores
   late final LlmController _controller;
@@ -139,6 +141,7 @@ class InjectionContainer {
     _generateResponseStream = GenerateResponseStream(_repository);
     _searchWeb = SearchWeb(_searchRepository);
     _fetchWebContent = FetchWebContent(_searchRepository);
+    _processThinkingResponse = ProcessThinkingResponse();
   }
 
   /// Configura os controladores da camada de apresentação.
@@ -151,6 +154,8 @@ class InjectionContainer {
       generateResponse: _generateResponse,
       generateResponseStream: _generateResponseStream,
       searchWeb: _searchWeb,
+      fetchWebContent: _fetchWebContent,
+      processThinkingResponse: _processThinkingResponse,
     );
   }
 
@@ -189,6 +194,10 @@ class InjectionContainer {
 
   /// Caso de uso para busca de conteúdo web.
   FetchWebContent get fetchWebContent => _fetchWebContent;
+
+  /// Caso de uso para processamento de respostas com pensamento.
+  ProcessThinkingResponse get processThinkingResponse =>
+      _processThinkingResponse;
 
   /// Controlador principal da aplicação.
   LlmController get controller => _controller;

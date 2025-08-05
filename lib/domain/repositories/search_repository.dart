@@ -6,6 +6,7 @@
 library;
 
 import '../entities/search_result.dart';
+import '../entities/search_query.dart';
 
 /// Interface para operações de busca web.
 ///

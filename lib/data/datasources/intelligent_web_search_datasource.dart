@@ -15,6 +15,7 @@ import '../../core/utils/relevance_analyzer.dart';
 import '../../core/utils/text_processor.dart';
 import '../../core/utils/logger.dart';
 import '../../domain/entities/search_result.dart';
+import '../../domain/entities/search_query.dart';
 import 'web_search_datasource.dart';
 
 /// Configuração para o datasource inteligente.

@@ -8,6 +8,7 @@ library;
 import 'dart:async';
 import 'dart:math' as math;
 import '../../domain/entities/search_result.dart';
+import '../../domain/entities/search_query.dart';
 import 'search_strategy.dart';
 import 'circuit_breaker.dart';
 import '../utils/logger.dart';
@@ -155,11 +156,18 @@ class SearchStrategyManager {
   /// Obtém estratégias disponíveis para a consulta.
   List<SearchStrategy> _getAvailableStrategies(SearchQuery query) {
     return _strategies
-        .where((strategy) =>
-            strategy.isAvailable &&
-            strategy.canHandle(query) &&
-            _getStrategySuccessRate(strategy.name) >= _config.minSuccessRate &&
-            _isStrategyHealthy(strategy.name))
+        .where((strategy) {
+          final successRate = _getStrategySuccessRate(strategy.name);
+          final metrics = _strategyMetrics[strategy.name] ?? SearchStrategyMetrics.empty();
+          
+          // Permitir estratégias novas (sem histórico) ou com taxa de sucesso adequada
+          final hasMinSuccessRate = metrics.totalSearches == 0 || successRate >= _config.minSuccessRate;
+          
+          return strategy.isAvailable &&
+              strategy.canHandle(query) &&
+              hasMinSuccessRate &&
+              _isStrategyHealthy(strategy.name);
+        })
         .toList();
   }
 
