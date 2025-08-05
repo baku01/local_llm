@@ -5,6 +5,7 @@
 library;
 
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import '../core/services/intelligent_search_service.dart';
 import '../core/classification/quality_classifier.dart';
 import '../core/classification/response_decision_engine.dart';
@@ -48,12 +49,12 @@ class IntelligentSearchExample {
       decisionEngine: decisionEngine,
     );
 
-    print('✅ Sistema de busca inteligente inicializado');
+    debugPrint('✅ Sistema de busca inteligente inicializado');
   }
 
   /// Exemplo de busca com diferentes tipos de consulta.
   Future<void> demonstrateSearchTypes() async {
-    print('\n🔍 Demonstrando diferentes tipos de busca:\n');
+    debugPrint('\n🔍 Demonstrando diferentes tipos de busca:\n');
 
     // 1. Pergunta factual - requer alta precisão
     await _performExampleSearch(
@@ -100,12 +101,12 @@ class IntelligentSearchExample {
 
   /// Realiza uma busca de exemplo e mostra os resultados.
   Future<void> _performExampleSearch(String query, QueryContext context) async {
-    print('🔍 Buscando: "$query"');
-    print('📊 Tipo: ${context.queryType.name}');
-    print(
+    debugPrint('🔍 Buscando: "$query"');
+    debugPrint('📊 Tipo: ${context.queryType.name}');
+    debugPrint(
         '👤 Nível de experiência: ${(context.userExpertiseLevel * 100).toStringAsFixed(0)}%');
-    if (context.isUrgent) print('⚡ Urgente: Sim');
-    print('---');
+    if (context.isUrgent) debugPrint('⚡ Urgente: Sim');
+    debugPrint('---');
 
     try {
       final result = await _searchService.searchIntelligently(
@@ -115,109 +116,109 @@ class IntelligentSearchExample {
 
       _displaySearchResult(result);
     } catch (e) {
-      print('❌ Erro na busca: $e');
+      debugPrint('❌ Erro na busca: $e');
     }
 
-    print('\n${'=' * 80}\n');
+    debugPrint('\n${'=' * 80}\n');
   }
 
   /// Exibe os resultados da busca de forma detalhada.
   void _displaySearchResult(IntelligentSearchResult result) {
-    print('📋 RESULTADO DA ANÁLISE:');
-    print('');
+    debugPrint('📋 RESULTADO DA ANÁLISE:');
+    debugPrint('');
 
     // Status da resposta
     if (result.canProvideAnswer) {
       if (result.isHighQuality) {
-        print('✅ PODE RESPONDER - Alta Qualidade');
+        debugPrint('✅ PODE RESPONDER - Alta Qualidade');
       } else if (result.isQualifiedAnswer) {
-        print('⚠️  PODE RESPONDER - Com Ressalvas');
+        debugPrint('⚠️  PODE RESPONDER - Com Ressalvas');
       } else {
-        print('📝 PODE RESPONDER - Qualidade Básica');
+        debugPrint('📝 PODE RESPONDER - Qualidade Básica');
       }
     } else {
-      print('❌ NÃO DEVE RESPONDER');
+      debugPrint('❌ NÃO DEVE RESPONDER');
     }
 
-    print(
+    debugPrint(
         '🎯 Confiança: ${(result.confidenceLevel * 100).toStringAsFixed(1)}%');
-    print('⏱️  Tempo: ${result.totalSearchTime.inMilliseconds}ms');
-    print('🔄 Tentativas: ${result.attemptsUsed}');
-    print('');
+    debugPrint('⏱️  Tempo: ${result.totalSearchTime.inMilliseconds}ms');
+    debugPrint('🔄 Tentativas: ${result.attemptsUsed}');
+    debugPrint('');
 
     // Análise de qualidade
     final qa = result.qualityAssessment;
-    print('📊 ANÁLISE DE QUALIDADE:');
-    print('  • Cobertura: ${(qa.coverageScore * 100).toStringAsFixed(1)}%');
-    print('  • Autoridade: ${(qa.authorityScore * 100).toStringAsFixed(1)}%');
-    print(
+    debugPrint('📊 ANÁLISE DE QUALIDADE:');
+    debugPrint('  • Cobertura: ${(qa.coverageScore * 100).toStringAsFixed(1)}%');
+    debugPrint('  • Autoridade: ${(qa.authorityScore * 100).toStringAsFixed(1)}%');
+    debugPrint(
         '  • Profundidade: ${(qa.contentDepthScore * 100).toStringAsFixed(1)}%');
-    print('  • Diversidade de fontes: ${qa.sourceDiversityCount}');
-    print('');
+    debugPrint('  • Diversidade de fontes: ${qa.sourceDiversityCount}');
+    debugPrint('');
 
     // Pontos fortes
     if (qa.strengths.isNotEmpty) {
-      print('✅ PONTOS FORTES:');
+      debugPrint('✅ PONTOS FORTES:');
       for (final strength in qa.strengths) {
-        print('  • $strength');
+        debugPrint('  • $strength');
       }
-      print('');
+      debugPrint('');
     }
 
     // Problemas identificados
     if (qa.qualityIssues.isNotEmpty) {
-      print('⚠️  PROBLEMAS IDENTIFICADOS:');
+      debugPrint('⚠️  PROBLEMAS IDENTIFICADOS:');
       for (final issue in qa.qualityIssues) {
-        print('  • $issue');
+        debugPrint('  • $issue');
       }
-      print('');
+      debugPrint('');
     }
 
     // Raciocínio da decisão
-    print('🧠 RACIOCÍNIO: ${result.reasoning}');
-    print('');
+    debugPrint('🧠 RACIOCÍNIO: ${result.reasoning}');
+    debugPrint('');
 
     // Recomendações
     if (result.decision.recommendations.isNotEmpty) {
-      print('💡 RECOMENDAÇÕES:');
+      debugPrint('💡 RECOMENDAÇÕES:');
       for (final rec in result.decision.recommendations) {
-        print('  • $rec');
+        debugPrint('  • $rec');
       }
-      print('');
+      debugPrint('');
     }
 
     // Resultados selecionados
     if (result.selectedResults.isNotEmpty) {
-      print('📄 FONTES SELECIONADAS (${result.selectedResults.length}):');
+      debugPrint('📄 FONTES SELECIONADAS (${result.selectedResults.length}):');
       for (int i = 0; i < result.selectedResults.length; i++) {
         final source = result.selectedResults[i];
-        print('  ${i + 1}. ${source.title}');
-        print('     🔗 ${source.url}');
+        debugPrint('  ${i + 1}. ${source.title}');
+        debugPrint('     🔗 ${source.url}');
         if (source.snippet.isNotEmpty) {
           final snippet = source.snippet.length > 100
               ? '${source.snippet.substring(0, 100)}...'
               : source.snippet;
-          print('     📝 $snippet');
+          debugPrint('     📝 $snippet');
         }
-        print('');
+        debugPrint('');
       }
     }
 
     // Sugestão para próximos passos
     if (result.suggestAdditionalSearch) {
-      print('🔍 PRÓXIMOS PASSOS SUGERIDOS:');
-      print('  • Considerar busca adicional para melhor qualidade');
+      debugPrint('🔍 PRÓXIMOS PASSOS SUGERIDOS:');
+      debugPrint('  • Considerar busca adicional para melhor qualidade');
       if (result.confidenceLevel < 0.5) {
-        print('  • Refinar termos de busca');
-        print('  • Tentar abordagem diferente');
+        debugPrint('  • Refinar termos de busca');
+        debugPrint('  • Tentar abordagem diferente');
       }
-      print('');
+      debugPrint('');
     }
   }
 
   /// Demonstra diferentes estratégias de decisão.
   Future<void> demonstrateDecisionStrategies() async {
-    print('\n🎯 Comparando estratégias de decisão:\n');
+    debugPrint('\n🎯 Comparando estratégias de decisão:\n');
 
     const query = 'Como funciona machine learning?';
     final context = QueryContext(
@@ -233,7 +234,7 @@ class IntelligentSearchExample {
     ];
 
     for (final strategy in strategies) {
-      print('📊 Estratégia: ${strategy.name.toUpperCase()}');
+      debugPrint('📊 Estratégia: ${strategy.name.toUpperCase()}');
 
       // Criar serviço com estratégia específica
       final config = IntelligentSearchConfig(
@@ -254,54 +255,54 @@ class IntelligentSearchExample {
           context: context,
         );
 
-        print('  Pode responder: ${result.canProvideAnswer ? "✅" : "❌"}');
-        print(
+        debugPrint('  Pode responder: ${result.canProvideAnswer ? "✅" : "❌"}');
+        debugPrint(
             '  Confiança: ${(result.confidenceLevel * 100).toStringAsFixed(1)}%');
-        print('  Raciocínio: ${result.reasoning}');
-        print('');
+        debugPrint('  Raciocínio: ${result.reasoning}');
+        debugPrint('');
       } catch (e) {
-        print('  Erro: $e\n');
+        debugPrint('  Erro: $e\n');
       }
     }
   }
 
   /// Mostra métricas de desempenho do sistema.
   void showPerformanceMetrics() {
-    print('\n📈 MÉTRICAS DE DESEMPENHO:\n');
+    debugPrint('\n📈 MÉTRICAS DE DESEMPENHO:\n');
 
     final metrics = _searchService.getPerformanceMetrics();
 
-    print('📊 Estatísticas Gerais:');
-    print('  • Total de consultas: ${metrics.totalQueries}');
-    print(
+    debugPrint('📊 Estatísticas Gerais:');
+    debugPrint('  • Total de consultas: ${metrics.totalQueries}');
+    debugPrint(
         '  • Taxa de sucesso: ${(metrics.successRate * 100).toStringAsFixed(1)}%');
-    print(
+    debugPrint(
         '  • Taxa de rejeição: ${(metrics.rejectionRate * 100).toStringAsFixed(1)}%');
-    print(
+    debugPrint(
         '  • Confiança média: ${(metrics.averageConfidence * 100).toStringAsFixed(1)}%');
-    print('  • Tempo médio: ${metrics.averageSearchTime.inMilliseconds}ms');
-    print('');
+    debugPrint('  • Tempo médio: ${metrics.averageSearchTime.inMilliseconds}ms');
+    debugPrint('');
 
     if (metrics.queryTypeDistribution.isNotEmpty) {
-      print('📋 Distribuição por Tipo de Consulta:');
+      debugPrint('📋 Distribuição por Tipo de Consulta:');
       for (final entry in metrics.queryTypeDistribution.entries) {
         final percentage =
             (entry.value / metrics.totalQueries * 100).toStringAsFixed(1);
-        print('  • ${entry.key.name}: ${entry.value} ($percentage%)');
+        debugPrint('  • ${entry.key.name}: ${entry.value} ($percentage%)');
       }
-      print('');
+      debugPrint('');
     }
 
     // Estatísticas do motor de decisão
     final decisionStats =
         (_searchService as dynamic)._decisionEngine.getStats();
-    print('🧠 Estatísticas do Motor de Decisão:');
-    print('  • Total de decisões: ${decisionStats['total_decisions']}');
-    print(
+    debugPrint('🧠 Estatísticas do Motor de Decisão:');
+    debugPrint('  • Total de decisões: ${decisionStats['total_decisions']}');
+    debugPrint(
         '  • Taxa de resposta: ${(decisionStats['response_rate'] * 100).toStringAsFixed(1)}%');
-    print(
+    debugPrint(
         '  • Taxa alta confiança: ${(decisionStats['high_confidence_rate'] * 100).toStringAsFixed(1)}%');
-    print('  • Estratégia: ${decisionStats['strategy']}');
+    debugPrint('  • Estratégia: ${decisionStats['strategy']}');
   }
 
   /// Exemplo de como processar uma consulta do usuário real.
@@ -400,11 +401,11 @@ Future<void> main() async {
   final example = IntelligentSearchExample();
 
   try {
-    print('🚀 Inicializando Sistema de Busca Inteligente\n');
+    debugPrint('🚀 Inicializando Sistema de Busca Inteligente\n');
 
     await example.initialize();
 
-    print('📝 Executando demonstrações...\n');
+    debugPrint('📝 Executando demonstrações...\n');
 
     // Demonstrar diferentes tipos de busca
     await example.demonstrateSearchTypes();
@@ -415,23 +416,23 @@ Future<void> main() async {
     // Mostrar métricas de desempenho
     example.showPerformanceMetrics();
 
-    print('\n✅ Demonstração concluída com sucesso!');
+    debugPrint('\n✅ Demonstração concluída com sucesso!');
 
     // Exemplo de processamento de consulta real
-    print('\n🔍 Exemplo de processamento de consulta real:');
+    debugPrint('\n🔍 Exemplo de processamento de consulta real:');
     final result = await example.processUserQuery(
       'Como criar um app Flutter responsivo?',
       userExpertiseLevel: 0.3,
       isUrgent: false,
     );
 
-    print(
+    debugPrint(
         'Resultado: ${result['should_respond'] ? "Pode responder" : "Não deve responder"}');
-    print(
+    debugPrint(
         'Confiança: ${(result['confidence_level'] * 100).toStringAsFixed(1)}%');
-    print('Qualidade: ${result['quality_tier']}');
+    debugPrint('Qualidade: ${result['quality_tier']}');
   } catch (e) {
-    print('❌ Erro durante a execução: $e');
+    debugPrint('❌ Erro durante a execução: $e');
   } finally {
     example.dispose();
   }
