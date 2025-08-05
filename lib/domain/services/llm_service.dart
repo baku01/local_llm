@@ -156,7 +156,7 @@ abstract class LLMQueryService {
   Future<Either<Failure, String>> refineSearchQuery(
     String originalQuery, {
     List<String>? previousResults,
-    String? refinementContext,  
+    String? refinementContext,
   });
 }
 

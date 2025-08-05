@@ -155,20 +155,20 @@ class SearchStrategyManager {
 
   /// Obtém estratégias disponíveis para a consulta.
   List<SearchStrategy> _getAvailableStrategies(SearchQuery query) {
-    return _strategies
-        .where((strategy) {
-          final successRate = _getStrategySuccessRate(strategy.name);
-          final metrics = _strategyMetrics[strategy.name] ?? SearchStrategyMetrics.empty();
-          
-          // Permitir estratégias novas (sem histórico) ou com taxa de sucesso adequada
-          final hasMinSuccessRate = metrics.totalSearches == 0 || successRate >= _config.minSuccessRate;
-          
-          return strategy.isAvailable &&
-              strategy.canHandle(query) &&
-              hasMinSuccessRate &&
-              _isStrategyHealthy(strategy.name);
-        })
-        .toList();
+    return _strategies.where((strategy) {
+      final successRate = _getStrategySuccessRate(strategy.name);
+      final metrics =
+          _strategyMetrics[strategy.name] ?? SearchStrategyMetrics.empty();
+
+      // Permitir estratégias novas (sem histórico) ou com taxa de sucesso adequada
+      final hasMinSuccessRate =
+          metrics.totalSearches == 0 || successRate >= _config.minSuccessRate;
+
+      return strategy.isAvailable &&
+          strategy.canHandle(query) &&
+          hasMinSuccessRate &&
+          _isStrategyHealthy(strategy.name);
+    }).toList();
   }
 
   /// Verifica se uma estratégia está saudável (circuit breaker fechado).

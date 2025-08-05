@@ -166,7 +166,8 @@ class SearchResultsWidget extends StatelessWidget {
                       Text(
                         result.url,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                          color:
+                              theme.colorScheme.primary.withValues(alpha: 0.7),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -433,7 +434,8 @@ class SearchResultDetailDialog extends StatelessWidget {
                         result.snippet,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontStyle: FontStyle.italic,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.8),
                         ),
                       ),
                     ),

@@ -244,12 +244,14 @@ class AdvancedGoogleSearchStrategy extends AdvancedSearchStrategy {
         // Tentar encontrar um snippet próximo ao link
         final parent = link.parent;
         final grandparent = parent?.parent;
-        final parentSnippet = extractCleanText(parent?.querySelector('div, span:not(:has(a))'));
-        final grandparentSnippet = extractCleanText(grandparent?.querySelector('div, span:not(:has(a))'));
-        final snippet = parentSnippet.isNotEmpty 
-            ? parentSnippet 
-            : grandparentSnippet.isNotEmpty 
-                ? grandparentSnippet 
+        final parentSnippet =
+            extractCleanText(parent?.querySelector('div, span:not(:has(a))'));
+        final grandparentSnippet = extractCleanText(
+            grandparent?.querySelector('div, span:not(:has(a))'));
+        final snippet = parentSnippet.isNotEmpty
+            ? parentSnippet
+            : grandparentSnippet.isNotEmpty
+                ? grandparentSnippet
                 : 'Sem descrição disponível';
 
         final result = SearchResult(

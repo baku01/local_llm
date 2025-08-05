@@ -21,9 +21,7 @@ You are an AI that synthesizes web search results into a coherent, concise respo
 Original Query: "$originalQuery"
 
 Search Results:
-${limitedResults.map((result) => 
-  '- Source: ${_extractDomain(result.url)}\n  Title: ${result.title}\n  Snippet: ${result.snippet}\n  URL: ${result.url}'
-).join('\n\n')}
+${limitedResults.map((result) => '- Source: ${_extractDomain(result.url)}\n  Title: ${result.title}\n  Snippet: ${result.snippet}\n  URL: ${result.url}').join('\n\n')}
 
 Instructions:
 - Analyze the search results thoroughly
@@ -34,7 +32,7 @@ Instructions:
     ''';
 
     final result = await llmService.generateText(prompt);
-    
+
     return result.fold(
       (failure) => Left(failure),
       (response) => Right(response.text),

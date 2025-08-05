@@ -95,5 +95,3 @@ class SearchResult {
   @override
   int get hashCode => Object.hash(title, url, snippet);
 }
-
-
