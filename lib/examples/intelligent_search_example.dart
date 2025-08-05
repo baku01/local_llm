@@ -118,7 +118,7 @@ class IntelligentSearchExample {
       print('❌ Erro na busca: $e');
     }
 
-    print('\n' + '=' * 80 + '\n');
+    print('\n${'=' * 80}\n');
   }
 
   /// Exibe os resultados da busca de forma detalhada.

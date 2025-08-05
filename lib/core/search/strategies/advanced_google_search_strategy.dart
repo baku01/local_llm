@@ -8,7 +8,6 @@
 /// - Análise de relevância
 library;
 
-import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html;
 import 'package:html/dom.dart' as dom;
 
@@ -26,29 +25,18 @@ class AdvancedGoogleSearchStrategy extends AdvancedSearchStrategy {
   ///
   /// Permite configurar domínio específico, prioridade e outros parâmetros.
   AdvancedGoogleSearchStrategy({
-    required http.Client client,
+    required super.client,
     String searchDomain = 'www.google.com',
-    int priority = 10,
-    List<String>? userAgents,
-    Map<String, String>? extraHeaders,
-    Duration? timeout,
-    Duration? minBackoff,
-    Duration? circuitOpenTime,
-    int? maxRetries,
-    int? maxRequestsPerMinute,
+    super.priority = 10,
+    super.userAgents,
+    super.extraHeaders,
+    super.timeout,
+    super.minBackoff,
+    super.circuitOpenTime,
+    super.maxRetries,
+    super.maxRequestsPerMinute,
   })  : _searchDomain = searchDomain,
-        super(
-          client: client,
-          name: 'Google',
-          priority: priority,
-          userAgents: userAgents,
-          extraHeaders: extraHeaders,
-          timeout: timeout,
-          minBackoff: minBackoff,
-          circuitOpenTime: circuitOpenTime,
-          maxRetries: maxRetries,
-          maxRequestsPerMinute: maxRequestsPerMinute,
-        );
+        super(name: 'Google');
 
   @override
   Future<List<SearchResult>> search(SearchQuery query) async {
