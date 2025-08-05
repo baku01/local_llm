@@ -25,103 +25,143 @@ class ChatBubble extends StatefulWidget {
 
 class _ChatBubbleState extends State<ChatBubble> {
   bool _isHovered = false;
+  bool _animationCompleted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Marcar animação como completada após um pequeno delay para reduzir flickering inicial
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() => _animationCompleted = true);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isUser = widget.message.isUser;
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        child: Row(
-          mainAxisAlignment:
-              isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (!isUser) ...[
-              _buildModernAvatar(context, false),
-              const SizedBox(width: 12),
-            ],
-            Flexible(
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutCubic,
-                constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.75,
-                ),
-                transform: Matrix4.identity()
-                  ..scale(_isHovered ? 1.02 : 1.0)
-                  ..translate(0.0, _isHovered ? -2.0 : 0.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24).copyWith(
-                    bottomLeft: isUser
-                        ? const Radius.circular(24)
-                        : const Radius.circular(8),
-                    bottomRight: isUser
-                        ? const Radius.circular(8)
-                        : const Radius.circular(24),
+    return RepaintBoundary(
+      child: MouseRegion(
+        onEnter: (_) {
+          if (_animationCompleted) {
+            setState(() => _isHovered = true);
+          }
+        },
+        onExit: (_) {
+          if (_animationCompleted) {
+            setState(() => _isHovered = false);
+          }
+        },
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          child: Row(
+            mainAxisAlignment:
+                isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!isUser) ...[
+                _buildModernAvatar(context, false),
+                const SizedBox(width: 12),
+              ],
+              Flexible(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.75,
                   ),
-                  child: isUser
-                      ? Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 16),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                theme.colorScheme.primary,
-                                theme.colorScheme.secondary,
-                              ],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: theme.colorScheme.primary
-                                    .withValues(alpha: 0.3),
-                                blurRadius: _isHovered ? 20 : 12,
-                                offset: Offset(0, _isHovered ? 8 : 4),
-                                spreadRadius: _isHovered ? 2 : 0,
-                              ),
-                            ],
-                          ),
-                          child: widget.isTyping
-                              ? _buildTypingIndicator(theme)
-                              : _buildMessageContent(context),
-                        )
-                      : BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: Container(
+                  transform: _animationCompleted
+                      ? (Matrix4.identity()
+                        ..scale(_isHovered ? 1.01 : 1.0)
+                        ..translate(0.0, _isHovered ? -1.0 : 0.0))
+                      : Matrix4.identity(),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24).copyWith(
+                      bottomLeft: isUser
+                          ? const Radius.circular(24)
+                          : const Radius.circular(8),
+                      bottomRight: isUser
+                          ? const Radius.circular(8)
+                          : const Radius.circular(24),
+                    ),
+                    child: isUser
+                        ? Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 16),
-                            decoration: AppTheme.glassEffect(
-                              isDark: theme.brightness == Brightness.dark,
-                              opacity: 0.15,
-                              blur: _isHovered ? 15 : 10,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  theme.colorScheme.primary,
+                                  theme.colorScheme.secondary,
+                                ],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: theme.colorScheme.primary
+                                      .withValues(alpha: 0.25),
+                                  blurRadius: _animationCompleted && _isHovered
+                                      ? 16
+                                      : 10,
+                                  offset: Offset(
+                                      0,
+                                      _animationCompleted && _isHovered
+                                          ? 6
+                                          : 3),
+                                  spreadRadius:
+                                      _animationCompleted && _isHovered ? 1 : 0,
+                                ),
+                              ],
                             ),
                             child: widget.isTyping
                                 ? _buildTypingIndicator(theme)
                                 : _buildMessageContent(context),
+                          )
+                        : BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 16),
+                              decoration: AppTheme.glassEffect(
+                                isDark: theme.brightness == Brightness.dark,
+                                opacity: 0.15,
+                                blur:
+                                    _animationCompleted && _isHovered ? 12 : 8,
+                              ),
+                              child: widget.isTyping
+                                  ? _buildTypingIndicator(theme)
+                                  : _buildMessageContent(context),
+                            ),
                           ),
-                        ),
+                  ),
                 ),
               ),
-            ),
-            if (isUser) ...[
-              const SizedBox(width: 12),
-              _buildModernAvatar(context, true),
+              if (isUser) ...[
+                const SizedBox(width: 12),
+                _buildModernAvatar(context, true),
+              ],
             ],
-          ],
-        ),
-      ).animate().fadeIn(duration: 400.ms).slideY(
-            begin: 0.3,
-            end: 0,
-            duration: 400.ms,
-            curve: Curves.easeOutCubic,
           ),
-    );
+        ),
+      ),
+    )
+        .animate(
+          onPlay: (controller) => controller.forward(from: 0),
+        )
+        .fadeIn(
+          duration: 300.ms,
+          curve: Curves.easeOut,
+        )
+        .slideY(
+          begin: 0.2,
+          end: 0,
+          duration: 300.ms,
+          curve: Curves.easeOut,
+        );
   }
 
   Widget _buildModernAvatar(BuildContext context, bool isUser) {
@@ -179,44 +219,46 @@ class _ChatBubbleState extends State<ChatBubble> {
         if (widget.showThinking &&
             widget.thinkingText != null &&
             widget.thinkingText!.isNotEmpty) ...[
-          Container(
-            padding: const EdgeInsets.all(12),
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest
-                  .withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: theme.colorScheme.outline.withValues(alpha: 0.2),
+          RepaintBoundary(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest
+                    .withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.2),
+                ),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.psychology_rounded,
-                      size: 16,
-                      color: theme.colorScheme.primary,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Processo de Pensamento',
-                      style: TextStyle(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.psychology_rounded,
+                        size: 16,
                         color: theme.colorScheme.primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                AdvancedMarkdownWidget(
-                  data: widget.thinkingText!,
-                  selectable: true,
-                ),
-              ],
+                      const SizedBox(width: 6),
+                      Text(
+                        'Processo de Pensamento',
+                        style: TextStyle(
+                          color: theme.colorScheme.primary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  AdvancedMarkdownWidget(
+                    data: widget.thinkingText!,
+                    selectable: true,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -252,39 +294,47 @@ class _ChatBubbleState extends State<ChatBubble> {
   }
 
   Widget _buildTypingIndicator(ThemeData theme) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildDot(0, theme),
-        const SizedBox(width: 6),
-        _buildDot(1, theme),
-        const SizedBox(width: 6),
-        _buildDot(2, theme),
-      ],
+    return RepaintBoundary(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildDot(0, theme),
+          const SizedBox(width: 6),
+          _buildDot(1, theme),
+          const SizedBox(width: 6),
+          _buildDot(2, theme),
+        ],
+      ),
     );
   }
 
   Widget _buildDot(int index, ThemeData theme) {
-    return Container(
-      width: 8,
-      height: 8,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary,
-        shape: BoxShape.circle,
+    return RepaintBoundary(
+      child: Container(
+        width: 8,
+        height: 8,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primary,
+          shape: BoxShape.circle,
+        ),
       ),
     )
-        .animate(onPlay: (controller) => controller.repeat())
+        .animate(
+          onPlay: (controller) => controller.repeat(),
+        )
         .scale(
-          begin: const Offset(0.8, 0.8),
-          end: const Offset(1.2, 1.2),
-          duration: 600.ms,
-          delay: Duration(milliseconds: index * 200),
+          begin: const Offset(0.9, 0.9),
+          end: const Offset(1.1, 1.1),
+          duration: 800.ms,
+          delay: Duration(milliseconds: index * 150),
+          curve: Curves.easeInOut,
         )
         .then()
         .scale(
-          begin: const Offset(1.2, 1.2),
-          end: const Offset(0.8, 0.8),
-          duration: 600.ms,
+          begin: const Offset(1.1, 1.1),
+          end: const Offset(0.9, 0.9),
+          duration: 800.ms,
+          curve: Curves.easeInOut,
         );
   }
 

@@ -185,3 +185,41 @@ jobs:
         find lib -name "*.dart" | wc -l | xargs echo "Dart files:"
         find lib -name "*.dart" -exec wc -l {} + | tail -1 | xargs echo "Total lines:"
         echo "✅ Code metrics analysis completed"
+
+  # Job de status final para release
+  ci_status:
+    name: CI Status
+    needs: [test, build, integration, quality]
+    runs-on: ubuntu-latest
+    if: always() && github.ref == 'refs/heads/main'
+    
+    outputs:
+      success: ${{ steps.status.outputs.success }}
+      
+    steps:
+    - name: 📊 Determine CI Status
+      id: status
+      run: |
+        # Verificar se todos os jobs necessários passaram
+        if [ "${{ needs.test.result }}" = "success" ] && [ "${{ needs.build.result }}" = "success" ]; then
+          echo "success=true" >> $GITHUB_OUTPUT
+          echo "✅ CI Pipeline completed successfully"
+        else
+          echo "success=false" >> $GITHUB_OUTPUT
+          echo "❌ CI Pipeline failed"
+        fi
+        
+    - name: 📋 CI Summary
+      run: |
+        echo "## 📊 CI/CD Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Test**: ${{ needs.test.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Build**: ${{ needs.build.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Integration**: ${{ needs.integration.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Quality**: ${{ needs.quality.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ steps.status.outputs.success }}" = "true" ]; then
+          echo "🎉 **Status**: Ready for Release!" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Status**: Issues found, release blocked" >> $GITHUB_STEP_SUMMARY
+        fi

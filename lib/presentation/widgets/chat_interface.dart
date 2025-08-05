@@ -12,6 +12,7 @@ import '../../domain/entities/chat_message.dart';
 import 'chat_bubble.dart';
 import 'animated_logo.dart';
 import 'thinking_animation.dart';
+import 'web_search_results_panel.dart';
 
 /// Widget principal da interface de chat.
 ///
@@ -64,9 +65,16 @@ class ChatInterface extends StatelessWidget {
       child: Column(
         children: [
           Expanded(
-            child: messages.isEmpty
-                ? _buildEmptyState(context)
-                : _buildMessageList(context),
+            child: Column(
+              children: [
+                const WebSearchResultsPanel(),
+                Expanded(
+                  child: messages.isEmpty
+                      ? _buildEmptyState(context)
+                      : _buildMessageList(context),
+                ),
+              ],
+            ),
           ),
           if (isThinking && currentThinking != null)
             ThinkingAnimation(thinkingText: currentThinking!, isVisible: true),
@@ -79,7 +87,7 @@ class ChatInterface extends StatelessWidget {
 
   Widget _buildMessageList(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: messages.length,
       itemBuilder: (context, index) {
         final message = messages[index];

@@ -291,7 +291,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
           TextButton(
             onPressed: () {
-              ref.read(chatMessagesProvider.notifier).clearMessages();
+              ref.read(llmControllerProvider).clearChat();
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(

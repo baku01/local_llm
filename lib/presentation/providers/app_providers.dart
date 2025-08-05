@@ -10,7 +10,6 @@ import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 
 // Domain
-import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/llm_model.dart';
 import '../../domain/repositories/llm_repository.dart';
 import '../../domain/repositories/search_repository.dart';
@@ -27,6 +26,7 @@ import '../../data/repositories/search_repository_impl.dart';
 
 // Presentation
 import '../controllers/llm_controller.dart';
+import '../../core/di/injection_container.dart';
 
 // =============================================================================
 // CONFIGURATION PROVIDERS
@@ -137,25 +137,17 @@ final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);
 /// Provider para o modelo LLM selecionado.
 final selectedModelProvider = StateProvider<LlmModel?>((ref) => null);
 
-/// Provider para as mensagens do chat.
-final chatMessagesProvider =
-    StateNotifierProvider<ChatMessagesNotifier, List<ChatMessage>>((ref) {
-  return ChatMessagesNotifier();
+/// Provider para o container de injeção de dependências.
+final injectionContainerProvider = Provider<InjectionContainer>((ref) {
+  final container = InjectionContainer();
+  container.initialize();
+  return container;
 });
 
-/// Provider para o controlador LLM.
+/// Provider para o controlador LLM via DI container.
 final llmControllerProvider = ChangeNotifierProvider<LlmController>((ref) {
-  final getModels = ref.watch(getAvailableModelsProvider);
-  final generateResponse = ref.watch(generateResponseProvider);
-  final generateStream = ref.watch(generateResponseStreamProvider);
-  final searchWeb = ref.watch(searchWebProvider);
-
-  return LlmController(
-    getAvailableModels: getModels,
-    generateResponse: generateResponse,
-    generateResponseStream: generateStream,
-    searchWeb: searchWeb,
-  );
+  final container = ref.watch(injectionContainerProvider);
+  return container.controller;
 });
 
 /// Provider para os modelos disponíveis.
@@ -184,39 +176,6 @@ final suggestionTextProvider = StateProvider<String>((ref) => '');
 // =============================================================================
 // STATE NOTIFIERS
 // =============================================================================
-
-/// Notifier para gerenciar o estado das mensagens do chat.
-class ChatMessagesNotifier extends StateNotifier<List<ChatMessage>> {
-  ChatMessagesNotifier() : super([]);
-
-  /// Adiciona uma nova mensagem ao chat.
-  void addMessage(ChatMessage message) {
-    state = [...state, message];
-  }
-
-  /// Limpa todas as mensagens do chat.
-  void clearMessages() {
-    state = [];
-  }
-
-  /// Atualiza o texto da última mensagem.
-  void updateLastMessage(String text) {
-    if (state.isNotEmpty) {
-      final lastMessage = state.last;
-      final updatedMessage = lastMessage.copyWith(text: text);
-      state = [...state.take(state.length - 1), updatedMessage];
-    }
-  }
-
-  /// Atualiza o texto de pensamento da última mensagem.
-  void updateLastMessageThinking(String? thinkingText) {
-    if (state.isNotEmpty) {
-      final lastMessage = state.last;
-      final updatedMessage = lastMessage.copyWith(thinkingText: thinkingText);
-      state = [...state.take(state.length - 1), updatedMessage];
-    }
-  }
-}
 
 /// Notifier para gerenciar o estado dos modelos disponíveis.
 class AvailableModelsNotifier

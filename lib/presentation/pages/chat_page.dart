@@ -16,7 +16,7 @@ class ChatPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Use select to prevent unnecessary rebuilds
+    // Otimização: usar select mais específicos para reduzir rebuilds
     final messages = ref.watch(
         llmControllerProvider.select((controller) => controller.messages));
     final selectedModel = ref.watch(
@@ -28,12 +28,12 @@ class ChatPage extends ConsumerWidget {
     final currentThinking = ref.watch(llmControllerProvider
         .select((controller) => controller.currentThinking));
 
-    // Only access the controller for method calls, not watching
     final llmController = ref.read(llmControllerProvider.notifier);
 
-    // Sincronizar apenas quando necessário para evitar loops
+    // Sincronização otimizada para evitar loops e rebuilds desnecessários
     ref.listen(selectedModelProvider, (previous, next) {
       if (next != null &&
+          previous != next &&
           (selectedModel == null || selectedModel.name != next.name)) {
         final domainModel = LlmModel(
           name: next.name,
@@ -84,59 +84,64 @@ class ChatPage extends ConsumerWidget {
           Expanded(
             child: messages.isEmpty && !isReplying
                 ? _buildEmptyState(context)
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: messages.length +
-                        (isReplying ? 1 : 0) +
-                        (isThinking ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      // Show thinking animation if model is thinking
-                      if (isThinking && index == 0) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          child: ThinkingAnimation(
-                            thinkingText: currentThinking ?? 'Analisando...',
-                            isVisible: true,
-                          ),
-                        );
-                      }
+                : RepaintBoundary(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: messages.length + (isReplying ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        final messageIndex = index;
 
-                      // Adjust index for thinking animation
-                      final messageIndex = isThinking ? index - 1 : index;
-
-                      if (messageIndex == messages.length && isReplying) {
-                        return ChatBubble(
-                          message: ChatMessage(
-                            text: '',
-                            isUser: false,
-                            timestamp: DateTime.now(),
-                          ),
-                          isTyping: true,
-                        ).animate().fadeIn(duration: 300.ms).slideY(
-                              begin: 0.1,
-                              end: 0,
-                              duration: 300.ms,
-                              curve: Curves.easeOutCubic,
-                            );
-                      }
-
-                      final message = messages[messageIndex];
-
-                      return ChatBubble(
-                        message: message,
-                        thinkingText: message.thinkingText,
-                        showThinking:
-                            !message.isUser && message.thinkingText != null,
-                      ).animate().fadeIn(duration: 300.ms).slideY(
-                            begin: 0.1,
-                            end: 0,
-                            duration: 300.ms,
-                            curve: Curves.easeOutCubic,
+                        if (messageIndex == messages.length && isReplying) {
+                          return RepaintBoundary(
+                            child: ChatBubble(
+                              message: ChatMessage(
+                                text: '',
+                                isUser: false,
+                                timestamp: DateTime.now(),
+                              ),
+                              isTyping: true,
+                            ).animate().fadeIn(duration: 250.ms).slideY(
+                                  begin: 0.05,
+                                  end: 0,
+                                  duration: 250.ms,
+                                  curve: Curves.easeOut,
+                                ),
                           );
-                    },
+                        }
+
+                        final message = messages[messageIndex];
+
+                        return RepaintBoundary(
+                          child: ChatBubble(
+                            key: ValueKey(
+                                'message_${message.timestamp.millisecondsSinceEpoch}'),
+                            message: message,
+                            thinkingText: message.thinkingText,
+                            showThinking:
+                                !message.isUser && message.thinkingText != null,
+                          ).animate().fadeIn(duration: 250.ms).slideY(
+                                begin: 0.05,
+                                end: 0,
+                                duration: 250.ms,
+                                curve: Curves.easeOut,
+                              ),
+                        );
+                      },
+                    ),
                   ),
           ),
+          if (isThinking)
+            RepaintBoundary(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: ThinkingAnimation(
+                  key: const ValueKey('thinking_animation'),
+                  thinkingText: currentThinking ?? 'Analisando...',
+                  isVisible: true,
+                ),
+              ),
+            ),
           const ChatInputField(),
         ],
       ),

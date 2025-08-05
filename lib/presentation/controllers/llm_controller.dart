@@ -8,12 +8,13 @@ library;
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/llm_model.dart';
-import '../../domain/entities/llm_response.dart';
 import '../../domain/entities/search_result.dart';
+import '../../domain/entities/search_query.dart';
 import '../../domain/usecases/get_available_models.dart';
 import '../../domain/usecases/generate_response.dart';
 import '../../domain/usecases/generate_response_stream.dart';
 import '../../domain/usecases/search_web.dart';
+import '../../domain/usecases/process_thinking_response.dart';
 import '../../domain/entities/chat_message.dart';
 
 /// Controlador principal que gerencia a interação com modelos LLM.
@@ -38,6 +39,12 @@ class LlmController extends ChangeNotifier {
   /// Caso de uso para realizar pesquisas na web.
   final SearchWeb _searchWeb;
 
+  /// Caso de uso para buscar conteúdo de páginas web.
+  final FetchWebContent _fetchWebContent;
+
+  /// Caso de uso para processar respostas com pensamento.
+  final ProcessThinkingResponse _processThinkingResponse;
+
   /// Cache para armazenar conteúdos de páginas web já processadas.
   /// Evita múltiplas requisições para a mesma URL durante uma sessão.
   final Map<String, String> _webPageContents = {};
@@ -56,10 +63,14 @@ class LlmController extends ChangeNotifier {
     required GenerateResponse generateResponse,
     required GenerateResponseStream generateResponseStream,
     required SearchWeb searchWeb,
+    required FetchWebContent fetchWebContent,
+    required ProcessThinkingResponse processThinkingResponse,
   })  : _getAvailableModels = getAvailableModels,
         _generateResponse = generateResponse,
         _generateResponseStream = generateResponseStream,
-        _searchWeb = searchWeb;
+        _searchWeb = searchWeb,
+        _fetchWebContent = fetchWebContent,
+        _processThinkingResponse = processThinkingResponse;
 
   // Estado dos modelos disponíveis
   List<LlmModel> _models = [];
@@ -160,21 +171,19 @@ class LlmController extends ChangeNotifier {
       shouldNotify = true;
     }
 
-    // Para texto de pensamento, usar throttling mais responsivo
+    // Throttling otimizado para eliminar flickering
     if (thinkingText != null &&
         (_currentThinking != thinkingText || shouldNotify)) {
       final currentLength = _currentThinking?.length ?? 0;
       final newLength = thinkingText.length;
 
-      // Throttling mais responsivo para streaming
+      // Critério mais rigoroso para atualizações - reduz flickering significativamente
       if (!_isThinking ||
           shouldNotify ||
           currentLength == 0 ||
-          (newLength - currentLength) > 10 || // Reduzido de 30 para 10
-          (newLength < 50 &&
-              (newLength - currentLength) > 5) || // Mais frequente no início
+          (newLength - currentLength) >=
+              50 || // Aumentado para 50 para maior estabilidade
           (newLength > 0 && currentLength == 0)) {
-        // Primeira atualização sempre
         _currentThinking = thinkingText;
         shouldNotify = true;
       }
@@ -184,7 +193,7 @@ class LlmController extends ChangeNotifier {
     }
 
     if (shouldNotify) {
-      // Force immediate notification when stopping thinking to ensure tests see the state change
+      // Notificação imediata apenas quando para de pensar
       if (!thinking) {
         _notificationTimer?.cancel();
         _hasPendingNotification = false;
@@ -364,20 +373,21 @@ class LlmController extends ChangeNotifier {
         modelName: _selectedModel!.name,
       );
 
-      // Processar resposta com pensamento
+      // Processar resposta com pensamento usando o caso de uso
       final processedResponse = _processThinkingResponse(response);
 
       // Adiciona resposta do LLM com pensamento se disponível
       final llmMessage = ChatMessage(
-        text: processedResponse.content,
+        text: processedResponse.mainContent,
         isUser: false,
         timestamp: DateTime.now(),
-        thinkingText: _currentThinking,
+        thinkingText: processedResponse.thinkingContent,
       );
       _messages.add(llmMessage);
 
-      if (processedResponse.isError) {
-        _setError('Erro na resposta: ${processedResponse.content}');
+      if (processedResponse.originalResponse.isError) {
+        _setError(
+            'Erro na resposta: ${processedResponse.originalResponse.content}');
       }
     } catch (e) {
       // Adiciona mensagem de erro
@@ -450,9 +460,8 @@ class LlmController extends ChangeNotifier {
             }
           } else {
             thinkingBuffer.write(chunk);
-            // Atualiza o pensamento em tempo real com throttling mais responsivo
-            if (thinkingBuffer.length % 15 == 0 ||
-                thinkingBuffer.length < 100) {
+            // Throttling otimizado para reduzir flickering
+            if (thinkingBuffer.length % 40 == 0 || thinkingBuffer.length < 50) {
               _setThinking(true, thinkingBuffer.toString());
             }
           }
@@ -511,41 +520,6 @@ class LlmController extends ChangeNotifier {
     }
   }
 
-  LlmResponse _processThinkingResponse(LlmResponse response) {
-    if (response.content.contains('<think>')) {
-      // Extrair o pensamento
-      final thinkStart = response.content.indexOf('<think>');
-      final thinkEnd = response.content.indexOf('</think>');
-
-      if (thinkStart != -1 && thinkEnd != -1) {
-        final thinkingText = response.content.substring(
-          thinkStart + 7, // length of '<think>'
-          thinkEnd,
-        );
-
-        // Mostrar o pensamento por um tempo antes da resposta
-        _setThinking(false, thinkingText);
-
-        // Armazenar o pensamento para exibição junto com a resposta final
-        // Não criar mensagem separada, será exibida junto com a resposta
-
-        // Remover tags de pensamento da resposta final
-        final cleanContent = response.content
-            .replaceAll(RegExp(r'<think>.*?</think>', dotAll: true), '')
-            .trim();
-
-        return LlmResponse(
-          content: cleanContent,
-          model: response.model,
-          timestamp: response.timestamp,
-          isError: response.isError,
-        );
-      }
-    }
-
-    return response;
-  }
-
   Future<void> _performWebSearch(String query) async {
     _searchResults.clear();
 
@@ -570,7 +544,7 @@ class LlmController extends ChangeNotifier {
     for (final result in _searchResults) {
       if (result.url.isNotEmpty && !_webPageContents.containsKey(result.url)) {
         try {
-          final content = await _fetchWebContent(result.url);
+          final content = await _fetchWebContentFromUrl(result.url);
           _webPageContents[result.url] = content;
         } catch (e) {
           _webPageContents[result.url] = '';
@@ -643,39 +617,41 @@ class LlmController extends ChangeNotifier {
     _notifyListenersThrottled();
   }
 
-  /// Busca o conteúdo de uma página web usando o datasource configurado.
-  ///
-  /// Utiliza reflexão para acessar o método fetchPageContent do datasource
-  /// se disponível. Retorna string vazia se o método não existir.
+  /// Busca o conteúdo de uma página web usando o caso de uso apropriado.
   ///
   /// [url] - URL da página a ser processada
   ///
-  /// Returns: Conteúdo da página ou string vazia se indisponível
-  Future<String> _fetchWebContent(String url) async {
-    // Verifica se o dataSource tem o método fetchPageContent
-    final dataSource = (_searchWeb as dynamic).dataSource;
-    if (dataSource != null && dataSource.fetchPageContent != null) {
-      return await dataSource.fetchPageContent(url);
+  /// Returns: Conteúdo da página ou string vazia se houver erro
+  Future<String> _fetchWebContentFromUrl(String url) async {
+    try {
+      return await _fetchWebContent(url);
+    } catch (e) {
+      debugPrint('Erro ao buscar conteúdo da página $url: $e');
+      return '';
     }
-    return '';
   }
 
-  /// Implementa throttling para notificações, reduzindo rebuilds excessivos.
+  /// Implementa throttling otimizado para eliminar flickering.
   ///
-  /// Durante operações de streaming, agrupa notificações em intervalos otimizados
-  /// para melhorar a performance da UI mantendo responsividade.
+  /// Durante operações de streaming, agrupa notificações em intervalos estáveis
+  /// para melhorar a performance da UI e eliminar flickering.
   void _notifyListenersThrottled() {
     if (_isLoading && _streamEnabled) {
-      // Durante streaming, usar throttling mais responsivo para thinking
-      final throttleDelay = _isThinking ? 50 : 80; // Mais rápido para thinking
-      _hasPendingNotification = true;
-      _notificationTimer?.cancel();
-      _notificationTimer = Timer(Duration(milliseconds: throttleDelay), () {
-        if (_hasPendingNotification) {
-          _hasPendingNotification = false;
-          notifyListeners();
-        }
-      });
+      // Throttling unificado mais estável para eliminar flickering
+      const throttleDelay = 250; // Intervalo fixo mais estável
+
+      // Só define nova notificação se não houver uma pendente
+      if (!_hasPendingNotification) {
+        _hasPendingNotification = true;
+        _notificationTimer?.cancel();
+        _notificationTimer =
+            Timer(const Duration(milliseconds: throttleDelay), () {
+          if (_hasPendingNotification) {
+            _hasPendingNotification = false;
+            notifyListeners();
+          }
+        });
+      }
     } else {
       // Para operações não-streaming, notificar imediatamente
       _notificationTimer?.cancel();
