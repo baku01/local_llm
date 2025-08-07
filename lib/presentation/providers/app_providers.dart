@@ -20,6 +20,7 @@ import '../../domain/usecases/search_web.dart';
 
 // Data
 import '../../data/datasources/ollama_remote_datasource.dart';
+import '../../data/datasources/lmstudio_remote_datasource.dart';
 import '../../data/datasources/intelligent_web_search_datasource.dart';
 import '../../data/repositories/llm_repository_impl.dart';
 import '../../data/repositories/search_repository_impl.dart';
@@ -34,6 +35,17 @@ import '../../core/di/injection_container.dart';
 
 /// Provider para a URL base da API do Ollama.
 final apiUrlProvider = StateProvider<String>((ref) => 'http://localhost:11434');
+
+/// Provider para a URL base da API do LM Studio.
+final lmStudioUrlProvider =
+    StateProvider<String>((ref) => 'http://localhost:1234');
+
+/// Backends disponíveis para geração de respostas LLM.
+enum LlmBackend { ollama, lmStudio }
+
+/// Provider para o backend atualmente selecionado.
+final llmBackendProvider =
+    StateProvider<LlmBackend>((ref) => LlmBackend.ollama);
 
 // =============================================================================
 // INFRASTRUCTURE PROVIDERS
@@ -66,6 +78,16 @@ final ollamaDataSourceProvider = Provider<OllamaRemoteDataSource>((ref) {
   );
 });
 
+/// Provider para o data source do LM Studio.
+final lmStudioDataSourceProvider = Provider<OllamaRemoteDataSource>((ref) {
+  final dio = ref.watch(dioProvider);
+  final apiUrl = ref.watch(lmStudioUrlProvider);
+  return LmStudioRemoteDataSource(
+    dio: dio,
+    baseUrl: apiUrl,
+  );
+});
+
 /// Provider para o data source de busca web inteligente.
 final webSearchDataSourceProvider =
     Provider<IntelligentWebSearchDataSource>((ref) {
@@ -89,7 +111,10 @@ final webSearchDataSourceProvider =
 
 /// Provider para o repositório de LLM.
 final llmRepositoryProvider = Provider<LlmRepository>((ref) {
-  final dataSource = ref.watch(ollamaDataSourceProvider);
+  final backend = ref.watch(llmBackendProvider);
+  final dataSource = backend == LlmBackend.lmStudio
+      ? ref.watch(lmStudioDataSourceProvider)
+      : ref.watch(ollamaDataSourceProvider);
   return LlmRepositoryImpl(remoteDataSource: dataSource);
 });
 
