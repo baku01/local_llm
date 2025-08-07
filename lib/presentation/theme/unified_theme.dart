@@ -30,13 +30,8 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
+      colorSchemeSeed: kPrimary,
       brightness: Brightness.light,
-      colorScheme: const ColorScheme.light(
-        primary: kPrimary,
-        secondary: kSecondary,
-        surface: kLightSurface,
-        onSurface: Colors.black87,
-      ),
       textTheme: AppTypography.buildTextTheme(ThemeData.light().textTheme),
       cardColor: kLightCardBg,
     );
@@ -45,13 +40,8 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
+      colorSchemeSeed: kPrimary,
       brightness: Brightness.dark,
-      colorScheme: const ColorScheme.dark(
-        primary: kPrimary,
-        secondary: kSecondary,
-        surface: kDarkSurface,
-        onSurface: Colors.white,
-      ),
       textTheme: AppTypography.buildTextTheme(ThemeData.dark().textTheme),
       cardColor: kDarkCardBg,
     );

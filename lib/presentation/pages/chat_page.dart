@@ -11,11 +11,18 @@ import '../../domain/entities/llm_model.dart';
 import '../widgets/thinking_animation.dart';
 import 'settings_page.dart';
 
-class ChatPage extends ConsumerWidget {
+class ChatPage extends ConsumerStatefulWidget {
   const ChatPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ChatPage> createState() => _ChatPageState();
+}
+
+class _ChatPageState extends ConsumerState<ChatPage> {
+  bool _isSidebarOpen = false;
+
+  @override
+  Widget build(BuildContext context) {
     // Otimização: usar select mais específicos para reduzir rebuilds
     final messages = ref.watch(
         llmControllerProvider.select((controller) => controller.messages));
@@ -45,10 +52,95 @@ class ChatPage extends ConsumerWidget {
       }
     });
 
+    final width = MediaQuery.of(context).size.width;
+    final isWide = width >= 800;
+
+    final chatBody = Column(
+      children: [
+        Expanded(
+          child: messages.isEmpty && !isReplying
+              ? _buildEmptyState(context)
+              : RepaintBoundary(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: messages.length + (isReplying ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      final messageIndex = index;
+
+                      if (messageIndex == messages.length && isReplying) {
+                        return RepaintBoundary(
+                          child: ChatBubble(
+                            message: ChatMessage(
+                              text: '',
+                              isUser: false,
+                              timestamp: DateTime.now(),
+                            ),
+                            isTyping: true,
+                          ).animate().fadeIn(duration: 250.ms).slideY(
+                                begin: 0.05,
+                                end: 0,
+                                duration: 250.ms,
+                                curve: Curves.easeOut,
+                              ),
+                        );
+                      }
+
+                      final message = messages[messageIndex];
+
+                      return RepaintBoundary(
+                        child: ChatBubble(
+                          key: ValueKey(
+                              'message_${message.timestamp.millisecondsSinceEpoch}'),
+                          message: message,
+                          thinkingText: message.thinkingText,
+                          showThinking:
+                              !message.isUser && message.thinkingText != null,
+                        ).animate().fadeIn(duration: 250.ms).slideY(
+                              begin: 0.05,
+                              end: 0,
+                              duration: 250.ms,
+                              curve: Curves.easeOut,
+                            ),
+                      );
+                    },
+                  ),
+                ),
+        ),
+        if (isThinking)
+          RepaintBoundary(
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: ThinkingAnimation(
+                key: const ValueKey('thinking_animation'),
+                thinkingText: currentThinking ?? 'Analisando...',
+                isVisible: true,
+              ),
+            ),
+          ),
+        const ChatInputField(),
+      ],
+    );
+
+    final sidebar = AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      width: isWide || _isSidebarOpen ? 250 : 0,
+      color: Theme.of(context).colorScheme.surface,
+      child: isWide || _isSidebarOpen ? _buildSidebar(context) : null,
+    );
+
     return Scaffold(
       appBar: AppBar(
+        leading: isWide
+            ? null
+            : IconButton(
+                icon: Icon(_isSidebarOpen ? Icons.close : Icons.menu),
+                onPressed: () => setState(() {
+                  _isSidebarOpen = !_isSidebarOpen;
+                }),
+              ),
         title: GestureDetector(
-          onTap: () => _showModelSelector(context, ref),
+          onTap: () => _showModelSelector(context),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -79,70 +171,44 @@ class ChatPage extends ConsumerWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: messages.isEmpty && !isReplying
-                ? _buildEmptyState(context)
-                : RepaintBoundary(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: messages.length + (isReplying ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        final messageIndex = index;
-
-                        if (messageIndex == messages.length && isReplying) {
-                          return RepaintBoundary(
-                            child: ChatBubble(
-                              message: ChatMessage(
-                                text: '',
-                                isUser: false,
-                                timestamp: DateTime.now(),
-                              ),
-                              isTyping: true,
-                            ).animate().fadeIn(duration: 250.ms).slideY(
-                                  begin: 0.05,
-                                  end: 0,
-                                  duration: 250.ms,
-                                  curve: Curves.easeOut,
-                                ),
-                          );
-                        }
-
-                        final message = messages[messageIndex];
-
-                        return RepaintBoundary(
-                          child: ChatBubble(
-                            key: ValueKey(
-                                'message_${message.timestamp.millisecondsSinceEpoch}'),
-                            message: message,
-                            thinkingText: message.thinkingText,
-                            showThinking:
-                                !message.isUser && message.thinkingText != null,
-                          ).animate().fadeIn(duration: 250.ms).slideY(
-                                begin: 0.05,
-                                end: 0,
-                                duration: 250.ms,
-                                curve: Curves.easeOut,
-                              ),
-                        );
-                      },
-                    ),
+      body: isWide
+          ? Row(
+              children: [
+                sidebar,
+                Expanded(child: chatBody),
+              ],
+            )
+          : Stack(
+              children: [
+                Positioned.fill(child: chatBody),
+                if (_isSidebarOpen)
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: sidebar,
                   ),
-          ),
-          if (isThinking)
-            RepaintBoundary(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: ThinkingAnimation(
-                  key: const ValueKey('thinking_animation'),
-                  thinkingText: currentThinking ?? 'Analisando...',
-                  isVisible: true,
-                ),
-              ),
+              ],
             ),
-          const ChatInputField(),
+    );
+  }
+
+  Widget _buildSidebar(BuildContext context) {
+    return SafeArea(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('Configurações'),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SettingsPage(),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -371,7 +437,7 @@ class ChatPage extends ConsumerWidget {
     );
   }
 
-  void _showModelSelector(BuildContext context, WidgetRef ref) {
+  void _showModelSelector(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
