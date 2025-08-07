@@ -76,7 +76,10 @@ class LmStudioRemoteDataSource implements LlmRemoteDataSource {
 
     final content = (response.data['choices'] as List).first['message']
             ['content'] as String? ??
-        '';
+    final choices = response.data['choices'] as List;
+    final content = choices.isNotEmpty
+        ? (choices.first['message']['content'] as String? ?? '')
+        : '';
     return LlmResponseDto(response: content, model: modelName, done: true);
   }
 
