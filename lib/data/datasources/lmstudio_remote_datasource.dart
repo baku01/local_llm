@@ -121,7 +121,12 @@ class LmStudioRemoteDataSource implements LlmRemoteDataSource {
             final jsonData = json.decode(payload);
             final content = jsonData['choices'][0]['delta']['content'] as String?;
             if (content != null) {
-              yield content;
+            final choices = jsonData['choices'];
+            if (choices is List && choices.isNotEmpty) {
+              final content = choices[0]['delta']['content'] as String?;
+              if (content != null) {
+                yield content;
+              }
             }
           } catch (_) {
             // Ignora erros de parsing de chunks individuais
