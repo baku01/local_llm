@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:local_llm/core/classification/quality_classifier.dart';
+import 'package:local_llm/infrastructure/core/classification/quality_classifier.dart';
 import 'package:local_llm/domain/entities/search_result.dart';
 import 'package:local_llm/domain/entities/relevance_score.dart';
 
@@ -114,7 +114,7 @@ void main() {
                 'Flutter is Google\'s UI toolkit for building beautiful, natively compiled applications for mobile, web, and desktop from a single codebase.',
             url: 'https://flutter.dev',
             content:
-                'Flutter is an open-source UI software development kit created by Google. It is used to develop cross platform applications for Android, iOS, Linux, Mac, Windows, Google Fuchsia, and the web from a single codebase. The first version of Flutter was known as codename "Sky" and ran on the Android operating system.',
+                'Flutter is an open-source UI software development kit created by Google. It is used to develop cross platform applications for Android, iOS, Linux, Mac, Windows, Google Fuchsia, and the web from a single codebase. The first version of Flutter was known as codename "Sky" and ran on the Android operating system. Flutter uses the Dart programming language and provides a rich set of widgets. It allows developers to create beautiful, performative applications with a single codebase that can run on multiple platforms. The framework includes hot reload functionality for faster development.',
             timestamp: DateTime.now(),
           ),
           SearchResult(
@@ -123,7 +123,7 @@ void main() {
                 'Flutter is an open-source UI software development kit created by Google.',
             url: 'https://en.wikipedia.org/wiki/Flutter_(software)',
             content:
-                'Detailed Wikipedia article about Flutter framework with comprehensive information about its history, features, and usage.',
+                'Detailed Wikipedia article about Flutter framework with comprehensive information about its history, features, and usage. Flutter was originally developed by Google and first released in 2017. It has gained significant popularity among developers due to its cross-platform capabilities and excellent performance. The framework supports multiple rendering backends and provides extensive customization options for creating unique user interfaces.',
             timestamp: DateTime.now(),
           ),
         ];

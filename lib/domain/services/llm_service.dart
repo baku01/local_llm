@@ -5,7 +5,7 @@
 library;
 
 import 'package:dartz/dartz.dart';
-import '../../core/error/failures.dart';
+import '../../infrastructure/core/error/failures.dart';
 
 /// Configuration for LLM generation parameters.
 class LLMGenerationConfig {

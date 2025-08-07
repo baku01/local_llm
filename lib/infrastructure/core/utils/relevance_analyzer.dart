@@ -8,7 +8,7 @@ library;
 import 'dart:math' as math;
 import 'package:string_similarity/string_similarity.dart';
 import 'text_processor.dart';
-import '../../domain/entities/relevance_score.dart';
+import '../../../domain/entities/relevance_score.dart';
 
 /// Analisador avançado de relevância de conteúdo web.
 ///

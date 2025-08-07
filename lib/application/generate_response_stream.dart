@@ -5,7 +5,7 @@
 /// possibilitando exibição progressiva do conteúdo.
 library;
 
-import '../repositories/llm_repository.dart';
+import '../domain/repositories/llm_repository.dart';
 
 /// Caso de uso para geração de respostas LLM em stream.
 ///

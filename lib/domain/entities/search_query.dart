@@ -104,8 +104,13 @@ class SearchQuery {
     final parts = <String>[query];
 
     if (domains?.isNotEmpty ?? false) {
-      // Join multiple domains with OR operator
-      parts.add('site:${domains!.join(' OR site:')}');
+      if (domains!.length == 1) {
+        // Single domain case
+        parts.add('site:${domains!.first}');
+      } else {
+        // Multiple domains with OR operator
+        parts.add('site:${domains!.join(' OR site:')}');
+      }
     }
 
     if (excludeTerms?.isNotEmpty ?? false) {

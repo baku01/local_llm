@@ -9,8 +9,8 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html;
-import '../../../domain/entities/search_result.dart';
-import '../../../domain/entities/search_query.dart';
+import '../../../../domain/entities/search_result.dart';
+import '../../../../domain/entities/search_query.dart';
 import '../search_strategy.dart';
 import '../../utils/logger.dart';
 

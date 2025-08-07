@@ -6,9 +6,9 @@ library;
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../core/services/intelligent_search_service.dart';
-import '../core/classification/quality_classifier.dart';
-import '../core/classification/response_decision_engine.dart';
+import '../infrastructure/core/services/intelligent_search_service.dart';
+import '../infrastructure/core/classification/quality_classifier.dart';
+import '../infrastructure/core/classification/response_decision_engine.dart';
 
 /// Exemplo prático de uso do sistema de busca inteligente.
 class IntelligentSearchExample {

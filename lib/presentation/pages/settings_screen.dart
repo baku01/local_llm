@@ -138,6 +138,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       onChanged: (value) {
                         ref.read(webSearchEnabledProvider.notifier).state =
                             value;
+                        // Sincronizar com o controller imediatamente
+                        ref.read(llmControllerProvider).toggleWebSearch(value);
                       },
                     );
                   },
@@ -156,6 +158,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       onChanged: (value) {
                         ref.read(streamModeEnabledProvider.notifier).state =
                             value;
+                        // Sincronizar com o controller imediatamente
+                        ref.read(llmControllerProvider).toggleStreamMode(value);
                       },
                     );
                   },

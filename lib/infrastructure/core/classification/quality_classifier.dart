@@ -6,8 +6,8 @@
 library;
 
 import 'dart:math' as math;
-import '../../domain/entities/search_result.dart';
-import '../../domain/entities/relevance_score.dart';
+import '../../../domain/entities/search_result.dart';
+import '../../../domain/entities/relevance_score.dart';
 import '../utils/text_processor.dart';
 
 /// Tipos de consulta para aplicar diferentes critérios de qualidade.
@@ -42,10 +42,10 @@ class QualityConfig {
   static const Map<QueryType, QualityConfig> defaultConfigs = {
     QueryType.factual: QualityConfig(
       minRelevanceThreshold: 0.8,
-      minCoverageScore: 0.85,
+      minCoverageScore: 0.75,
       minAuthorityScore: 0.7,
       minSourceDiversity: 2,
-      minContentDepth: 0.8,
+      minContentDepth: 0.4,
       requireMultipleSources: true,
     ),
     QueryType.technical: QualityConfig(
@@ -318,24 +318,42 @@ class QualityClassifier {
         'better',
         'diferença entre',
         'difference between',
-        'qual escolher'
+        'qual escolher',
+        'qual é melhor',
+        'ou',  // for "iOS ou Android"
+        'versus'
       ],
     };
 
-    // Contar matches para cada tipo
-    final scores = <QueryType, int>{};
-    for (final entry in patterns.entries) {
-      scores[entry.key] =
-          entry.value.where((pattern) => lowerQuery.contains(pattern)).length;
+    // Tratamento especial para consultas muito simples
+    if (lowerQuery.length <= 15 && !lowerQuery.contains(' ')) {
+      return QueryType.general;
     }
 
-    // Retornar o tipo com mais matches, ou general se nenhum
-    final maxScore =
-        scores.values.isNotEmpty ? scores.values.reduce(math.max) : 0;
+    // Contar matches para cada tipo com prioridade
+    final scores = <QueryType, double>{};
+    for (final entry in patterns.entries) {
+      double score = 0;
+      for (final pattern in entry.value) {
+        if (lowerQuery.contains(pattern)) {
+          // Dar peso maior para matches mais específicos
+          score += pattern.split(' ').length;
+        }
+      }
+      scores[entry.key] = score;
+    }
+
+    // Retornar o tipo com mais score, ou general se nenhum
+    final maxScore = scores.values.isNotEmpty 
+        ? scores.values.reduce(math.max) 
+        : 0.0;
 
     if (maxScore == 0) return QueryType.general;
 
-    return scores.entries.where((entry) => entry.value == maxScore).first.key;
+    return scores.entries
+        .where((entry) => entry.value == maxScore)
+        .first
+        .key;
   }
 
   /// Avalia quão bem os resultados cobrem a consulta.

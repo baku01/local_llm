@@ -8,8 +8,9 @@ library;
 
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
-import 'package:shimmer/shimmer.dart';
+import 'elegant_loading_widget.dart';
 
 /// Widget que exibe uma animação de "pensamento" da IA otimizada.
 ///
@@ -192,42 +193,35 @@ class _ThinkingAnimationState extends State<ThinkingAnimation>
     return RepaintBoundary(
       child: Row(
         children: [
-          SizedBox(
-            width: 40,
-            height: 40,
-            child: AnimatedBuilder(
-              animation: _neuralController,
-              builder: (context, child) {
-                return CustomPaint(
-                  painter: OptimizedNeuralPainter(
-                    progress: _neuralController.value,
-                    color: theme.colorScheme.primary,
-                  ),
-                );
-              },
-            ),
+          // Novo loading elegante
+          CompactLoadingWidget(
+            size: 32,
+            color: theme.colorScheme.primary,
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Shimmer.fromColors(
-                  baseColor: theme.colorScheme.primary.withValues(alpha: 0.6),
-                  highlightColor: theme.colorScheme.primary,
-                  period: const Duration(milliseconds: 1500),
-                  child: Text(
-                    'Processando pensamento...',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.primary,
-                    ),
+                Text(
+                  'Processando pensamento...',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: theme.colorScheme.primary,
                   ),
-                ),
+                )
+                    .animate(
+                      onPlay: (controller) => controller.repeat(reverse: true),
+                    )
+                    .shimmer(
+                      duration: 2000.ms,
+                      color: theme.colorScheme.primary.withOpacity(0.3),
+                    ),
                 const SizedBox(height: 4),
-                _AnimatedDots(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                TypingIndicator(
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  size: 6,
                 ),
               ],
             ),

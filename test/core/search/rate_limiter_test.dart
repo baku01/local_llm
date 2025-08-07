@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:local_llm/core/search/rate_limiter.dart';
+import 'package:local_llm/infrastructure/core/search/rate_limiter.dart';
 
 void main() {
   group('RateLimiter', () {

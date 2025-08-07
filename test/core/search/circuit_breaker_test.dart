@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:local_llm/core/search/circuit_breaker.dart';
+import 'package:local_llm/infrastructure/core/search/circuit_breaker.dart';
 
 void main() {
   group('CircuitBreaker', () {

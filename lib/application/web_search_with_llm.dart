@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
-import '../../core/error/failures.dart';
-import '../../core/search/search_strategy_manager.dart';
-import '../../domain/entities/search_query.dart';
-import '../../domain/entities/search_result.dart';
-import '../services/llm_query_generator.dart';
-import '../services/llm_result_processor.dart';
+import '../infrastructure/core/error/failures.dart';
+import '../infrastructure/core/search/search_strategy_manager.dart';
+import '../domain/entities/search_query.dart';
+import '../domain/entities/search_result.dart';
+import '../domain/services/llm_query_generator.dart';
+import '../domain/services/llm_result_processor.dart';
 
 class WebSearchWithLLM {
   final SearchStrategyManager searchStrategyManager;

@@ -4,8 +4,8 @@
 /// completa (não streaming) usando um modelo LLM específico.
 library;
 
-import '../entities/llm_response.dart';
-import '../repositories/llm_repository.dart';
+import '../domain/entities/llm_response.dart';
+import '../domain/repositories/llm_repository.dart';
 
 /// Caso de uso responsável por gerar respostas LLM de forma síncrona.
 ///

@@ -11,8 +11,8 @@ library;
 import 'package:html/parser.dart' as html;
 import 'package:html/dom.dart' as dom;
 
-import '../../../domain/entities/search_result.dart';
-import '../../../domain/entities/search_query.dart';
+import '../../../../domain/entities/search_result.dart';
+import '../../../../domain/entities/search_query.dart';
 import '../../utils/logger.dart';
 import 'advanced_search_strategy.dart';
 

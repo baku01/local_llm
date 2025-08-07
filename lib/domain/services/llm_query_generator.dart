@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:dartz/dartz.dart';
-import '../../core/error/failures.dart';
+import '../../infrastructure/core/error/failures.dart';
 import 'llm_service.dart';
 
 class LLMQueryGenerator {

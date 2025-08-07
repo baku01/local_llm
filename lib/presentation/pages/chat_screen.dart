@@ -5,10 +5,12 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../providers/app_providers.dart';
 import '../widgets/chat_bubble.dart';
+
 import '../widgets/chat_input_field.dart';
-import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/llm_model.dart';
 import '../widgets/thinking_animation.dart';
+import '../widgets/elegant_loading_widget.dart';
+import '../widgets/enhanced_page_transitions.dart';
 import 'settings_screen.dart';
 
 class ChatScreen extends ConsumerWidget {
@@ -16,6 +18,8 @@ class ChatScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+
     // Otimização: usar select mais específicos para reduzir rebuilds
     final messages = ref.watch(
         llmControllerProvider.select((controller) => controller.messages));
@@ -70,8 +74,10 @@ class ChatScreen extends ConsumerWidget {
           IconButton(
             onPressed: () {
               Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
+                EnhancedPageTransitions.slideTransition<void>(
+                  page: const SettingsScreen(),
+                  direction: AxisDirection.right,
+                  duration: const Duration(milliseconds: 400),
                 ),
               );
             },
@@ -92,21 +98,51 @@ class ChatScreen extends ConsumerWidget {
                         final messageIndex = index;
 
                         if (messageIndex == messages.length && isReplying) {
-                          return RepaintBoundary(
-                            child: ChatBubble(
-                              message: ChatMessage(
-                                text: '',
-                                isUser: false,
-                                timestamp: DateTime.now(),
-                              ),
-                              isTyping: true,
-                            ).animate().fadeIn(duration: 250.ms).slideY(
-                                  begin: 0.05,
-                                  end: 0,
-                                  duration: 250.ms,
-                                  curve: Curves.easeOut,
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        theme.colorScheme.primary,
+                                        theme.colorScheme.secondary,
+                                      ],
+                                    ),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.auto_awesome_rounded,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
                                 ),
-                          );
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: theme.cardColor,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: theme.colorScheme.outline
+                                            .withOpacity(0.2),
+                                      ),
+                                    ),
+                                    child: const TypingIndicator(size: 8),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ).animate().fadeIn(duration: 300.ms).slideY(
+                                begin: 0.1,
+                                end: 0,
+                                duration: 400.ms,
+                                curve: Curves.easeOutCubic,
+                              );
                         }
 
                         final message = messages[messageIndex];
@@ -532,9 +568,14 @@ class ChatScreen extends ConsumerWidget {
                               },
                             );
                           },
-                          loading: () => const Padding(
-                            padding: EdgeInsets.all(32),
-                            child: Center(child: CircularProgressIndicator()),
+                          loading: () => Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Center(
+                              child: ElegantLoadingWidget(
+                                message: "Carregando modelos...",
+                                size: 50,
+                              ),
+                            ),
                           ),
                           error: (error, stack) => SingleChildScrollView(
                             padding: const EdgeInsets.all(32),

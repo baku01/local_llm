@@ -3,5 +3,6 @@
 /// environment specific.
 void main(List<String> args) {
   // TODO(baku): implement data migration logic once legacy format is defined.
+  // ignore: avoid_print
   print('Migration to Clean Architecture is not implemented yet.');
 }

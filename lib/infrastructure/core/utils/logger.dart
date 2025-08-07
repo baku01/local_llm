@@ -50,9 +50,14 @@ class AppLogger {
       [String? tag, Object? error, StackTrace? stackTrace]) {
     _log(LogLevel.error, message, tag);
     if (error != null) {
+      final logTag = tag ?? 'AppLogger';
+      print('[ERROR] [$logTag] Error details: $error');
+      if (stackTrace != null) {
+        print('[ERROR] [$logTag] Stack trace:\n$stackTrace');
+      }
       developer.log(
         'Error details: $error',
-        name: tag ?? 'AppLogger',
+        name: logTag,
         level: 1000,
         error: error,
         stackTrace: stackTrace,
@@ -65,6 +70,12 @@ class AppLogger {
     final logTag = tag ?? 'AppLogger';
     final levelStr = level.name.toUpperCase();
 
+    // Usar print para melhor visibilidade no console Flutter
+    final timestamp =
+        DateTime.now().toIso8601String().split('T')[1].split('.')[0];
+    print('[$timestamp] [$levelStr] [$logTag] $message');
+
+    // Também manter o developer.log para ferramentas de debug
     developer.log(
       '[$levelStr] $message',
       name: logTag,

@@ -5,8 +5,8 @@
 /// separando o conteúdo principal do processo de "pensamento" do modelo.
 library;
 
-import '../entities/llm_response.dart';
-import '../entities/thinking_response.dart';
+import '../domain/entities/llm_response.dart';
+import '../domain/entities/thinking_response.dart';
 
 /// Caso de uso para processamento de respostas com pensamento.
 ///

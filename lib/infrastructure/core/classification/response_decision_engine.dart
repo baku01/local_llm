@@ -6,8 +6,8 @@
 library;
 
 import 'dart:math' as math;
-import '../../domain/entities/search_result.dart';
-import '../../domain/entities/relevance_score.dart';
+import '../../../domain/entities/search_result.dart';
+import '../../../domain/entities/relevance_score.dart';
 import 'quality_classifier.dart';
 
 /// Estratégias de decisão para diferentes cenários.

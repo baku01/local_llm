@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:local_llm/core/search/search_strategy_manager.dart';
-import 'package:local_llm/core/search/search_strategy.dart';
+import 'package:local_llm/infrastructure/core/search/search_strategy_manager.dart';
+import 'package:local_llm/infrastructure/core/search/search_strategy.dart';
 import 'package:local_llm/domain/entities/search_result.dart';
 import 'package:local_llm/domain/entities/search_query.dart';
 

@@ -11,20 +11,20 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../http/robust_http_client.dart';
-import '../datasources/ollama_remote_datasource.dart';
-import '../datasources/web_search_datasource.dart';
+import '../../datasources/ollama_remote_datasource.dart';
+import '../../datasources/web_search_datasource.dart';
 
-import '../datasources/strategy_web_search_datasource.dart';
-import '../repositories/llm_repository_impl.dart';
-import '../repositories/search_repository_impl.dart';
-import '../../domain/repositories/llm_repository.dart';
-import '../../domain/repositories/search_repository.dart';
-import '../../application/get_available_models.dart';
-import '../../application/generate_response.dart';
-import '../../application/generate_response_stream.dart';
-import '../../application/search_web.dart';
-import '../../application/process_thinking_response.dart';
-import '../../presentation/controllers/llm_controller.dart';
+import '../../datasources/strategy_web_search_datasource.dart';
+import '../../repositories/llm_repository_impl.dart';
+import '../../repositories/search_repository_impl.dart';
+import '../../../domain/repositories/llm_repository.dart';
+import '../../../domain/repositories/search_repository.dart';
+import '../../../application/get_available_models.dart';
+import '../../../application/generate_response.dart';
+import '../../../application/generate_response_stream.dart';
+import '../../../application/search_web.dart';
+import '../../../application/process_thinking_response.dart';
+import '../../../presentation/controllers/llm_controller.dart';
 
 /// Container singleton responsável pela injeção de dependências.
 ///

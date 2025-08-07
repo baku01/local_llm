@@ -9,9 +9,9 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'package:crypto/crypto.dart';
 
-import '../../domain/entities/search_result.dart';
+import '../../../domain/entities/search_result.dart';
 import 'logger.dart';
-import '../../domain/entities/relevance_score.dart';
+import '../../../domain/entities/relevance_score.dart';
 
 /// Configuração do cache inteligente.
 class SmartCacheConfig {

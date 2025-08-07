@@ -10,28 +10,16 @@ import 'package:flutter/material.dart';
 
 // Domain
 import '../../domain/entities/llm_model.dart';
-import '../../application/get_available_models.dart';
 
 // Presentation
-import '../controllers/llm_controller.dart';
-import '../../infrastructure/core/di/injection_container.dart';
+import 'app_providers.dart';
 
 // =============================================================================
-// DEPENDENCY INJECTION
+// CONTROLLER PROVIDER
 // =============================================================================
 
-/// Provider para o container de injeção de dependências.
-final injectionContainerProvider = Provider<InjectionContainer>((ref) {
-  final container = InjectionContainer();
-  container.initialize();
-  return container;
-});
-
-/// Provider para o controlador LLM via DI container.
-final llmControllerProvider = ChangeNotifierProvider<LlmController>((ref) {
-  final container = ref.watch(injectionContainerProvider);
-  return container.controller;
-});
+/// Provider para o controlador LLM.
+/// Este provider é importado de app_providers.dart onde está corretamente configurado.
 
 // =============================================================================
 // UI STATE PROVIDERS
@@ -63,36 +51,28 @@ final suggestionTextProvider = StateProvider<String>((ref) => '');
 // =============================================================================
 
 /// Notifier para gerenciar o estado dos modelos disponíveis.
-class AvailableModelsNotifier
-    extends StateNotifier<AsyncValue<List<LlmModel>>> {
-  final GetAvailableModels _getAvailableModels;
-
-  AvailableModelsNotifier(this._getAvailableModels)
-      : super(const AsyncValue.loading()) {
-    loadModels();
-  }
-
-  /// Carrega os modelos disponíveis.
-  Future<void> loadModels() async {
-    state = const AsyncValue.loading();
-    try {
-      final models = await _getAvailableModels();
-      state = AsyncValue.data(models);
-    } catch (error, stackTrace) {
-      state = AsyncValue.error(error, stackTrace);
-    }
+class AvailableModelsNotifier extends AsyncNotifier<List<LlmModel>> {
+  @override
+  Future<List<LlmModel>> build() async {
+    final getAvailableModels = ref.watch(getAvailableModelsProvider);
+    return await getAvailableModels();
   }
 
   /// Recarrega os modelos.
   Future<void> refresh() async {
-    await loadModels();
+    state = const AsyncLoading();
+    try {
+      final getAvailableModels = ref.watch(getAvailableModelsProvider);
+      final models = await getAvailableModels();
+      state = AsyncData(models);
+    } catch (error, stackTrace) {
+      state = AsyncError(error, stackTrace);
+    }
   }
 }
 
-/// Provider para os modelos disponíveis via DI.
+/// Provider para os modelos disponíveis.
 final availableModelsProvider =
-    StateNotifierProvider<AvailableModelsNotifier, AsyncValue<List<LlmModel>>>(
-        (ref) {
-  final container = ref.watch(injectionContainerProvider);
-  return AvailableModelsNotifier(container.getAvailableModels);
-});
+    AsyncNotifierProvider<AvailableModelsNotifier, List<LlmModel>>(
+  () => AvailableModelsNotifier(),
+);

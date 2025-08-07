@@ -23,19 +23,52 @@ class ChatBubble extends StatefulWidget {
   State<ChatBubble> createState() => _ChatBubbleState();
 }
 
-class _ChatBubbleState extends State<ChatBubble> {
+class _ChatBubbleState extends State<ChatBubble>
+    with TickerProviderStateMixin {
   bool _isHovered = false;
   bool _animationCompleted = false;
+  late AnimationController _scaleController;
+  late AnimationController _shimmerController;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
-    // Marcar animação como completada após um pequeno delay para reduzir flickering inicial
-    Future.delayed(const Duration(milliseconds: 500), () {
+    
+    _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+
+    _shimmerController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.02,
+    ).animate(CurvedAnimation(
+      parent: _scaleController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Marcar animação como completada após delay
+    Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
         setState(() => _animationCompleted = true);
+        if (!widget.message.isUser && widget.message.text.isNotEmpty) {
+          _shimmerController.forward();
+        }
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _scaleController.dispose();
+    _shimmerController.dispose();
+    super.dispose();
   }
 
   @override
@@ -48,11 +81,13 @@ class _ChatBubbleState extends State<ChatBubble> {
         onEnter: (_) {
           if (_animationCompleted) {
             setState(() => _isHovered = true);
+            _scaleController.forward();
           }
         },
         onExit: (_) {
           if (_animationCompleted) {
             setState(() => _isHovered = false);
+            _scaleController.reverse();
           }
         },
         child: Container(
@@ -67,18 +102,16 @@ class _ChatBubbleState extends State<ChatBubble> {
                 const SizedBox(width: 12),
               ],
               Flexible(
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOut,
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.75,
-                  ),
-                  transform: _animationCompleted
-                      ? (Matrix4.identity()
-                        ..scale(_isHovered ? 1.01 : 1.0)
-                        ..translate(0.0, _isHovered ? -1.0 : 0.0))
-                      : Matrix4.identity(),
-                  child: ClipRRect(
+                child: AnimatedBuilder(
+                  animation: _scaleAnimation,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: _scaleAnimation.value,
+                      child: Container(
+                        constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width * 0.75,
+                        ),
+                        child: ClipRRect(
                     borderRadius: BorderRadius.circular(24).copyWith(
                       bottomLeft: isUser
                           ? const Radius.circular(24)
@@ -137,7 +170,10 @@ class _ChatBubbleState extends State<ChatBubble> {
                                   : _buildMessageContent(context),
                             ),
                           ),
-                  ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
               if (isUser) ...[

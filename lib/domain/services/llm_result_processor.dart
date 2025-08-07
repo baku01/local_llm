@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import '../../core/error/failures.dart';
-import '../../domain/entities/search_result.dart';
+import '../../infrastructure/core/error/failures.dart';
+import '../entities/search_result.dart';
 import 'llm_service.dart';
 
 class LLMResultProcessor {

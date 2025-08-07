@@ -7,8 +7,8 @@ library;
 
 import 'dart:async';
 import 'dart:math' as math;
-import '../../domain/entities/search_result.dart';
-import '../../domain/entities/search_query.dart';
+import '../../../domain/entities/search_result.dart';
+import '../../../domain/entities/search_query.dart';
 import 'search_strategy.dart';
 import 'circuit_breaker.dart';
 import '../utils/logger.dart';

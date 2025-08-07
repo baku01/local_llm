@@ -11,9 +11,9 @@ import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart' as dom;
 
-import '../../core/utils/relevance_analyzer.dart';
-import '../../core/utils/text_processor.dart';
-import '../../core/utils/logger.dart';
+import '../core/utils/relevance_analyzer.dart';
+import '../core/utils/text_processor.dart';
+import '../core/utils/logger.dart';
 import '../../domain/entities/search_result.dart';
 import '../../domain/entities/search_query.dart';
 import 'web_search_datasource.dart';
@@ -105,6 +105,9 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
       }
 
       // Executar pesquisas em paralelo
+      AppLogger.debug('Iniciando buscas em múltiplos provedores...',
+          'IntelligentWebSearch');
+
       final futures = <Future<List<SearchResult>>>[
         _searchGoogle(query),
         _searchBing(query),
@@ -151,7 +154,7 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
       }
 
       AppLogger.info(
-          'Pesquisa concluída: ${finalResults.length} resultados relevantes',
+          'Pesquisa concluída: ${finalResults.length} resultados relevantes de ${allResults.length} totais',
           'IntelligentWebSearch');
       return finalResults;
     } catch (e, stackTrace) {
@@ -168,6 +171,8 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
       final url =
           'https://www.google.com/search?q=$encodedQuery&num=${_config.maxResultsPerProvider}&hl=pt-BR';
 
+      AppLogger.debug('Google URL: $url', 'IntelligentWebSearch');
+
       final response = await _client
           .get(
             Uri.parse(url),
@@ -176,14 +181,22 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
           .timeout(Duration(seconds: _config.requestTimeoutSeconds));
 
       if (response.statusCode != 200) {
-        AppLogger.warning('Google search failed: ${response.statusCode}',
+        AppLogger.warning(
+            'Google search failed: ${response.statusCode} - Body: ${response.body.substring(0, 200)}',
             'IntelligentWebSearch');
         return [];
       }
 
-      return _parseGoogleResults(response.body);
+      AppLogger.debug('Google response received, parsing results...',
+          'IntelligentWebSearch');
+
+      final googleResults = _parseGoogleResults(response.body);
+      AppLogger.debug('Google retornou ${googleResults.length} resultados',
+          'IntelligentWebSearch');
+      return googleResults;
     } catch (e) {
-      AppLogger.warning('Erro no Google search: $e', 'IntelligentWebSearch');
+      AppLogger.warning('Erro ao pesquisar no Google: ${e.toString()}',
+          'IntelligentWebSearch');
       return [];
     }
   }
@@ -193,7 +206,9 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
     try {
       final encodedQuery = Uri.encodeComponent(query.formattedQuery);
       final url =
-          'https://www.bing.com/search?q=$encodedQuery&count=${_config.maxResultsPerProvider}';
+          'https://www.bing.com/search?q=$encodedQuery&count=${_config.maxResultsPerProvider}&setlang=pt-BR';
+
+      AppLogger.debug('Bing URL: $url', 'IntelligentWebSearch');
 
       final response = await _client
           .get(
@@ -208,9 +223,13 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
         return [];
       }
 
-      return _parseBingResults(response.body);
+      final bingResults = _parseBingResults(response.body);
+      AppLogger.debug('Bing retornou ${bingResults.length} resultados',
+          'IntelligentWebSearch');
+      return bingResults;
     } catch (e) {
-      AppLogger.warning('Erro no Bing search: $e', 'IntelligentWebSearch');
+      AppLogger.warning(
+          'Erro ao pesquisar no Bing: ${e.toString()}', 'IntelligentWebSearch');
       return [];
     }
   }
@@ -220,6 +239,8 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
     try {
       final encodedQuery = Uri.encodeComponent(query.formattedQuery);
       final url = 'https://html.duckduckgo.com/html/?q=$encodedQuery';
+
+      AppLogger.debug('DuckDuckGo URL: $url', 'IntelligentWebSearch');
 
       final response = await _client
           .get(
@@ -234,10 +255,13 @@ class IntelligentWebSearchDataSource implements WebSearchDataSource {
         return [];
       }
 
-      return _parseDuckDuckGoResults(response.body);
+      final ddgResults = _parseDuckDuckGoResults(response.body);
+      AppLogger.debug('DuckDuckGo retornou ${ddgResults.length} resultados',
+          'IntelligentWebSearch');
+      return ddgResults;
     } catch (e) {
-      AppLogger.warning(
-          'Erro no DuckDuckGo search: $e', 'IntelligentWebSearch');
+      AppLogger.warning('Erro ao pesquisar no DuckDuckGo: ${e.toString()}',
+          'IntelligentWebSearch');
       return [];
     }
   }

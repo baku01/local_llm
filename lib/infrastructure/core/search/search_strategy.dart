@@ -5,8 +5,8 @@
 /// de mecanismos de busca.
 library;
 
-import '../../domain/entities/search_result.dart';
-import '../../domain/entities/search_query.dart';
+import '../../../domain/entities/search_result.dart';
+import '../../../domain/entities/search_query.dart';
 
 /// Interface base para estratégias de busca.
 abstract class SearchStrategy {

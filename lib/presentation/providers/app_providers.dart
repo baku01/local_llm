@@ -17,17 +17,20 @@ import '../../application/get_available_models.dart';
 import '../../application/generate_response.dart';
 import '../../application/generate_response_stream.dart';
 import '../../application/search_web.dart';
+// FetchWebContent is in the same file as SearchWeb
+import '../../application/process_thinking_response.dart';
 
 // Data
 import '../../infrastructure/datasources/ollama_remote_datasource.dart';
 import '../../infrastructure/datasources/lmstudio_remote_datasource.dart';
 import '../../infrastructure/datasources/intelligent_web_search_datasource.dart';
+import '../../infrastructure/datasources/simple_web_search_datasource.dart';
+import '../../infrastructure/datasources/web_search_datasource.dart';
 import '../../infrastructure/repositories/llm_repository_impl.dart';
 import '../../infrastructure/repositories/search_repository_impl.dart';
 
 // Presentation
 import '../controllers/llm_controller.dart';
-import '../../infrastructure/core/di/injection_container.dart';
 
 // =============================================================================
 // CONFIGURATION PROVIDERS
@@ -47,6 +50,9 @@ enum LlmBackend { ollama, lmStudio }
 final llmBackendProvider =
     StateProvider<LlmBackend>((ref) => LlmBackend.ollama);
 
+/// Provider para usar busca web simples (alternativa mais confiável).
+final useSimpleWebSearchProvider = StateProvider<bool>((ref) => true);
+
 // =============================================================================
 // INFRASTRUCTURE PROVIDERS
 // =============================================================================
@@ -56,6 +62,17 @@ final dioProvider = Provider<Dio>((ref) {
   final dio = Dio();
   dio.options.connectTimeout = const Duration(seconds: 30);
   dio.options.receiveTimeout = const Duration(minutes: 5);
+
+  // Adicionar interceptor para debug
+  dio.interceptors.add(LogInterceptor(
+    requestBody: true,
+    responseBody: false,
+    requestHeader: true,
+    responseHeader: false,
+    error: true,
+    logPrint: (obj) => print('[DIO DEBUG] $obj'),
+  ));
+
   return dio;
 });
 
@@ -89,7 +106,7 @@ final lmStudioDataSourceProvider = Provider<OllamaRemoteDataSource>((ref) {
 });
 
 /// Provider para o data source de busca web inteligente.
-final webSearchDataSourceProvider =
+final intelligentWebSearchDataSourceProvider =
     Provider<IntelligentWebSearchDataSource>((ref) {
   final client = ref.watch(httpClientProvider);
   return IntelligentWebSearchDataSource(
@@ -105,6 +122,21 @@ final webSearchDataSourceProvider =
   );
 });
 
+/// Provider para o data source de busca web simples.
+final simpleWebSearchDataSourceProvider =
+    Provider<SimpleWebSearchDataSource>((ref) {
+  final client = ref.watch(httpClientProvider);
+  return SimpleWebSearchDataSource(client: client);
+});
+
+/// Provider para o data source de busca web (seleciona entre simples e inteligente).
+final webSearchDataSourceProvider = Provider<WebSearchDataSource>((ref) {
+  final useSimple = ref.watch(useSimpleWebSearchProvider);
+  return useSimple
+      ? ref.watch(simpleWebSearchDataSourceProvider)
+      : ref.watch(intelligentWebSearchDataSourceProvider);
+});
+
 // =============================================================================
 // REPOSITORY PROVIDERS
 // =============================================================================
@@ -115,6 +147,18 @@ final llmRepositoryProvider = Provider<LlmRepository>((ref) {
   final dataSource = backend == LlmBackend.lmStudio
       ? ref.watch(lmStudioDataSourceProvider)
       : ref.watch(ollamaDataSourceProvider);
+
+  // Debug logging
+  print('[DEBUG] Backend selecionado: ${backend.name}');
+  print('[DEBUG] DataSource: ${dataSource.runtimeType}');
+  if (backend == LlmBackend.lmStudio) {
+    final lmStudioUrl = ref.watch(lmStudioUrlProvider);
+    print('[DEBUG] LM Studio URL: $lmStudioUrl');
+  } else {
+    final ollamaUrl = ref.watch(apiUrlProvider);
+    print('[DEBUG] Ollama URL: $ollamaUrl');
+  }
+
   return LlmRepositoryImpl(remoteDataSource: dataSource);
 });
 
@@ -146,10 +190,22 @@ final generateResponseStreamProvider = Provider<GenerateResponseStream>((ref) {
   return GenerateResponseStream(repository);
 });
 
-/// Provider para o caso de uso de busca web.
+/// Provider para o caso de uso de busca na web.
 final searchWebProvider = Provider<SearchWeb>((ref) {
   final repository = ref.watch(searchRepositoryProvider);
   return SearchWeb(repository);
+});
+
+/// Provider para o caso de uso de buscar conteúdo web.
+final fetchWebContentProvider = Provider<FetchWebContent>((ref) {
+  final repository = ref.watch(searchRepositoryProvider);
+  return FetchWebContent(repository);
+});
+
+/// Provider para o caso de uso de processar respostas com pensamento.
+final processThinkingResponseProvider =
+    Provider<ProcessThinkingResponse>((ref) {
+  return ProcessThinkingResponse();
 });
 
 // =============================================================================
@@ -162,17 +218,23 @@ final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);
 /// Provider para o modelo LLM selecionado.
 final selectedModelProvider = StateProvider<LlmModel?>((ref) => null);
 
-/// Provider para o container de injeção de dependências.
-final injectionContainerProvider = Provider<InjectionContainer>((ref) {
-  final container = InjectionContainer();
-  container.initialize();
-  return container;
-});
-
-/// Provider para o controlador LLM via DI container.
+/// Provider para o controlador de LLM.
 final llmControllerProvider = ChangeNotifierProvider<LlmController>((ref) {
-  final container = ref.watch(injectionContainerProvider);
-  return container.controller;
+  final getAvailableModels = ref.watch(getAvailableModelsProvider);
+  final generateResponse = ref.watch(generateResponseProvider);
+  final generateResponseStream = ref.watch(generateResponseStreamProvider);
+  final searchWeb = ref.watch(searchWebProvider);
+  final fetchWebContent = ref.watch(fetchWebContentProvider);
+  final processThinkingResponse = ref.watch(processThinkingResponseProvider);
+
+  return LlmController(
+    getAvailableModels: getAvailableModels,
+    generateResponse: generateResponse,
+    generateResponseStream: generateResponseStream,
+    searchWeb: searchWeb,
+    fetchWebContent: fetchWebContent,
+    processThinkingResponse: processThinkingResponse,
+  );
 });
 
 /// Provider para os modelos disponíveis.

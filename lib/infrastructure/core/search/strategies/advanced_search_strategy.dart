@@ -13,9 +13,9 @@ import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 import 'package:html/dom.dart' as dom;
 
-import '../../../domain/entities/search_result.dart';
-import '../../../domain/entities/search_query.dart';
-import '../../../domain/entities/relevance_score.dart';
+import '../../../../domain/entities/search_result.dart';
+import '../../../../domain/entities/search_query.dart';
+import '../../../../domain/entities/relevance_score.dart';
 import '../circuit_breaker.dart';
 import '../rate_limiter.dart';
 import '../search_strategy.dart';

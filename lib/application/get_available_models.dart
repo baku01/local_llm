@@ -5,8 +5,8 @@
 /// disponíveis no sistema.
 library;
 
-import '../entities/llm_model.dart';
-import '../repositories/llm_repository.dart';
+import '../domain/entities/llm_model.dart';
+import '../domain/repositories/llm_repository.dart';
 
 /// Caso de uso para obtenção de modelos LLM disponíveis.
 ///

@@ -164,6 +164,8 @@ class LlmController extends ChangeNotifier {
   /// [thinking] - Se o modelo está pensando
   /// [thinkingText] - Texto opcional do pensamento atual
   void _setThinking(bool thinking, [String? thinkingText]) {
+    print(
+        '[DEBUG THINKING] _setThinking chamado: thinking=$thinking, text=${thinkingText?.substring(0, thinkingText.length > 50 ? 50 : thinkingText.length)}...');
     bool shouldNotify = false;
 
     if (_isThinking != thinking) {
@@ -333,20 +335,31 @@ class LlmController extends ChangeNotifier {
 
     _setLoading(true);
 
-    // Verificar se é um modelo que "pensa" (R1 series)
-    final isThinkingModel = _selectedModel!.name.toLowerCase().contains('r1');
+    // Verificar se é um modelo que "pensa" (R1 series, thinking models, etc)
+    final modelName = _selectedModel!.name.toLowerCase();
+    final isThinkingModel = modelName.contains('r1') ||
+        modelName.contains('thinking') ||
+        modelName.contains('reasoning') ||
+        modelName.contains('deepseek-r1') ||
+        modelName.contains('qwen') && modelName.contains('thinking');
 
-    if (isThinkingModel) {
+    // Comando de teste para simular pensamento
+    final isTestThinking =
+        userMessage.text.toLowerCase().contains('#testthinking');
+
+    if (isThinkingModel || isTestThinking) {
       _setThinking(true, 'Analisando a pergunta e estruturando a resposta...');
     }
 
     try {
       if (_streamEnabled) {
         // Usa streaming
-        await _handleStreamingResponse(finalPrompt, isThinkingModel);
+        await _handleStreamingResponse(
+            finalPrompt, isThinkingModel || isTestThinking);
       } else {
         // Usa resposta única (modo original)
-        await _handleSingleResponse(finalPrompt, isThinkingModel);
+        await _handleSingleResponse(
+            finalPrompt, isThinkingModel || isTestThinking);
       }
     } catch (e) {
       // Adiciona mensagem de erro
@@ -413,12 +426,30 @@ class LlmController extends ChangeNotifier {
     ChatMessage? streamingMessage;
     int? messageIndex;
 
+    // Simular pensamento para teste
+    if (isThinkingModel) {
+      isInThinkingMode = true;
+      _setThinking(true, 'Iniciando processo de análise...');
+
+      // Simular pensamento por 2 segundos
+      for (int i = 0; i < 20; i++) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        final thinkingText = 'Analisando contexto... ${i * 5}% completo. '
+            'Processando informações relevantes e estruturando resposta detalhada...';
+        _setThinking(true, thinkingText);
+      }
+
+      _setThinking(false);
+      isInThinkingMode = false;
+    }
+
     try {
       await for (final chunk in _generateResponseStream(
         prompt: prompt,
         modelName: _selectedModel!.name,
       )) {
         if (chunk.contains('<think>')) {
+          print('[DEBUG THINKING] Detectada tag <think>');
           isInThinkingMode = true;
           _setThinking(true, '');
           final thinkStart = chunk.indexOf('<think>');
@@ -433,6 +464,7 @@ class LlmController extends ChangeNotifier {
           }
         } else if (isInThinkingMode) {
           if (chunk.contains('</think>')) {
+            print('[DEBUG THINKING] Detectada tag </think>');
             final thinkEnd = chunk.indexOf('</think>');
             if (thinkEnd != -1) {
               // Finaliza pensamento
@@ -462,6 +494,8 @@ class LlmController extends ChangeNotifier {
             thinkingBuffer.write(chunk);
             // Throttling otimizado para reduzir flickering
             if (thinkingBuffer.length % 40 == 0 || thinkingBuffer.length < 50) {
+              print(
+                  '[DEBUG THINKING] Atualizando pensamento: ${thinkingBuffer.toString().substring(0, thinkingBuffer.toString().length > 100 ? 100 : thinkingBuffer.toString().length)}...');
               _setThinking(true, thinkingBuffer.toString());
             }
           }

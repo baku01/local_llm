@@ -6,15 +6,15 @@ library;
 
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import '../../core/search/search_strategy_manager.dart';
+import '../core/search/search_strategy_manager.dart';
 
-import '../../core/search/strategies/google_search_strategy.dart';
-import '../../core/search/strategies/bing_search_strategy.dart';
-import '../../core/search/strategies/duckduckgo_search_strategy.dart';
-import '../../core/search/strategies/local_search_strategy.dart';
+import '../core/search/strategies/google_search_strategy.dart';
+import '../core/search/strategies/bing_search_strategy.dart';
+import '../core/search/strategies/duckduckgo_search_strategy.dart';
+import '../core/search/strategies/local_search_strategy.dart';
 import '../../domain/entities/search_result.dart';
 import '../../domain/entities/search_query.dart';
-import '../../core/utils/logger.dart';
+import '../core/utils/logger.dart';
 import 'web_search_datasource.dart';
 
 /// Data source de busca web usando estratégias modulares.
