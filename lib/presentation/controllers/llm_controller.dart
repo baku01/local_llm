@@ -10,11 +10,11 @@ import 'package:flutter/foundation.dart';
 import '../../domain/entities/llm_model.dart';
 import '../../domain/entities/search_result.dart';
 import '../../domain/entities/search_query.dart';
-import '../../domain/usecases/get_available_models.dart';
-import '../../domain/usecases/generate_response.dart';
-import '../../domain/usecases/generate_response_stream.dart';
-import '../../domain/usecases/search_web.dart';
-import '../../domain/usecases/process_thinking_response.dart';
+import '../../application/get_available_models.dart';
+import '../../application/generate_response.dart';
+import '../../application/generate_response_stream.dart';
+import '../../application/search_web.dart';
+import '../../application/process_thinking_response.dart';
 import '../../domain/entities/chat_message.dart';
 
 /// Controlador principal que gerencia a interação com modelos LLM.

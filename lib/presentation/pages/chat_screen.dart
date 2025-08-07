@@ -9,10 +9,10 @@ import '../widgets/chat_input_field.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/llm_model.dart';
 import '../widgets/thinking_animation.dart';
-import 'settings_page.dart';
+import 'settings_screen.dart';
 
-class ChatPage extends ConsumerWidget {
-  const ChatPage({super.key});
+class ChatScreen extends ConsumerWidget {
+  const ChatScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -71,7 +71,7 @@ class ChatPage extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => const SettingsPage(),
+                  builder: (context) => const SettingsScreen(),
                 ),
               );
             },

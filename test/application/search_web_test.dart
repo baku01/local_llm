@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
-import 'package:local_llm/domain/usecases/search_web.dart';
+import 'package:local_llm/application/search_web.dart';
 import 'package:local_llm/domain/repositories/search_repository.dart';
 import 'package:local_llm/domain/entities/search_result.dart';
 import 'package:local_llm/domain/entities/search_query.dart';
