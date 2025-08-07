@@ -11,7 +11,9 @@ import '../../../domain/entities/search_result.dart';
 import '../../../domain/entities/search_query.dart';
 import 'search_strategy.dart';
 import 'circuit_breaker.dart';
+import 'rate_limiter.dart';
 import '../utils/logger.dart';
+import '../utils/smart_cache.dart';
 
 /// Configuração do gerenciador de estratégias.
 class SearchStrategyConfig {
@@ -52,17 +54,17 @@ class SearchStrategyConfig {
 class SearchStrategyManager {
   final List<SearchStrategy> _strategies = [];
   final SearchStrategyConfig _config;
-  final Map<String, List<StrategySearchResult>> _cache = {};
   final Map<String, CircuitBreaker> _circuitBreakers = {};
-  Timer? _cacheCleanupTimer;
+  final Map<String, RateLimiter> _rateLimiters = {};
+  final SmartCache _smartCache;
   Timer? _healthCheckTimer;
 
   /// Métricas globais do gerenciador.
   final Map<String, SearchStrategyMetrics> _strategyMetrics = {};
 
-  SearchStrategyManager({SearchStrategyConfig? config})
-      : _config = config ?? const SearchStrategyConfig() {
-    _startCacheCleanup();
+  SearchStrategyManager({SearchStrategyConfig? config, SmartCache? cache})
+      : _config = config ?? const SearchStrategyConfig(),
+        _smartCache = cache ?? SmartCache() {
     _startHealthCheck();
   }
 
@@ -71,6 +73,8 @@ class SearchStrategyManager {
     if (!_strategies.any((s) => s.name == strategy.name)) {
       _strategies.add(strategy);
       _strategyMetrics[strategy.name] = SearchStrategyMetrics.empty();
+
+      // Circuit breaker configurado por estratégia
       _circuitBreakers[strategy.name] = CircuitBreaker(
         strategy.name,
         const CircuitBreakerConfig(
@@ -79,8 +83,44 @@ class SearchStrategyManager {
           successThreshold: 2,
         ),
       );
+
+      // Rate limiter configurado por estratégia
+      final rateLimiterConfig = _getRateLimiterConfig(strategy.name);
+      _rateLimiters[strategy.name] = RateLimiter(
+        strategy.name,
+        rateLimiterConfig,
+      );
+
       AppLogger.info(
           'Estratégia registrada: ${strategy.name}', 'SearchStrategyManager');
+    }
+  }
+
+  /// Obtém configuração de rate limiter específica para cada estratégia.
+  RateLimiterConfig _getRateLimiterConfig(String strategyName) {
+    switch (strategyName) {
+      case 'semantic_search':
+        return const RateLimiterConfig(
+          maxRequests: 20,
+          windowMs: 60000,
+          initialTokens: 5,
+          refillRate: 0.5, // Mais conservativo para busca semântica
+        );
+      case 'google_search':
+      case 'bing_search':
+        return const RateLimiterConfig(
+          maxRequests: 100,
+          windowMs: 60000,
+          initialTokens: 10,
+          refillRate: 2.0,
+        );
+      default:
+        return const RateLimiterConfig(
+          maxRequests: 50,
+          windowMs: 60000,
+          initialTokens: 8,
+          refillRate: 1.0,
+        );
     }
   }
 
@@ -89,6 +129,7 @@ class SearchStrategyManager {
     _strategies.removeWhere((s) => s.name == strategyName);
     _strategyMetrics.remove(strategyName);
     _circuitBreakers.remove(strategyName);
+    _rateLimiters.remove(strategyName);
     AppLogger.info(
         'Estratégia removida: $strategyName', 'SearchStrategyManager');
   }
@@ -99,13 +140,19 @@ class SearchStrategyManager {
       throw Exception('Nenhuma estratégia de busca registrada');
     }
 
-    // Verificar cache primeiro
+    // Verificar cache inteligente primeiro
     if (_config.enableStrategyCache) {
-      final cachedResult = _getCachedResult(query);
-      if (cachedResult != null) {
-        AppLogger.debug(
-            'Resultado encontrado no cache', 'SearchStrategyManager');
-        return cachedResult;
+      final cachedResults =
+          await _smartCache.getCachedSearchResults(_generateCacheKey(query));
+      if (cachedResults != null && cachedResults.isNotEmpty) {
+        AppLogger.debug('Resultado encontrado no cache inteligente',
+            'SearchStrategyManager');
+        return StrategySearchResult(
+          results: cachedResults,
+          strategyName: 'cache',
+          executionTimeMs: 0,
+          isSuccessful: true,
+        );
       }
     }
 
@@ -125,9 +172,13 @@ class SearchStrategyManager {
 
         // Se o resultado é bem-sucedido, retornar
         if (result.isSuccessful) {
-          // Cache do resultado se bem-sucedido
+          // Cache inteligente do resultado se bem-sucedido
           if (_config.enableStrategyCache) {
-            _cacheResult(query, result);
+            await _smartCache.cacheSearchResults(
+              _generateCacheKey(query),
+              result.results,
+              ttlMinutes: _config.cacheCleanupIntervalMinutes * 2,
+            );
           }
           return result;
         } else {
@@ -210,15 +261,24 @@ class SearchStrategyManager {
     return (successScore + speedScore) * (strategy.priority / 10.0);
   }
 
-  /// Executa uma estratégia específica com timeout e circuit breaker.
+  /// Executa uma estratégia específica com timeout, circuit breaker e rate limiting.
   Future<StrategySearchResult> _executeStrategy(
     SearchStrategy strategy,
     SearchQuery query,
   ) async {
     final stopwatch = Stopwatch()..start();
     final circuitBreaker = _circuitBreakers[strategy.name];
+    final rateLimiter = _rateLimiters[strategy.name];
 
     try {
+      // Verificar rate limiting primeiro
+      if (rateLimiter != null) {
+        final allowed = await rateLimiter.tryAcquire();
+        if (!allowed) {
+          throw Exception('Rate limit exceeded for strategy ${strategy.name}');
+        }
+      }
+
       late List<SearchResult> results;
 
       if (circuitBreaker != null) {
@@ -306,46 +366,9 @@ class SearchStrategyManager {
     return metrics?.successRate ?? 0.0;
   }
 
-  /// Verifica cache para resultado existente.
-  StrategySearchResult? _getCachedResult(SearchQuery query) {
-    final cacheKey = _generateCacheKey(query);
-    final cachedResults = _cache[cacheKey];
-
-    if (cachedResults != null && cachedResults.isNotEmpty) {
-      // Retornar resultado mais recente e bem-sucedido
-      final validResults = cachedResults.where((r) => r.isSuccessful).toList();
-      if (validResults.isNotEmpty) {
-        return validResults.last;
-      }
-    }
-
-    return null;
-  }
-
-  /// Armazena resultado no cache.
-  void _cacheResult(SearchQuery query, StrategySearchResult result) {
-    final cacheKey = _generateCacheKey(query);
-    _cache.putIfAbsent(cacheKey, () => []).add(result);
-
-    // Limitar tamanho do cache por chave
-    if (_cache[cacheKey]!.length > 5) {
-      _cache[cacheKey]!.removeAt(0);
-    }
-  }
-
   /// Gera chave de cache para uma consulta.
   String _generateCacheKey(SearchQuery query) {
-    return '${query.formattedQuery}_${query.type.name}_${query.maxResults}';
-  }
-
-  /// Inicia timer de limpeza de cache.
-  void _startCacheCleanup() {
-    if (!_config.enableStrategyCache) return;
-
-    _cacheCleanupTimer = Timer.periodic(
-      Duration(minutes: _config.cacheCleanupIntervalMinutes),
-      (_) => _cleanupCache(),
-    );
+    return 'search_${query.formattedQuery}_${query.type.name}_${query.maxResults}';
   }
 
   /// Inicia health check das estratégias.
@@ -388,30 +411,22 @@ class SearchStrategyManager {
     }
   }
 
-  /// Limpa entradas antigas do cache.
-  void _cleanupCache() {
-    final cutoffMinutes = _config.cacheCleanupIntervalMinutes * 2;
-
-    _cache.removeWhere((key, results) {
-      results.removeWhere((result) =>
-          DateTime.now().difference(DateTime.now()).inMinutes > cutoffMinutes);
-      return results.isEmpty;
-    });
-
-    AppLogger.debug('Cache limpo', 'SearchStrategyManager');
-  }
-
   /// Obtém estatísticas do gerenciador.
   Map<String, dynamic> getStatistics() {
     final circuitBreakerStats = _circuitBreakers.map(
       (name, breaker) => MapEntry(name, breaker.getStatistics()),
     );
 
+    final rateLimiterStats = _rateLimiters.map(
+      (name, limiter) => MapEntry(name, limiter.getStatistics()),
+    );
+
     return {
       'registered_strategies': _strategies.length,
-      'cache_entries': _cache.length,
+      'smart_cache_stats': _smartCache.getStats(),
       'strategy_metrics': _strategyMetrics,
       'circuit_breakers': circuitBreakerStats,
+      'rate_limiters': rateLimiterStats,
       'health_check_enabled': _healthCheckTimer != null,
       'available_strategies': _strategies.where((s) => s.isAvailable).length,
       'healthy_strategies':
@@ -452,11 +467,11 @@ class SearchStrategyManager {
 
   /// Libera recursos do gerenciador.
   void dispose() {
-    _cacheCleanupTimer?.cancel();
     _healthCheckTimer?.cancel();
-    _cache.clear();
+    _smartCache.dispose();
     _strategies.clear();
     _strategyMetrics.clear();
     _circuitBreakers.clear();
+    _rateLimiters.clear();
   }
 }

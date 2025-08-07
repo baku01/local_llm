@@ -20,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _pulseController;
   late AnimationController _rotateController;
   late AnimationController _progressController;
-  
+
   late Animation<double> _pulseAnimation;
   late Animation<double> _rotateAnimation;
   late Animation<double> _progressAnimation;
@@ -28,18 +28,18 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    
+
     // Controladores de animação
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
-    
+
     _rotateController = AnimationController(
       duration: const Duration(milliseconds: 3000),
       vsync: this,
     );
-    
+
     _progressController = AnimationController(
       duration: const Duration(milliseconds: 2500),
       vsync: this,
@@ -81,7 +81,7 @@ class _SplashScreenState extends State<SplashScreen>
         _pulseController.stop();
         _rotateController.stop();
         _progressController.stop();
-        
+
         // Navigação com transição moderna melhorada
         Navigator.of(context).pushReplacement(
           EnhancedPageTransitions.glassMorphTransition<void>(
@@ -107,11 +107,10 @@ class _SplashScreenState extends State<SplashScreen>
     final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
     final isDarkMode = theme.brightness == Brightness.dark;
-    
+
     return Scaffold(
-      backgroundColor: isDarkMode 
-          ? const Color(0xFF0A0A0A) 
-          : const Color(0xFFFAFBFC),
+      backgroundColor:
+          isDarkMode ? const Color(0xFF0A0A0A) : const Color(0xFFFAFBFC),
       body: Container(
         width: size.width,
         height: size.height,
@@ -135,8 +134,9 @@ class _SplashScreenState extends State<SplashScreen>
         child: Stack(
           children: [
             // Partículas de fundo animadas
-            ...List.generate(20, (index) => _buildParticle(index, size, isDarkMode)),
-            
+            ...List.generate(
+                20, (index) => _buildParticle(index, size, isDarkMode)),
+
             // Conteúdo principal
             Center(
               child: Column(
@@ -144,7 +144,8 @@ class _SplashScreenState extends State<SplashScreen>
                 children: [
                   // Logo com múltiplas animações
                   AnimatedBuilder(
-                    animation: Listenable.merge([_pulseAnimation, _rotateAnimation]),
+                    animation:
+                        Listenable.merge([_pulseAnimation, _rotateAnimation]),
                     builder: (context, child) {
                       return Transform.scale(
                         scale: _pulseAnimation.value,
@@ -156,7 +157,8 @@ class _SplashScreenState extends State<SplashScreen>
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: SweepGradient(
-                                startAngle: _rotateAnimation.value * 2 * math.pi,
+                                startAngle:
+                                    _rotateAnimation.value * 2 * math.pi,
                                 colors: [
                                   theme.colorScheme.primary,
                                   theme.colorScheme.secondary,
@@ -166,7 +168,8 @@ class _SplashScreenState extends State<SplashScreen>
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: theme.colorScheme.primary.withOpacity(0.4),
+                                  color: theme.colorScheme.primary
+                                      .withOpacity(0.4),
                                   blurRadius: 30,
                                   spreadRadius: 5,
                                 ),
@@ -176,7 +179,7 @@ class _SplashScreenState extends State<SplashScreen>
                               margin: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: isDarkMode 
+                                color: isDarkMode
                                     ? const Color(0xFF1A1A1A)
                                     : Colors.white,
                               ),
@@ -191,11 +194,11 @@ class _SplashScreenState extends State<SplashScreen>
                       );
                     },
                   ).animate().fadeIn(duration: 600.ms).scale(
-                      begin: const Offset(0.3, 0.3),
-                      end: const Offset(1.0, 1.0),
-                      duration: 800.ms,
-                      curve: Curves.elasticOut,
-                    ),
+                        begin: const Offset(0.3, 0.3),
+                        end: const Offset(1.0, 1.0),
+                        duration: 800.ms,
+                        curve: Curves.elasticOut,
+                      ),
 
                   const SizedBox(height: 48),
 
@@ -220,10 +223,10 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     ),
                   ).animate().fadeIn(duration: 800.ms, delay: 400.ms).slideY(
-                      begin: 0.5,
-                      end: 0,
-                      curve: Curves.easeOutCubic,
-                    ),
+                        begin: 0.5,
+                        end: 0,
+                        curve: Curves.easeOutCubic,
+                      ),
 
                   const SizedBox(height: 12),
 
@@ -237,10 +240,10 @@ class _SplashScreenState extends State<SplashScreen>
                       letterSpacing: 0.5,
                     ),
                   ).animate().fadeIn(duration: 600.ms, delay: 600.ms).slideY(
-                      begin: 0.3,
-                      end: 0,
-                      curve: Curves.easeOutCubic,
-                    ),
+                        begin: 0.3,
+                        end: 0,
+                        curve: Curves.easeOutCubic,
+                      ),
 
                   const SizedBox(height: 64),
 
@@ -271,7 +274,8 @@ class _SplashScreenState extends State<SplashScreen>
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: theme.colorScheme.primary.withOpacity(0.4),
+                                      color: theme.colorScheme.primary
+                                          .withOpacity(0.4),
                                       blurRadius: 8,
                                       spreadRadius: 1,
                                     ),
@@ -284,7 +288,8 @@ class _SplashScreenState extends State<SplashScreen>
                           Text(
                             'Inicializando...',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withOpacity(0.6),
+                              color:
+                                  theme.colorScheme.onSurface.withOpacity(0.6),
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
@@ -321,16 +326,19 @@ class _SplashScreenState extends State<SplashScreen>
               ? Colors.white.withOpacity(0.1)
               : Colors.black.withOpacity(0.05),
         ),
-      ).animate(
-        onPlay: (controller) => controller.repeat(reverse: true),
-      ).fadeIn(
-        duration: Duration(milliseconds: duration),
-        delay: Duration(milliseconds: delay),
-      ).moveY(
-        begin: 0,
-        end: -20 - random.nextDouble() * 30,
-        duration: Duration(milliseconds: duration),
-      ),
+      )
+          .animate(
+            onPlay: (controller) => controller.repeat(reverse: true),
+          )
+          .fadeIn(
+            duration: Duration(milliseconds: duration),
+            delay: Duration(milliseconds: delay),
+          )
+          .moveY(
+            begin: 0,
+            end: -20 - random.nextDouble() * 30,
+            duration: Duration(milliseconds: duration),
+          ),
     );
   }
 }

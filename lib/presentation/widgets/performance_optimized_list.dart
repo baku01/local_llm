@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 /// Performance-optimized list widget with intelligent rendering
 class PerformanceOptimizedList extends StatefulWidget {
@@ -155,6 +154,7 @@ class _OptimizedListItemState extends State<_OptimizedListItem>
 
 /// Custom visibility detector for performance optimization
 class VisibilityDetector extends StatefulWidget {
+  @override
   final Key key;
   final Widget child;
   final Function(VisibilityInfo) onVisibilityChanged;

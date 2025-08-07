@@ -80,16 +80,17 @@ class RelevanceScore {
     Map<String, double>? contributingFactors,
     String? explanation,
   }) {
-    final defaultWeights = weights ?? {
-      'title': 0.25,
-      'content': 0.35,
-      'url': 0.10,
-      'metadata': 0.10,
-      'semantic': 0.10,
-      'keyword': 0.05,
-      'quality': 0.03,
-      'authority': 0.02,
-    };
+    final defaultWeights = weights ??
+        {
+          'title': 0.25,
+          'content': 0.35,
+          'url': 0.10,
+          'metadata': 0.10,
+          'semantic': 0.10,
+          'keyword': 0.05,
+          'quality': 0.03,
+          'authority': 0.02,
+        };
 
     final overall = (titleRelevance * defaultWeights['title']!) +
         (contentRelevance * defaultWeights['content']!) +

@@ -21,20 +21,59 @@ O Local LLM é uma aplicação desktop desenvolvida em Flutter que fornece uma i
 ### Funcionalidades Técnicas
 
 - **Integração com Ollama**: Comunicação eficiente com API local para processamento de LLMs
-- **Sistema de Busca Avançado**: Implementação multi-estratégia com fallback automático
-  - Suporte para Google, Bing, DuckDuckGo e busca local
-  - Circuit Breaker Pattern para tolerância a falhas
-  - Rate Limiting com algoritmos token bucket e sliding window
-  - Cache inteligente com TTL configurável
+- **Sistema de Busca Inteligente**: Implementação multi-estratégia com busca semântica
+  - **Busca Semântica**: Interpretação de intent com embeddings e NLP
+  - **Multi-Engine Strategy**: Google, Bing, DuckDuckGo, busca local e semântica
+  - **Circuit Breaker Pattern**: Tolerância a falhas com recuperação automática
+  - **Rate Limiting**: Algoritmos token bucket e sliding window por estratégia  
+  - **Cache Inteligente**: TTL configurável com scoring LRU avançado
+  - **Fallback Automático**: Estratégias redundantes com ranking dinâmico
 - **Streaming de Respostas**: Processamento em tempo real com renderização incremental
 - **Análise de Relevância**: Algoritmos customizados para filtragem e ordenação de resultados
 
 ### Interface e Experiência
 
-- **Design Responsivo**: Adaptação automática para diferentes resoluções e tamanhos de tela
-- **Temas Dinâmicos**: Suporte completo para temas claro e escuro
-- **Renderização Markdown**: Processamento avançado com syntax highlighting
+- **Design Minimalista**: Interface fluida com paleta preto/branco e espaçamento generoso
+  - Remoção de elementos supérfluos para foco no conteúdo essencial
+  - Tipografia ousada Inter com hierarquia visual clara
+  - Muito espaço negativo para interface que "respira"
+- **Sistema de Design Responsivo**: Adaptação inteligente para múltiplos tamanhos de tela
+  - Margens e padding responsivos baseados em breakpoints
+  - Componentes que se adaptam dinamicamente ao contexto
+  - Otimizado para desktops, tablets e diferentes resoluções
+- **Temas Dinâmicos**: Suporte completo para temas claro e escuro minimalistas
+- **Renderização Avançada**: Processamento markdown com syntax highlighting
 - **Performance Otimizada**: Virtualização de listas e gerenciamento eficiente de estado
+
+## Design System Minimalista
+
+### Paleta de Cores
+A aplicação adota uma abordagem minimalista rigorosa com uma paleta limitada focada na legibilidade:
+
+- **Preto Puro**: `#000000` - Elementos primários e texto principal
+- **Branco Puro**: `#FFFFFF` - Fundos principais e contraste
+- **Cinza Escuro**: `#404040` - Elementos secundários e texto auxiliar
+- **Cinza Médio**: `#606060` - Elementos de acento e divisores
+- **Cinza Claro**: `#E8E8E8` - Superfícies e cards no tema claro
+- **Cinza Muito Escuro**: `#1A1A1A` - Superfícies no tema escuro
+
+### Tipografia
+Sistema tipográfico baseado na fonte Inter para máxima legibilidade:
+
+- **Display**: 40px/900 - Títulos principais com impacto visual
+- **Headline**: 24px/700 - Títulos de seções
+- **Body**: 16px/400 - Texto principal com line-height 1.75 para respiração
+- **Labels**: 14px/500 - Elementos de interface e botões
+
+### Espaçamento
+Sistema de espaçamento consistente baseado em múltiplos de 8px:
+
+- **XS**: 4px - Espaçamentos mínimos
+- **SM**: 8px - Elementos próximos
+- **MD**: 16px - Padrão geral
+- **LG**: 24px - Seções
+- **XL**: 32px - Grandes divisões
+- **XXL**: 48px - Separações principais
 
 ## Requisitos do Sistema
 

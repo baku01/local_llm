@@ -24,12 +24,12 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField>
   @override
   void initState() {
     super.initState();
-    
+
     _bounceController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _focusController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
@@ -109,26 +109,32 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField>
                 ),
                 child: ChatTextField(
                   enabled: !isLoading,
-                  onSubmitted: (text, ref) => _handleMessageSubmissionWithContext(
+                  onSubmitted: (text, ref) =>
+                      _handleMessageSubmissionWithContext(
                     text,
                     ref,
                     context,
                   ),
                   onFocusChanged: _handleFocusChanged,
                   onSendPressed: _handleSendPressed,
-                  hintText: isLoading ? 'Aguarde a resposta...' : 'Digite sua mensagem...',
+                  hintText: isLoading
+                      ? 'Aguarde a resposta...'
+                      : 'Digite sua mensagem...',
                 ),
               ),
             );
           },
         ),
       ),
-    ).animate().slideY(
-      begin: 1.0,
-      end: 0.0,
-      duration: 400.ms,
-      curve: Curves.easeOutCubic,
-    ).fadeIn(duration: 300.ms);
+    )
+        .animate()
+        .slideY(
+          begin: 1.0,
+          end: 0.0,
+          duration: 400.ms,
+          curve: Curves.easeOutCubic,
+        )
+        .fadeIn(duration: 300.ms);
   }
 
   void _handleFocusChanged(bool hasFocus) {

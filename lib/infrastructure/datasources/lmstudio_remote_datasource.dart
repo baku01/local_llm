@@ -42,8 +42,7 @@ class LmStudioRemoteDataSource implements OllamaRemoteDataSource {
     final data = response.data as Map<String, dynamic>;
     final models = data['data'] as List<dynamic>;
     return models
-        .map((model) =>
-            LlmModelDto(name: model['id'] as String? ?? 'unknown'))
+        .map((model) => LlmModelDto(name: model['id'] as String? ?? 'unknown'))
         .toList();
   }
 
@@ -119,7 +118,8 @@ class LmStudioRemoteDataSource implements OllamaRemoteDataSource {
           }
           try {
             final jsonData = json.decode(payload);
-            final content = jsonData['choices'][0]['delta']['content'] as String?;
+            final content =
+                jsonData['choices'][0]['delta']['content'] as String?;
             if (content != null) {
               yield content;
             }

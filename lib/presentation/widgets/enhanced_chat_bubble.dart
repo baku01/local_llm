@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'dart:ui';
 import 'dart:math' as math;
 import '../../domain/entities/chat_message.dart';
 import '../theme/unified_theme.dart';
@@ -37,14 +36,14 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble>
   bool _isPressed = false;
   bool _showActionButtons = false;
   bool _isCopied = false;
-  
+
   late AnimationController _entranceController;
   late AnimationController _hoverController;
   late AnimationController _pressController;
   late AnimationController _glowController;
   late AnimationController _bounceController;
   late AnimationController _shimmerController;
-  
+
   late Animation<double> _scaleAnimation;
   late Animation<double> _glowAnimation;
   late Animation<double> _bounceAnimation;
@@ -64,22 +63,22 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble>
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     _hoverController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-    
+
     _pressController = AnimationController(
       duration: const Duration(milliseconds: 100),
       vsync: this,
     );
-    
+
     _glowController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
-    
+
     _bounceController = AnimationController(
       duration: const Duration(milliseconds: 400),
       vsync: this,
@@ -207,7 +206,7 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble>
     _bounceController.forward().then((_) => _bounceController.reverse());
     HapticFeedback.mediumImpact();
     setState(() => _isCopied = true);
-    
+
     // Show feedback
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -250,8 +249,8 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble>
                     child: Stack(
                       children: [
                         Row(
-                          mainAxisAlignment: isUser 
-                              ? MainAxisAlignment.end 
+                          mainAxisAlignment: isUser
+                              ? MainAxisAlignment.end
                               : MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -260,7 +259,8 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble>
                               const SizedBox(width: 12),
                             ],
                             Flexible(
-                              child: _buildMessageContainer(context, theme, isUser),
+                              child: _buildMessageContainer(
+                                  context, theme, isUser),
                             ),
                             if (isUser) ...[
                               const SizedBox(width: 12),
@@ -282,18 +282,20 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble>
     );
   }
 
-  Widget _buildMessageContainer(BuildContext context, ThemeData theme, bool isUser) {
+  Widget _buildMessageContainer(
+      BuildContext context, ThemeData theme, bool isUser) {
     return AnimatedBuilder(
       animation: Listenable.merge([
-        _scaleAnimation, 
-        _glowAnimation, 
+        _scaleAnimation,
+        _glowAnimation,
         _bounceAnimation,
         _pressController,
       ]),
       builder: (context, child) {
         final pressScale = _isPressed ? 0.98 : 1.0;
-        final totalScale = _scaleAnimation.value * _bounceAnimation.value * pressScale;
-        
+        final totalScale =
+            _scaleAnimation.value * _bounceAnimation.value * pressScale;
+
         return Transform.scale(
           scale: totalScale,
           child: Container(
@@ -309,9 +311,8 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble>
                     ? const Radius.circular(8)
                     : const Radius.circular(24),
               ),
-              child: isUser
-                  ? _buildUserMessage(theme)
-                  : _buildBotMessage(theme),
+              child:
+                  isUser ? _buildUserMessage(theme) : _buildBotMessage(theme),
             ),
           ),
         );
@@ -335,14 +336,10 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble>
           BoxShadow(
             color: theme.colorScheme.primary
                 .withValues(alpha: 0.25 + (_glowAnimation.value * 0.15)),
-            blurRadius: _isHovered
-                ? 20 + (_glowAnimation.value * 10)
-                : 10,
+            blurRadius: _isHovered ? 20 + (_glowAnimation.value * 10) : 10,
             offset: Offset(
               0,
-              _isHovered
-                  ? 8 + (_glowAnimation.value * 4)
-                  : 3,
+              _isHovered ? 8 + (_glowAnimation.value * 4) : 3,
             ),
             spreadRadius: _isHovered ? 2 + (_glowAnimation.value * 2) : 0,
           ),
@@ -389,8 +386,9 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble>
                 ),
               if (_shimmerController.isAnimating)
                 BoxShadow(
-                  color: theme.colorScheme.primary
-                      .withValues(alpha: 0.1 * math.sin(_shimmerController.value * math.pi)),
+                  color: theme.colorScheme.primary.withValues(
+                      alpha:
+                          0.1 * math.sin(_shimmerController.value * math.pi)),
                   blurRadius: 20,
                   spreadRadius: 2,
                 ),
@@ -449,12 +447,14 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble>
             size: 20,
             color: Colors.white,
           ),
-        ).animate(
-          onPlay: (controller) => controller.repeat(reverse: true),
-        ).shimmer(
-          duration: 2000.ms,
-          color: Colors.white.withValues(alpha: 0.1),
-        );
+        )
+            .animate(
+              onPlay: (controller) => controller.repeat(reverse: true),
+            )
+            .shimmer(
+              duration: 2000.ms,
+              color: Colors.white.withValues(alpha: 0.1),
+            );
       },
     );
   }
@@ -473,7 +473,8 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble>
               child: Opacity(
                 opacity: _actionButtonAnimation.value,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surface.withValues(alpha: 0.95),
                     borderRadius: BorderRadius.circular(16),
@@ -492,7 +493,9 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _buildActionButton(
-                        icon: _isCopied ? Icons.check : Icons.content_copy_rounded,
+                        icon: _isCopied
+                            ? Icons.check
+                            : Icons.content_copy_rounded,
                         onPressed: _handleCopyMessage,
                         theme: theme,
                         isActive: _isCopied,
@@ -530,16 +533,19 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble>
           child: Icon(
             icon,
             size: 16,
-            color: isActive 
+            color: isActive
                 ? theme.colorScheme.primary
                 : theme.colorScheme.onSurface.withValues(alpha: 0.7),
           ),
         ),
       ),
-    ).animate()
-      .scale(duration: 200.ms, curve: Curves.easeOutCubic)
-      .then()
-      .shimmer(duration: 1000.ms, color: theme.colorScheme.primary.withValues(alpha: 0.1));
+    )
+        .animate()
+        .scale(duration: 200.ms, curve: Curves.easeOutCubic)
+        .then()
+        .shimmer(
+            duration: 1000.ms,
+            color: theme.colorScheme.primary.withValues(alpha: 0.1));
   }
 
   Widget _buildMessageContent(BuildContext context, Color? textColor) {
@@ -645,25 +651,29 @@ class _EnhancedChatBubbleState extends State<EnhancedChatBubble>
       width: 8,
       height: 8,
       decoration: BoxDecoration(
-        color: widget.message.isUser 
+        color: widget.message.isUser
             ? Colors.white.withValues(alpha: 0.8)
             : theme.colorScheme.primary,
         shape: BoxShape.circle,
       ),
-    ).animate(
-      onPlay: (controller) => controller.repeat(),
-    ).scale(
-      begin: const Offset(0.9, 0.9),
-      end: const Offset(1.2, 1.2),
-      duration: 800.ms,
-      delay: Duration(milliseconds: index * 150),
-      curve: Curves.easeInOut,
-    ).then().scale(
-      begin: const Offset(1.2, 1.2),
-      end: const Offset(0.9, 0.9),
-      duration: 800.ms,
-      curve: Curves.easeInOut,
-    );
+    )
+        .animate(
+          onPlay: (controller) => controller.repeat(),
+        )
+        .scale(
+          begin: const Offset(0.9, 0.9),
+          end: const Offset(1.2, 1.2),
+          duration: 800.ms,
+          delay: Duration(milliseconds: index * 150),
+          curve: Curves.easeInOut,
+        )
+        .then()
+        .scale(
+          begin: const Offset(1.2, 1.2),
+          end: const Offset(0.9, 0.9),
+          duration: 800.ms,
+          curve: Curves.easeInOut,
+        );
   }
 
   String _formatTime(DateTime timestamp) {

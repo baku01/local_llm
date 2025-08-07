@@ -320,7 +320,7 @@ class QualityClassifier {
         'difference between',
         'qual escolher',
         'qual é melhor',
-        'ou',  // for "iOS ou Android"
+        'ou', // for "iOS ou Android"
         'versus'
       ],
     };
@@ -344,16 +344,12 @@ class QualityClassifier {
     }
 
     // Retornar o tipo com mais score, ou general se nenhum
-    final maxScore = scores.values.isNotEmpty 
-        ? scores.values.reduce(math.max) 
-        : 0.0;
+    final maxScore =
+        scores.values.isNotEmpty ? scores.values.reduce(math.max) : 0.0;
 
     if (maxScore == 0) return QueryType.general;
 
-    return scores.entries
-        .where((entry) => entry.value == maxScore)
-        .first
-        .key;
+    return scores.entries.where((entry) => entry.value == maxScore).first.key;
   }
 
   /// Avalia quão bem os resultados cobrem a consulta.

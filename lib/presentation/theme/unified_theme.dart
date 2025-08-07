@@ -1,44 +1,71 @@
 import 'package:flutter/material.dart';
 import 'typography.dart';
 
-/// Tema unificado para a aplicação
+/// Tema unificado minimalista para a aplicação
 ///
-/// Define cores, estilos e configurações visuais consistentes
-/// para toda a aplicação.
+/// Define uma paleta preto/branco com tons neutros para criar
+/// uma interface fluida e focada no conteúdo essencial.
 class AppTheme {
-  // Cores primárias
-  static const Color kPrimary = Color(0xFF7F5AF0);
-  static const Color kSecondary = Color(0xFF2CB67D);
-  static const Color kAccent = Color(0xFFFF8906);
+  // Paleta minimalista - preto puro, branco puro e tons de cinza
+  static const Color kPrimary = Color(0xFF000000); // Preto puro
+  static const Color kSecondary = Color(0xFF404040); // Cinza escuro
+  static const Color kAccent = Color(0xFF606060); // Cinza médio
 
   // Cores de fundo - Tema escuro
-  static const Color kDarkBg = Color(0xFF16161A);
-  static const Color kDarkCardBg = Color(0xFF242629);
-  static const Color kDarkSurface = Color(0xFF2E2F36);
+  static const Color kDarkBg = Color(0xFF000000); // Preto puro
+  static const Color kDarkCardBg = Color(0xFF1A1A1A); // Cinza muito escuro
+  static const Color kDarkSurface = Color(0xFF2A2A2A); // Cinza escuro
 
   // Cores de fundo - Tema claro
-  static const Color kLightBg = Color(0xFFF9F9FB);
-  static const Color kLightCardBg = Color(0xFFFFFFFF);
-  static const Color kLightSurface = Color(0xFFEFEFF1);
+  static const Color kLightBg = Color(0xFFFFFFFF); // Branco puro
+  static const Color kLightCardBg = Color(0xFFF8F8F8); // Cinza muito claro
+  static const Color kLightSurface = Color(0xFFE8E8E8); // Cinza claro
 
-  // Cores semânticas
-  static const Color kSuccess = Color(0xFF2CB67D);
-  static const Color kError = Color(0xFFE53170);
-  static const Color kWarning = Color(0xFFFF8906);
-  static const Color kInfo = Color(0xFF7F5AF0);
+  // Cores semânticas em tons neutros
+  static const Color kSuccess = Color(0xFF404040); // Cinza escuro
+  static const Color kError = Color(0xFF000000); // Preto para destaque
+  static const Color kWarning = Color(0xFF606060); // Cinza médio
+  static const Color kInfo = Color(0xFF808080); // Cinza
 
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
+      scaffoldBackgroundColor: kLightBg,
       colorScheme: const ColorScheme.light(
         primary: kPrimary,
         secondary: kSecondary,
         surface: kLightSurface,
-        onSurface: Colors.black87,
+        onSurface: kPrimary,
+        background: kLightBg,
+        onBackground: kPrimary,
+        onPrimary: kLightBg,
+        onSecondary: kLightBg,
+        outline: Color(0xFFBBBBBB),
       ),
       textTheme: AppTypography.buildTextTheme(ThemeData.light().textTheme),
       cardColor: kLightCardBg,
+      cardTheme: const CardThemeData(
+        color: kLightCardBg,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+          side: BorderSide(
+            color: Color(0xFFE0E0E0),
+            width: 1,
+          ),
+        ),
+        margin: EdgeInsets.all(8),
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: kLightBg,
+        foregroundColor: kPrimary,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        centerTitle: true,
+      ),
+      dividerColor: const Color(0xFFE0E0E0),
     );
   }
 
@@ -46,42 +73,103 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
+      scaffoldBackgroundColor: kDarkBg,
       colorScheme: const ColorScheme.dark(
-        primary: kPrimary,
-        secondary: kSecondary,
+        primary: Color(0xFFFFFFFF),
+        secondary: Color(0xFFBBBBBB),
         surface: kDarkSurface,
-        onSurface: Colors.white,
+        onSurface: Color(0xFFFFFFFF),
+        background: kDarkBg,
+        onBackground: Color(0xFFFFFFFF),
+        onPrimary: kDarkBg,
+        onSecondary: kDarkBg,
+        outline: Color(0xFF404040),
       ),
       textTheme: AppTypography.buildTextTheme(ThemeData.dark().textTheme),
       cardColor: kDarkCardBg,
+      cardTheme: const CardThemeData(
+        color: kDarkCardBg,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+          side: BorderSide(
+            color: Color(0xFF333333),
+            width: 1,
+          ),
+        ),
+        margin: EdgeInsets.all(8),
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: kDarkBg,
+        foregroundColor: Color(0xFFFFFFFF),
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        centerTitle: true,
+      ),
+      dividerColor: const Color(0xFF333333),
     );
   }
 
-  /// Cria um efeito de vidro (glass effect) para containers
+  /// Cria um container minimalista com bordas sutis
+  static BoxDecoration minimalContainer({
+    required bool isDark,
+    double borderRadius = 12,
+    bool withBorder = true,
+  }) {
+    return BoxDecoration(
+      color: isDark ? kDarkCardBg : kLightCardBg,
+      borderRadius: BorderRadius.circular(borderRadius),
+      border: withBorder
+          ? Border.all(
+              color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0),
+              width: 1,
+            )
+          : null,
+    );
+  }
+
+  /// Espaçamento padrão da aplicação seguindo design minimalista
+  static const double spaceXS = 4.0;
+  static const double spaceSM = 8.0;
+  static const double spaceMD = 16.0;
+  static const double spaceLG = 24.0;
+  static const double spaceXL = 32.0;
+  static const double spaceXXL = 48.0;
+
+  /// Margens responsivas baseadas no tamanho da tela
+  static EdgeInsets responsiveMargin(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    if (screenWidth > 1200) {
+      return const EdgeInsets.symmetric(
+          horizontal: spaceXXL, vertical: spaceLG);
+    } else if (screenWidth > 800) {
+      return const EdgeInsets.symmetric(horizontal: spaceXL, vertical: spaceMD);
+    } else {
+      return const EdgeInsets.symmetric(horizontal: spaceMD, vertical: spaceSM);
+    }
+  }
+
+  /// Padding responsivo baseado no tamanho da tela
+  static EdgeInsets responsivePadding(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    if (screenWidth > 1200) {
+      return const EdgeInsets.all(spaceXL);
+    } else if (screenWidth > 800) {
+      return const EdgeInsets.all(spaceLG);
+    } else {
+      return const EdgeInsets.all(spaceMD);
+    }
+  }
+
+  /// Cria efeito de vidro minimalista (compatibilidade com componentes existentes)
   static BoxDecoration glassEffect({
     required bool isDark,
     double opacity = 0.1,
     double blur = 10,
   }) {
-    return BoxDecoration(
-      color: isDark
-          ? Colors.white.withValues(alpha: opacity)
-          : Colors.black.withValues(alpha: opacity),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.2)
-            : Colors.black.withValues(alpha: 0.1),
-        width: 1,
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
-          blurRadius: blur,
-          offset: const Offset(0, 4),
-          spreadRadius: -2,
-        ),
-      ],
-    );
+    return minimalContainer(isDark: isDark);
   }
 }

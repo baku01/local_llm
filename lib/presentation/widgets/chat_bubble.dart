@@ -23,8 +23,7 @@ class ChatBubble extends StatefulWidget {
   State<ChatBubble> createState() => _ChatBubbleState();
 }
 
-class _ChatBubbleState extends State<ChatBubble>
-    with TickerProviderStateMixin {
+class _ChatBubbleState extends State<ChatBubble> with TickerProviderStateMixin {
   bool _isHovered = false;
   bool _animationCompleted = false;
   late AnimationController _scaleController;
@@ -34,7 +33,7 @@ class _ChatBubbleState extends State<ChatBubble>
   @override
   void initState() {
     super.initState();
-    
+
     _scaleController = AnimationController(
       duration: const Duration(milliseconds: 150),
       vsync: this,
@@ -112,64 +111,70 @@ class _ChatBubbleState extends State<ChatBubble>
                           maxWidth: MediaQuery.of(context).size.width * 0.75,
                         ),
                         child: ClipRRect(
-                    borderRadius: BorderRadius.circular(24).copyWith(
-                      bottomLeft: isUser
-                          ? const Radius.circular(24)
-                          : const Radius.circular(8),
-                      bottomRight: isUser
-                          ? const Radius.circular(8)
-                          : const Radius.circular(24),
-                    ),
-                    child: isUser
-                        ? Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 16),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  theme.colorScheme.primary,
-                                  theme.colorScheme.secondary,
-                                ],
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: theme.colorScheme.primary
-                                      .withValues(alpha: 0.25),
-                                  blurRadius: _animationCompleted && _isHovered
-                                      ? 16
-                                      : 10,
-                                  offset: Offset(
-                                      0,
-                                      _animationCompleted && _isHovered
-                                          ? 6
-                                          : 3),
-                                  spreadRadius:
-                                      _animationCompleted && _isHovered ? 1 : 0,
-                                ),
-                              ],
-                            ),
-                            child: widget.isTyping
-                                ? _buildTypingIndicator(theme)
-                                : _buildMessageContent(context),
-                          )
-                        : BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 16),
-                              decoration: AppTheme.glassEffect(
-                                isDark: theme.brightness == Brightness.dark,
-                                opacity: 0.15,
-                                blur:
-                                    _animationCompleted && _isHovered ? 12 : 8,
-                              ),
-                              child: widget.isTyping
-                                  ? _buildTypingIndicator(theme)
-                                  : _buildMessageContent(context),
-                            ),
+                          borderRadius: BorderRadius.circular(24).copyWith(
+                            bottomLeft: isUser
+                                ? const Radius.circular(24)
+                                : const Radius.circular(8),
+                            bottomRight: isUser
+                                ? const Radius.circular(8)
+                                : const Radius.circular(24),
                           ),
+                          child: isUser
+                              ? Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 16),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        theme.colorScheme.primary,
+                                        theme.colorScheme.secondary,
+                                      ],
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.25),
+                                        blurRadius:
+                                            _animationCompleted && _isHovered
+                                                ? 16
+                                                : 10,
+                                        offset: Offset(
+                                            0,
+                                            _animationCompleted && _isHovered
+                                                ? 6
+                                                : 3),
+                                        spreadRadius:
+                                            _animationCompleted && _isHovered
+                                                ? 1
+                                                : 0,
+                                      ),
+                                    ],
+                                  ),
+                                  child: widget.isTyping
+                                      ? _buildTypingIndicator(theme)
+                                      : _buildMessageContent(context),
+                                )
+                              : BackdropFilter(
+                                  filter:
+                                      ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 16),
+                                    decoration: AppTheme.glassEffect(
+                                      isDark:
+                                          theme.brightness == Brightness.dark,
+                                      opacity: 0.15,
+                                      blur: _animationCompleted && _isHovered
+                                          ? 12
+                                          : 8,
+                                    ),
+                                    child: widget.isTyping
+                                        ? _buildTypingIndicator(theme)
+                                        : _buildMessageContent(context),
+                                  ),
+                                ),
                         ),
                       ),
                     );

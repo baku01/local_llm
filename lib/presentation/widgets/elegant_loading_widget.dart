@@ -8,7 +8,7 @@ class ElegantLoadingWidget extends StatefulWidget {
   final Color? color;
   final double size;
   final bool showMessage;
-  
+
   const ElegantLoadingWidget({
     super.key,
     this.message,
@@ -26,7 +26,7 @@ class _ElegantLoadingWidgetState extends State<ElegantLoadingWidget>
   late AnimationController _pulseController;
   late AnimationController _rotationController;
   late AnimationController _scaleController;
-  
+
   late Animation<double> _pulseAnimation;
   late Animation<double> _rotationAnimation;
   late Animation<double> _scaleAnimation;
@@ -34,17 +34,17 @@ class _ElegantLoadingWidgetState extends State<ElegantLoadingWidget>
   @override
   void initState() {
     super.initState();
-    
+
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _rotationController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
-    
+
     _scaleController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
@@ -92,7 +92,7 @@ class _ElegantLoadingWidgetState extends State<ElegantLoadingWidget>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final loadingColor = widget.color ?? theme.colorScheme.primary;
-    
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -188,7 +188,7 @@ class _ElegantLoadingWidgetState extends State<ElegantLoadingWidget>
     return List.generate(8, (index) {
       final angle = (index * math.pi * 2) / 8;
       final delay = index * 200;
-      
+
       return Positioned(
         child: Transform.translate(
           offset: Offset(
@@ -202,16 +202,19 @@ class _ElegantLoadingWidgetState extends State<ElegantLoadingWidget>
               shape: BoxShape.circle,
               color: color.withOpacity(0.3),
             ),
-          ).animate(
-            onPlay: (controller) => controller.repeat(reverse: true),
-          ).fadeIn(
-            duration: 800.ms,
-            delay: Duration(milliseconds: delay),
-          ).scale(
-            begin: const Offset(0.5, 0.5),
-            end: const Offset(1.5, 1.5),
-            duration: 1200.ms,
-          ),
+          )
+              .animate(
+                onPlay: (controller) => controller.repeat(reverse: true),
+              )
+              .fadeIn(
+                duration: 800.ms,
+                delay: Duration(milliseconds: delay),
+              )
+              .scale(
+                begin: const Offset(0.5, 0.5),
+                end: const Offset(1.5, 1.5),
+                duration: 1200.ms,
+              ),
         ),
       );
     });
@@ -222,7 +225,7 @@ class _ElegantLoadingWidgetState extends State<ElegantLoadingWidget>
 class CompactLoadingWidget extends StatelessWidget {
   final Color? color;
   final double size;
-  
+
   const CompactLoadingWidget({
     super.key,
     this.color,
@@ -246,14 +249,16 @@ class CompactLoadingWidget extends StatelessWidget {
               loadingColor.withOpacity(0.3),
             ),
           ),
-          
+
           // Anel interno animado
           CircularProgressIndicator(
             strokeWidth: 2,
             valueColor: AlwaysStoppedAnimation<Color>(loadingColor),
-          ).animate(
-            onPlay: (controller) => controller.repeat(),
-          ).rotate(duration: 1000.ms),
+          )
+              .animate(
+                onPlay: (controller) => controller.repeat(),
+              )
+              .rotate(duration: 1000.ms),
         ],
       ),
     );
@@ -264,7 +269,7 @@ class CompactLoadingWidget extends StatelessWidget {
 class TypingIndicator extends StatefulWidget {
   final Color? color;
   final double size;
-  
+
   const TypingIndicator({
     super.key,
     this.color,
@@ -283,7 +288,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
   @override
   void initState() {
     super.initState();
-    
+
     _controllers = List.generate(3, (index) {
       return AnimationController(
         duration: const Duration(milliseconds: 600),
