@@ -48,7 +48,6 @@ class InjectionContainer {
   InjectionContainer._internal();
 
   final GetIt _getIt = GetIt.instance;
-
   // Clientes de rede
   late final Dio _dio;
   late final http.Client _httpClient;
