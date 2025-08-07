@@ -29,12 +29,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final backend = ref.watch(llmBackendProvider);
     final apiUrl = ref.watch(apiUrlProvider);
+    final lmStudioUrl = ref.watch(lmStudioUrlProvider);
     final themeMode = ref.watch(themeModeProvider);
 
-    // Sincronizar o controller com o provider
-    if (_apiUrlController.text != apiUrl) {
-      _apiUrlController.text = apiUrl;
+    final currentUrl = backend == LlmBackend.lmStudio ? lmStudioUrl : apiUrl;
+    if (_apiUrlController.text != currentUrl) {
+      _apiUrlController.text = currentUrl;
     }
 
     return Scaffold(
@@ -57,8 +59,29 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  DropdownButtonFormField<LlmBackend>(
+                    value: backend,
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.computer),
+                      labelText: 'Backend',
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                          value: LlmBackend.ollama, child: Text('Ollama')),
+                      DropdownMenuItem(
+                          value: LlmBackend.lmStudio, child: Text('LM Studio')),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        ref.read(llmBackendProvider.notifier).state = value;
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
                   Text(
-                    'URL da API Ollama',
+                    backend == LlmBackend.lmStudio
+                        ? 'URL da API LM Studio'
+                        : 'URL da API Ollama',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -66,18 +89,25 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _apiUrlController,
-                    decoration: const InputDecoration(
-                      hintText: 'http://localhost:11434',
-                      prefixIcon: Icon(Icons.link),
+                    decoration: InputDecoration(
+                      hintText: backend == LlmBackend.lmStudio
+                          ? 'http://localhost:1234'
+                          : 'http://localhost:11434',
+                      prefixIcon: const Icon(Icons.link),
                     ),
                     onChanged: (value) {
-                      ref.read(apiUrlProvider.notifier).state = value;
+                      if (backend == LlmBackend.lmStudio) {
+                        ref.read(lmStudioUrlProvider.notifier).state = value;
+                      } else {
+                        ref.read(apiUrlProvider.notifier).state = value;
+                      }
                     },
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Configure a URL do servidor Ollama. Use localhost:11434 para instalação local.',
-                    // Remover as linhas de comentário e corrigir:
+                    backend == LlmBackend.lmStudio
+                        ? 'Configure a URL do servidor LM Studio. Use localhost:1234 para instalação local.'
+                        : 'Configure a URL do servidor Ollama. Use localhost:11434 para instalação local.',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
