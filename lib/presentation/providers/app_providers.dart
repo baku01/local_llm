@@ -19,7 +19,9 @@ import '../../domain/usecases/generate_response_stream.dart';
 import '../../domain/usecases/search_web.dart';
 
 // Data
+import '../../data/datasources/llm_remote_datasource.dart';
 import '../../data/datasources/ollama_remote_datasource.dart';
+import '../../data/datasources/lmstudio_remote_datasource.dart';
 import '../../data/datasources/intelligent_web_search_datasource.dart';
 import '../../data/repositories/llm_repository_impl.dart';
 import '../../data/repositories/search_repository_impl.dart';
@@ -34,6 +36,17 @@ import '../../core/di/injection_container.dart';
 
 /// Provider para a URL base da API do Ollama.
 final apiUrlProvider = StateProvider<String>((ref) => 'http://localhost:11434');
+
+/// Provider para a URL base da API do LM Studio.
+final lmStudioUrlProvider =
+    StateProvider<String>((ref) => 'http://localhost:1234');
+
+/// Backends disponíveis para geração de respostas LLM.
+enum LlmBackend { ollama, lmStudio }
+
+/// Provider para o backend atualmente selecionado.
+final llmBackendProvider =
+    StateProvider<LlmBackend>((ref) => LlmBackend.ollama);
 
 // =============================================================================
 // INFRASTRUCTURE PROVIDERS
@@ -57,13 +70,46 @@ final httpClientProvider = Provider<http.Client>((ref) {
 // =============================================================================
 
 /// Provider para o data source do Ollama.
-final ollamaDataSourceProvider = Provider<OllamaRemoteDataSource>((ref) {
+final ollamaDataSourceProvider = Provider<LlmRemoteDataSource>((ref) {
   final dio = ref.watch(dioProvider);
   final apiUrl = ref.watch(apiUrlProvider);
-  return OllamaRemoteDataSourceImpl(
+  return OllamaRemoteDataSource(
     dio: dio,
     baseUrl: apiUrl,
   );
+});
+
+/// Provider para o data source do LM Studio.
+final lmStudioDataSourceProvider = Provider<LlmRemoteDataSource>((ref) {
+  final dio = ref.watch(dioProvider);
+  final apiUrl = ref.watch(lmStudioUrlProvider);
+  return LmStudioRemoteDataSource(
+    dio: dio,
+    baseUrl: apiUrl,
+  );
+});
+
+/// Verifica se o LM Studio está disponível no endereço configurado.
+final lmStudioAvailableProvider = FutureProvider<bool>((ref) async {
+  final dio = ref.watch(dioProvider);
+  final url = ref.watch(lmStudioUrlProvider);
+  try {
+    final response = await dio.get('$url/v1/models');
+    return response.statusCode == 200;
+  } catch (_) {
+    return false;
+  }
+});
+
+/// Atualiza o backend selecionado automaticamente se o LM Studio estiver
+/// acessível na porta padrão.
+final autoBackendProvider = Provider<void>((ref) {
+  ref.listen<AsyncValue<bool>>(lmStudioAvailableProvider, (previous, next) {
+    if (next.value == true &&
+        ref.read(llmBackendProvider) == LlmBackend.ollama) {
+      ref.read(llmBackendProvider.notifier).state = LlmBackend.lmStudio;
+    }
+  });
 });
 
 /// Provider para o data source de busca web inteligente.
@@ -89,7 +135,11 @@ final webSearchDataSourceProvider =
 
 /// Provider para o repositório de LLM.
 final llmRepositoryProvider = Provider<LlmRepository>((ref) {
-  final dataSource = ref.watch(ollamaDataSourceProvider);
+  ref.watch(autoBackendProvider);
+  final backend = ref.watch(llmBackendProvider);
+  final dataSource = backend == LlmBackend.lmStudio
+      ? ref.watch(lmStudioDataSourceProvider)
+      : ref.watch(ollamaDataSourceProvider);
   return LlmRepositoryImpl(remoteDataSource: dataSource);
 });
 

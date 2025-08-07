@@ -11,6 +11,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../http/robust_http_client.dart';
+import '../../data/datasources/llm_remote_datasource.dart';
 import '../../data/datasources/ollama_remote_datasource.dart';
 import '../../data/datasources/web_search_datasource.dart';
 
@@ -25,6 +26,7 @@ import '../../domain/usecases/generate_response_stream.dart';
 import '../../domain/usecases/search_web.dart';
 import '../../domain/usecases/process_thinking_response.dart';
 import '../../presentation/controllers/llm_controller.dart';
+import 'package:get_it/get_it.dart';
 
 /// Container singleton responsável pela injeção de dependências.
 ///
@@ -45,12 +47,14 @@ class InjectionContainer {
   /// Construtor privado para implementar Singleton.
   InjectionContainer._internal();
 
+  final GetIt _getIt = GetIt.instance;
+
   // Clientes de rede
   late final Dio _dio;
   late final http.Client _httpClient;
 
   // DataSources
-  late final OllamaRemoteDataSource _remoteDataSource;
+  late final LlmRemoteDataSource _remoteDataSource;
   late final WebSearchDataSource _searchDataSource;
 
   // Repositórios
@@ -104,6 +108,9 @@ class InjectionContainer {
     );
 
     _httpClient = RobustHttpClient();
+
+    _getIt.registerSingleton<Dio>(_dio);
+    _getIt.registerSingleton<http.Client>(_httpClient);
   }
 
   /// Configura os datasources para acesso a APIs externas.
@@ -111,7 +118,7 @@ class InjectionContainer {
   /// - OllamaRemoteDataSource: Comunicação com servidor Ollama local
   /// - StrategyWebSearchDataSource: Pesquisas web com estratégias modulares
   void _setupDataSources() {
-    _remoteDataSource = OllamaRemoteDataSourceImpl(
+    _remoteDataSource = OllamaRemoteDataSource(
       dio: _dio,
       baseUrl: 'http://localhost:11434',
     );
@@ -120,6 +127,9 @@ class InjectionContainer {
     _searchDataSource = StrategyWebSearchDataSource(
       httpClient: _httpClient,
     );
+
+    _getIt.registerSingleton<LlmRemoteDataSource>(_remoteDataSource);
+    _getIt.registerSingleton<WebSearchDataSource>(_searchDataSource);
   }
 
   /// Configura os repositórios que implementam as interfaces de domínio.
@@ -129,6 +139,9 @@ class InjectionContainer {
     _repository = LlmRepositoryImpl(remoteDataSource: _remoteDataSource);
 
     _searchRepository = SearchRepositoryImpl(dataSource: _searchDataSource);
+
+    _getIt.registerSingleton<LlmRepository>(_repository);
+    _getIt.registerSingleton<SearchRepository>(_searchRepository);
   }
 
   /// Configura os casos de uso da aplicação.
@@ -142,6 +155,15 @@ class InjectionContainer {
     _searchWeb = SearchWeb(_searchRepository);
     _fetchWebContent = FetchWebContent(_searchRepository);
     _processThinkingResponse = ProcessThinkingResponse();
+
+    _getIt.registerSingleton<GetAvailableModels>(_getAvailableModels);
+    _getIt.registerSingleton<GenerateResponse>(_generateResponse);
+    _getIt.registerSingleton<GenerateResponseStream>(
+        _generateResponseStream);
+    _getIt.registerSingleton<SearchWeb>(_searchWeb);
+    _getIt.registerSingleton<FetchWebContent>(_fetchWebContent);
+    _getIt.registerSingleton<ProcessThinkingResponse>(
+        _processThinkingResponse);
   }
 
   /// Configura os controladores da camada de apresentação.
@@ -157,6 +179,8 @@ class InjectionContainer {
       fetchWebContent: _fetchWebContent,
       processThinkingResponse: _processThinkingResponse,
     );
+
+    _getIt.registerSingleton<LlmController>(_controller);
   }
 
   // === GETTERS PÚBLICOS ===
@@ -169,7 +193,7 @@ class InjectionContainer {
   http.Client get httpClient => _httpClient;
 
   /// DataSource para comunicação com API do Ollama.
-  OllamaRemoteDataSource get remoteDataSource => _remoteDataSource;
+  LlmRemoteDataSource get remoteDataSource => _remoteDataSource;
 
   /// DataSource para pesquisas web.
   WebSearchDataSource get searchDataSource => _searchDataSource;

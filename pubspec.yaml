@@ -62,6 +62,9 @@ dependencies:
   
   # State Management
   flutter_riverpod: ^2.6.1
+
+  # Dependency Injection
+  get_it: ^7.7.0
   
   # Icons & UI
   phosphor_flutter: ^2.1.0

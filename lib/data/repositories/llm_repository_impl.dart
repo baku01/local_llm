@@ -8,7 +8,7 @@ library;
 import '../../domain/entities/llm_model.dart';
 import '../../domain/entities/llm_response.dart';
 import '../../domain/repositories/llm_repository.dart';
-import '../datasources/ollama_remote_datasource.dart';
+import '../datasources/llm_remote_datasource.dart';
 
 /// Implementação concreta do repositório de modelos LLM.
 ///
@@ -32,9 +32,9 @@ import '../datasources/ollama_remote_datasource.dart';
 class LlmRepositoryImpl implements LlmRepository {
   /// Fonte de dados remota para operações com modelos LLM.
   ///
-  /// Esta propriedade mantém uma referência para o [OllamaRemoteDataSource]
+  /// Esta propriedade mantém uma referência para o [LlmRemoteDataSource]
   /// que é usado para realizar operações de rede com o servidor Ollama.
-  final OllamaRemoteDataSource remoteDataSource;
+  final LlmRemoteDataSource remoteDataSource;
 
   /// Cria uma nova instância de [LlmRepositoryImpl].
   ///

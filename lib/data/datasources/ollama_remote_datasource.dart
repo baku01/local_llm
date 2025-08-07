@@ -8,34 +8,13 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import '../models/llm_model_dto.dart';
 import '../models/llm_response_dto.dart';
-
-/// Interface abstrata para operações remotas com Ollama.
-///
-/// Define os contratos que devem ser implementados para
-/// comunicação com a API do servidor Ollama.
-abstract class OllamaRemoteDataSource {
-  /// Obtém lista de modelos disponíveis no servidor Ollama.
-  Future<List<LlmModelDto>> getAvailableModels();
-
-  /// Gera resposta completa usando um modelo específico.
-  Future<LlmResponseDto> generateResponse({
-    required String prompt,
-    required String modelName,
-    bool stream = false,
-  });
-
-  /// Gera resposta em streaming usando um modelo específico.
-  Stream<String> generateResponseStream({
-    required String prompt,
-    required String modelName,
-  });
-}
+import 'llm_remote_datasource.dart';
 
 /// Implementação concreta do datasource para comunicação com Ollama.
 ///
 /// Utiliza Dio para realizar requisições HTTP para a API do Ollama,
 /// incluindo suporte a streaming de respostas para melhor experiência do usuário.
-class OllamaRemoteDataSourceImpl implements OllamaRemoteDataSource {
+class OllamaRemoteDataSource implements LlmRemoteDataSource {
   /// Cliente HTTP para comunicação com a API.
   final Dio dio;
 
@@ -46,7 +25,7 @@ class OllamaRemoteDataSourceImpl implements OllamaRemoteDataSource {
   ///
   /// [dio] - Cliente HTTP configurado
   /// [baseUrl] - URL do servidor Ollama (padrão: localhost:11434)
-  const OllamaRemoteDataSourceImpl({
+  const OllamaRemoteDataSource({
     required this.dio,
     this.baseUrl = 'http://localhost:11434',
   });
