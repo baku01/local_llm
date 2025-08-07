@@ -111,7 +111,6 @@ final autoBackendProvider = Provider<void>((ref) {
     }
   });
 });
-
 /// Provider para o data source de busca web inteligente.
 final webSearchDataSourceProvider =
     Provider<IntelligentWebSearchDataSource>((ref) {
