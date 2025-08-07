@@ -11,19 +11,19 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../http/robust_http_client.dart';
-import '../../data/datasources/ollama_remote_datasource.dart';
-import '../../data/datasources/web_search_datasource.dart';
+import '../datasources/ollama_remote_datasource.dart';
+import '../datasources/web_search_datasource.dart';
 
-import '../../data/datasources/strategy_web_search_datasource.dart';
-import '../../data/repositories/llm_repository_impl.dart';
-import '../../data/repositories/search_repository_impl.dart';
+import '../datasources/strategy_web_search_datasource.dart';
+import '../repositories/llm_repository_impl.dart';
+import '../repositories/search_repository_impl.dart';
 import '../../domain/repositories/llm_repository.dart';
 import '../../domain/repositories/search_repository.dart';
-import '../../domain/usecases/get_available_models.dart';
-import '../../domain/usecases/generate_response.dart';
-import '../../domain/usecases/generate_response_stream.dart';
-import '../../domain/usecases/search_web.dart';
-import '../../domain/usecases/process_thinking_response.dart';
+import '../../application/get_available_models.dart';
+import '../../application/generate_response.dart';
+import '../../application/generate_response_stream.dart';
+import '../../application/search_web.dart';
+import '../../application/process_thinking_response.dart';
 import '../../presentation/controllers/llm_controller.dart';
 
 /// Container singleton responsável pela injeção de dependências.

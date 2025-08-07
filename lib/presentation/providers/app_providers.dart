@@ -13,21 +13,21 @@ import 'package:http/http.dart' as http;
 import '../../domain/entities/llm_model.dart';
 import '../../domain/repositories/llm_repository.dart';
 import '../../domain/repositories/search_repository.dart';
-import '../../domain/usecases/get_available_models.dart';
-import '../../domain/usecases/generate_response.dart';
-import '../../domain/usecases/generate_response_stream.dart';
-import '../../domain/usecases/search_web.dart';
+import '../../application/get_available_models.dart';
+import '../../application/generate_response.dart';
+import '../../application/generate_response_stream.dart';
+import '../../application/search_web.dart';
 
 // Data
-import '../../data/datasources/ollama_remote_datasource.dart';
-import '../../data/datasources/lmstudio_remote_datasource.dart';
-import '../../data/datasources/intelligent_web_search_datasource.dart';
-import '../../data/repositories/llm_repository_impl.dart';
-import '../../data/repositories/search_repository_impl.dart';
+import '../../infrastructure/datasources/ollama_remote_datasource.dart';
+import '../../infrastructure/datasources/lmstudio_remote_datasource.dart';
+import '../../infrastructure/datasources/intelligent_web_search_datasource.dart';
+import '../../infrastructure/repositories/llm_repository_impl.dart';
+import '../../infrastructure/repositories/search_repository_impl.dart';
 
 // Presentation
 import '../controllers/llm_controller.dart';
-import '../../core/di/injection_container.dart';
+import '../../infrastructure/core/di/injection_container.dart';
 
 // =============================================================================
 // CONFIGURATION PROVIDERS

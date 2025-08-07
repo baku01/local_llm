@@ -4,14 +4,14 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../providers/app_providers.dart';
 
-class SettingsPage extends ConsumerStatefulWidget {
-  const SettingsPage({super.key});
+class SettingsScreen extends ConsumerStatefulWidget {
+  const SettingsScreen({super.key});
 
   @override
-  ConsumerState<SettingsPage> createState() => _SettingsPageState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsPageState extends ConsumerState<SettingsPage> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late final TextEditingController _apiUrlController;
 
   @override

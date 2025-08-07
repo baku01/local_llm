@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'presentation/theme/unified_theme.dart';
 import 'presentation/providers/app_providers.dart';
-import 'presentation/pages/chat_page.dart';
+import 'presentation/pages/splash_screen.dart';
 
 void main() {
   runApp(
@@ -26,7 +26,7 @@ class LocalLLMApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      home: const ChatPage(),
+      home: const SplashScreen(),
     );
   }
 }

@@ -10,11 +10,11 @@ import 'package:flutter/material.dart';
 
 // Domain
 import '../../domain/entities/llm_model.dart';
-import '../../domain/usecases/get_available_models.dart';
+import '../../application/get_available_models.dart';
 
 // Presentation
 import '../controllers/llm_controller.dart';
-import '../../core/di/injection_container.dart';
+import '../../infrastructure/core/di/injection_container.dart';
 
 // =============================================================================
 // DEPENDENCY INJECTION

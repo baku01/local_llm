@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
-import 'package:local_llm/data/datasources/web_search_datasource.dart';
-import 'package:local_llm/data/repositories/search_repository_impl.dart';
-import 'package:local_llm/domain/usecases/search_web.dart';
+import 'package:local_llm/infrastructure/datasources/web_search_datasource.dart';
+import 'package:local_llm/infrastructure/repositories/search_repository_impl.dart';
+import 'package:local_llm/application/search_web.dart';
 import 'package:local_llm/domain/entities/search_result.dart';
 import 'package:local_llm/domain/entities/search_query.dart';
 

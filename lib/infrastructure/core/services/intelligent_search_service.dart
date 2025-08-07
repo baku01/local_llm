@@ -10,7 +10,7 @@ import 'dart:math' as math;
 import '../../domain/entities/search_result.dart';
 import '../../domain/entities/search_query.dart';
 import '../../domain/entities/relevance_score.dart';
-import '../../data/datasources/intelligent_web_search_datasource.dart';
+import '../../infrastructure/datasources/intelligent_web_search_datasource.dart';
 import '../classification/quality_classifier.dart';
 import '../classification/response_decision_engine.dart';
 import '../utils/relevance_analyzer.dart';

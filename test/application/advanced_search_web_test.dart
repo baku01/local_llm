@@ -4,7 +4,7 @@ import 'package:mockito/annotations.dart';
 import 'package:local_llm/domain/entities/search_result.dart';
 import 'package:local_llm/domain/entities/search_query.dart';
 import 'package:local_llm/domain/repositories/search_repository.dart';
-import 'package:local_llm/domain/usecases/search_web.dart';
+import 'package:local_llm/application/search_web.dart';
 
 @GenerateMocks([SearchRepository])
 import 'advanced_search_web_test.mocks.dart';
