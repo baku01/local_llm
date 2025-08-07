@@ -8,10 +8,13 @@
 /// maximizar a qualidade e quantidade de resultados obtidos.
 library;
 
+import 'dart:async';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart' as dom;
+import '../../core/http/robust_http_client.dart';
+import '../../core/utils/logger.dart';
 import '../../domain/entities/search_result.dart';
 import '../../domain/entities/search_query.dart';
 import 'web_search_datasource.dart';
@@ -28,6 +31,9 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
   /// Cliente HTTP para realizar requisições.
   final http.Client client;
 
+  /// Timeout padrão para requisições.
+  final Duration _requestTimeout = const Duration(seconds: 10);
+
   /// Lista de User-Agents realísticos para rotação.
   final List<String> _userAgents = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -37,11 +43,25 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
   ];
 
   /// Construtor que recebe o cliente HTTP configurado.
-  LocalWebSearchDataSource({required this.client});
+  LocalWebSearchDataSource({http.Client? client})
+      : client = client ?? RobustHttpClient();
 
   /// Retorna um User-Agent aleatório da lista para evitar detecção.
   String get _randomUserAgent =>
       _userAgents[Random().nextInt(_userAgents.length)];
+
+  /// Headers base para requisições HTTP.
+  Map<String, String> _buildHeaders() {
+    return {
+      'User-Agent': _randomUserAgent,
+      'Accept':
+          'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
+      'Accept-Encoding': 'gzip, deflate',
+      'Connection': 'keep-alive',
+      'Upgrade-Insecure-Requests': '1',
+    };
+  }
 
   /// Realiza pesquisa web agregando resultados de múltiplos provedores.
   ///
@@ -82,8 +102,8 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
       }
 
       return results.take(query.maxResults).toList();
-    } catch (e) {
-      // print('Erro na pesquisa web local: $e');
+    } catch (e, stackTrace) {
+      AppLogger.error('Erro na pesquisa web local', 'LocalWebSearch', e, stackTrace);
       return [];
     }
   }
@@ -93,26 +113,19 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
       final encodedQuery = Uri.encodeComponent(query.formattedQuery);
       final url = 'https://www.google.com/search?q=$encodedQuery&num=10';
 
-      final response = await client.get(
-        Uri.parse(url),
-        headers: {
-          'User-Agent': _randomUserAgent,
-          'Accept':
-              'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
-          'Accept-Encoding': 'gzip, deflate',
-          'Connection': 'keep-alive',
-          'Upgrade-Insecure-Requests': '1',
-        },
-      );
+      final response = await client
+          .get(Uri.parse(url), headers: _buildHeaders())
+          .timeout(_requestTimeout);
 
       if (response.statusCode != 200) {
-        throw Exception('Google search failed: ${response.statusCode}');
+        AppLogger.warning(
+            'Google search failed: ${response.statusCode}', 'LocalWebSearch');
+        return [];
       }
 
       return _parseGoogleResults(response.body);
     } catch (e) {
-      // print('Erro no Google search: $e');
+      AppLogger.debug('Erro no Google search: $e', 'LocalWebSearch');
       return [];
     }
   }
@@ -122,23 +135,19 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
       final encodedQuery = Uri.encodeComponent(query.formattedQuery);
       final url = 'https://www.bing.com/search?q=$encodedQuery&count=10';
 
-      final response = await client.get(
-        Uri.parse(url),
-        headers: {
-          'User-Agent': _randomUserAgent,
-          'Accept':
-              'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
-        },
-      );
+      final response = await client
+          .get(Uri.parse(url), headers: _buildHeaders())
+          .timeout(_requestTimeout);
 
       if (response.statusCode != 200) {
-        throw Exception('Bing search failed: ${response.statusCode}');
+        AppLogger.warning(
+            'Bing search failed: ${response.statusCode}', 'LocalWebSearch');
+        return [];
       }
 
       return _parseBingResults(response.body);
     } catch (e) {
-      // print('Erro no Bing search: $e');
+      AppLogger.debug('Erro no Bing search: $e', 'LocalWebSearch');
       return [];
     }
   }
@@ -148,23 +157,19 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
       final encodedQuery = Uri.encodeComponent(query.formattedQuery);
       final url = 'https://html.duckduckgo.com/html/?q=$encodedQuery';
 
-      final response = await client.get(
-        Uri.parse(url),
-        headers: {
-          'User-Agent': _randomUserAgent,
-          'Accept':
-              'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
-        },
-      );
+      final response = await client
+          .get(Uri.parse(url), headers: _buildHeaders())
+          .timeout(_requestTimeout);
 
       if (response.statusCode != 200) {
-        throw Exception('DuckDuckGo search failed: ${response.statusCode}');
+        AppLogger.warning('DuckDuckGo search failed: ${response.statusCode}',
+            'LocalWebSearch');
+        return [];
       }
 
       return _parseDuckDuckGoResults(response.body);
     } catch (e) {
-      // print('Erro no DuckDuckGo search: $e');
+      AppLogger.debug('Erro no DuckDuckGo search: $e', 'LocalWebSearch');
       return [];
     }
   }
@@ -296,17 +301,13 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
   @override
   Future<String> fetchPageContent(String url) async {
     try {
-      final response = await client.get(
-        Uri.parse(url),
-        headers: {
-          'User-Agent': _randomUserAgent,
-          'Accept':
-              'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
-        },
-      );
+      final response = await client
+          .get(Uri.parse(url), headers: _buildHeaders())
+          .timeout(_requestTimeout);
 
       if (response.statusCode != 200) {
+        AppLogger.warning(
+            'Falha ao carregar página: ${response.statusCode}', 'LocalWebSearch');
         throw Exception('Falha ao carregar página: ${response.statusCode}');
       }
 
@@ -336,7 +337,13 @@ class LocalWebSearchDataSource implements WebSearchDataSource {
       }
 
       return _cleanText(textContent);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Erro ao buscar conteúdo da página',
+        'LocalWebSearch',
+        e,
+        stackTrace,
+      );
       throw Exception('Erro ao buscar conteúdo da página: $e');
     }
   }
